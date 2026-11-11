@@ -8,16 +8,16 @@ Implements every ADR dated 2026-11-11: project foundation, wallet connection, ho
 
 Each is a feature branch into `dev`, passes `pnpm preflight`, carries a release note and deletes what it replaces.
 
-| #   | Branch                 | Delivers                                                                                       |
-| --- | ---------------------- | ---------------------------------------------------------------------------------------------- |
-| 1   | `chore/foundation`     | Scaffold, gates, CI, docs, landing page, studio shell. Deletes the whole old app.              |
-| 2   | `feat/wallet`          | wagmi, RainbowKit, header connect button, network status.                                      |
-| 3   | `feat/monguard`        | Server AI core (`groq`, env, rate limit, route helper), contract draft hook, MonGuard.          |
-| 4   | `feat/gaslens`         | GasLens on the AI core, diff view.                                                             |
-| 5   | `feat/forge-generate`  | Generate and edit; compile route without source rewriting.                                     |
-| 6   | `feat/forge-deploy`    | Deploy panel on wagmi; Sourcify spike recorded; verification after deploy and standalone tab. |
-| 7   | `feat/sentinel`        | Watch list, polling through TanStack Query, AI anomaly review.                                 |
-| 8   | `feat/paradebug`       | Same-function contention report and AI suggestions.                                            |
+| #   | Branch                | Delivers                                                                                      |
+| --- | --------------------- | --------------------------------------------------------------------------------------------- |
+| 1   | `chore/foundation`    | Scaffold, gates, CI, docs, landing page, studio shell. Deletes the whole old app.             |
+| 2   | `feat/wallet`         | wagmi, RainbowKit, header connect button, network status.                                     |
+| 3   | `feat/monguard`       | Server AI core (`groq`, env, rate limit, route helper), contract draft hook, MonGuard.        |
+| 4   | `feat/gaslens`        | GasLens on the AI core, diff view.                                                            |
+| 5   | `feat/forge-generate` | Generate and edit; compile route without source rewriting.                                    |
+| 6   | `feat/forge-deploy`   | Deploy panel on wagmi; Sourcify spike recorded; verification after deploy and standalone tab. |
+| 7   | `feat/sentinel`       | Watch list, polling through TanStack Query, AI anomaly review.                                |
+| 8   | `feat/paradebug`      | Same-function contention report and AI suggestions.                                           |
 
 `dev` is promoted to `staging` and `main` by the owner after step 8.
 

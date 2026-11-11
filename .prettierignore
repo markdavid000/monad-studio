@@ -1,0 +1,8 @@
+.next
+.vercel
+.lighthouseci
+coverage
+node_modules
+pnpm-lock.yaml
+next-env.d.ts
+.worktrees
