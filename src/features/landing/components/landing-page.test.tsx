@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { tools } from "@/config/tools";
-import { landingCopy, sectionCopy } from "../copy";
+import { checksCopy, flowCopy, landingCopy, sectionCopy } from "../copy";
 import { LandingPage } from "./landing-page";
 
 describe("LandingPage", () => {
@@ -24,6 +24,26 @@ describe("LandingPage", () => {
       } else {
         expect(link).toBeNull();
       }
+    }
+  });
+
+  it("explains why checking matters with a labelled diagram", () => {
+    render(<LandingPage />);
+    expect(screen.getByRole("heading", { level: 2, name: flowCopy.title })).toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: `${flowCopy.sources}, ${flowCopy.hub}, ${flowCopy.target}` })
+    ).toBeInTheDocument();
+  });
+
+  it("lists every check once for screen readers", () => {
+    render(<LandingPage />);
+    const list = screen.getByRole("region", { name: checksCopy.label });
+    for (const item of checksCopy.items) {
+      expect(
+        Array.from(list.querySelectorAll("li:not([aria-hidden='true'])")).filter(
+          (node) => node.textContent === item
+        )
+      ).toHaveLength(1);
     }
   });
 

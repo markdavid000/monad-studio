@@ -31,6 +31,24 @@ The first landing page followed the design ADR: system fonts, neutral surfaces, 
 - A tool section links to its tool only once the tool's route exists.
 - The `tw-animate-css` import and package are removed; nothing uses them.
 
+### Motion
+
+The owner found the first v2 page still too static and asked for CodeRabbit's movement. Each pattern below is built with CSS keyframes and one `IntersectionObserver` hook; no animation library.
+
+| CodeRabbit pattern                          | MonadStudio                                                                                                                                                               |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Headline word that changes letter by letter | "Write the contract. Review it on Monad." The verb follows the showcase tab, each letter rising in and flashing the accent colour. Screen readers get one stable heading. |
+| Showcase as a horizontal accordion          | The active preview grows wide; the others shrink to cropped, faded slices that open on click.                                                                             |
+| Scenes that play inside each preview        | Items rise in one after another; MonGuard's score counts down to its value; a scan line sweeps; deploy steps tick; flagged rows pulse; contention bars grow.              |
+| "Fast code. Faster chaos." flow lines       | "Monad is fast. So are its bugs." Dashed lines flow from twelve contracts into MonadStudio and on to Monad testnet.                                                       |
+| Logo wall and marquee                       | A marquee of what the reviews check. No customer logos: there are none yet.                                                                                               |
+| Travelling colour bar under each frame      | Same, in the accent, success, warning and critical colours.                                                                                                               |
+| Fade-up on scroll                           | Each section's eyebrow, heading, frame and points rise in when 15% of it is visible.                                                                                      |
+
+Rules: only `transform` and `opacity` move (plus the score counter, a registered `@property`); everything stops under `prefers-reduced-motion`; nothing visible on first paint starts hidden, so the largest contentful paint is not delayed.
+
+To keep Lighthouse at 98 or more, the four inactive showcase previews and the five section previews render on the client after hydration (`useIsClient`), and their frames reserve their height so nothing shifts. The page's text, the active preview and every heading stay in the server HTML.
+
 ### Measured
 
 | Change                                          | Lighthouse performance (mobile) |
@@ -40,6 +58,8 @@ The first landing page followed the design ADR: system fonts, neutral surfaces, 
 | Previews as client components (smaller payload) | 0.97 to 0.99                    |
 | `inlineCss` turned off                          | 0.96, worse; kept on            |
 | `tw-animate-css` removed, tab strip fixed       | 0.98 to 1.00                    |
+| Motion added (more client code and CSS)         | 0.97 to 0.99                    |
+| Hidden and below-the-fold previews client only  | 0.98 to 1.00, CLS 0             |
 
 Observed largest contentful paint is 141 ms; the 2 to 2.5 s figure is Lighthouse's slow 4G simulation.
 
@@ -68,10 +88,11 @@ Observed largest contentful paint is 141 ms; the 2 to 2.5 s figure is Lighthouse
 ## Consequences
 
 - The landing page shows the product instead of describing it.
-- About 23 KB of font and a few KB of client JavaScript for the showcase and previews.
+- About 29 KB of font and roughly 30 KB of client JavaScript for the showcase, previews and scenes.
+- Without JavaScript the section previews do not appear; the text around them does.
 - Example data in `copy.ts` must stay consistent with what the tools really produce; each tool pull request checks its previews.
 - Packages: `tw-animate-css` removed. No packages added; Geist ships with `next/font`.
 
 ## Verification
 
-`pnpm preflight` passes with Lighthouse at 98 or more in every category. Tests cover the showcase tabs, keyboard navigation, auto-advance, pause, and links appearing only for tools that exist. The owner reviews the page in the browser.
+`pnpm preflight` passes with Lighthouse at 98 or more in every category. Tests cover the stable heading and changing verb, the showcase tabs, previews that open on click, keyboard navigation, auto-advance, pause, the in-view hook, the flow diagram, the marquee, and links appearing only for tools that exist. The owner reviews the page in the browser.

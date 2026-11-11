@@ -13,7 +13,7 @@ The old app is gone from `dev`. Visitors see a landing page that says what each 
 
 - Next.js 16.4, React 19.3 with the React Compiler, Tailwind CSS v4, shadcn/ui, Vitest, pnpm and Node 24.
 - Gates on commit, push and pull request: format, lint with layer boundaries, comments, copy, typecheck, tests, knip, build, smoke test, Lighthouse on public routes, branch flow and gitleaks.
-- Landing page in the style of CodeRabbit (see the landing design v2 ADR): dark by default, Geist headlines, a five-tab showcase of example tool output that advances on its own, one framed preview per tool and a closing call to action. Light theme through the toggle.
+- Landing page in the style of CodeRabbit (see the landing design v2 ADR): dark by default, Geist headlines, a headline verb that changes letter by letter with the five-tab showcase, an accordion of example tool output with scenes that play, a flowing-lines section, a marquee of what the reviews check, sections that reveal on scroll with a travelling colour bar, and a closing call to action. Light theme through the toggle; all motion stops under reduced motion.
 - Studio shell: header with the tool links that exist, the network name and the theme toggle; `/studio` lists the tools.
 - `AGENTS.md`, `CONTRIBUTING.md`, the engineering standards, the architecture document and the ADRs.
 
@@ -25,6 +25,6 @@ The old app is gone from `dev`. Visitors see a landing page that says what each 
 
 ## Verification
 
-- Tests for the hero, the showcase (tabs, arrow keys, auto-advance, pause), the landing sections (links only where a route exists) and the studio tool list.
+- Tests for the hero stage (stable heading, changing verb, tabs, previews, arrow keys, auto-advance, pause), the in-view hook, the landing sections (links only where a route exists, diagram, marquee) and the studio tool list.
 - `pnpm preflight` passed, including Lighthouse on `/` (0.98 to 1.00 performance, 1.00 elsewhere).
 - Opened `/`, `/studio` and an unknown route in light and dark mode at phone width.

@@ -2,6 +2,7 @@
 
 import { Check, Loader } from "lucide-react";
 import { mockLabels } from "../../copy";
+import { step } from "../../lib/step";
 import type { ForgeMockData } from "../../types";
 import { MockWindow } from "./mock-window";
 
@@ -14,15 +15,20 @@ export function ForgeMock({ data }: ForgeMockProps) {
     <MockWindow title={data.file} meta={mockLabels.network}>
       <div className="grid gap-4 md:grid-cols-[1fr_15rem]">
         <div className="flex min-w-0 flex-col gap-3">
-          <div className="rounded-md border bg-muted/40 p-3">
+          <div data-step style={step(0)} className="rounded-md border bg-muted/40 p-3">
             <p className="font-mono text-[11px] text-muted-foreground uppercase">
               {mockLabels.promptLabel}
             </p>
             <p className="mt-1 text-sm">{data.prompt}</p>
           </div>
           <pre className="overflow-hidden rounded-md border p-3 font-mono text-[11px] leading-6 sm:text-xs">
-            {data.code.map((line) => (
-              <span key={line} className="block overflow-hidden text-ellipsis whitespace-pre">
+            {data.code.map((line, index) => (
+              <span
+                key={line}
+                data-step
+                style={step(2 + index)}
+                className="block overflow-hidden text-ellipsis whitespace-pre"
+              >
                 {line}
               </span>
             ))}
@@ -36,14 +42,19 @@ export function ForgeMock({ data }: ForgeMockProps) {
           </div>
           <p className="font-mono text-xs text-muted-foreground">{data.wallet}</p>
           <ol className="flex flex-col gap-2">
-            {data.steps.map((step) => (
-              <li key={step.label} className="flex items-center gap-2 text-xs">
-                {step.state === "done" ? (
+            {data.steps.map((item, index) => (
+              <li
+                key={item.label}
+                data-step
+                style={step(10 + index * 3)}
+                className="flex items-center gap-2 text-xs"
+              >
+                {item.state === "done" ? (
                   <Check aria-hidden className="size-3.5 text-success" />
                 ) : (
                   <Loader aria-hidden className="size-3.5 text-eyebrow motion-safe:animate-spin" />
                 )}
-                <span className="truncate">{step.label}</span>
+                <span className="truncate">{item.label}</span>
               </li>
             ))}
           </ol>

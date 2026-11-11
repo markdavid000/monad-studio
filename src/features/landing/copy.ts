@@ -8,13 +8,16 @@ import type {
 
 export const landingCopy = {
   eyebrow: "Solidity tooling for Monad",
-  title: "Write it. Break it. Ship it to Monad.",
+  titleLead: "Write the contract.",
+  titleSuffix: "it on Monad.",
+  titleAccessible: "Write the contract. Review, optimise, deploy, watch and debug it on Monad.",
   lead: "Review a contract for security holes and wasted gas, generate one from a sentence, deploy it from your own wallet, then watch how it behaves on testnet.",
   cta: "Open the studio",
   secondaryCta: "See what each tool does",
   noWallet: "No sign-in. A wallet is only needed to deploy.",
   showcaseLabel: "Tool previews",
   pause: "Pause the previews",
+  showPreview: "Show",
   play: "Play the previews",
   exampleData: "Example output",
   closingTitle: "Paste a contract and see what it finds.",
@@ -24,12 +27,59 @@ export const landingCopy = {
 } as const;
 
 export const showcaseTabs = [
-  { id: "review", number: "01", label: "Review", caption: "every contract before it ships" },
-  { id: "optimise", number: "02", label: "Optimise", caption: "gas line by line" },
-  { id: "deploy", number: "03", label: "Deploy", caption: "from a description" },
-  { id: "watch", number: "04", label: "Watch", caption: "calls as they land" },
-  { id: "contention", number: "05", label: "Contention", caption: "inside each block" },
+  {
+    id: "review",
+    number: "01",
+    label: "Review",
+    verb: "Review",
+    caption: "every contract before it ships",
+  },
+  {
+    id: "optimise",
+    number: "02",
+    label: "Optimise",
+    verb: "Optimise",
+    caption: "gas line by line",
+  },
+  { id: "deploy", number: "03", label: "Deploy", verb: "Deploy", caption: "from a description" },
+  { id: "watch", number: "04", label: "Watch", verb: "Watch", caption: "calls as they land" },
+  {
+    id: "contention",
+    number: "05",
+    label: "Contention",
+    verb: "Debug",
+    caption: "inside each block",
+  },
 ] as const;
+
+export const flowCopy = {
+  eyebrow: "Why it matters",
+  title: "Monad is fast. So are its bugs.",
+  body: "Blocks land in well under a second and transactions run in parallel. A broken contract can be drained before anyone opens the explorer. Check it before it ships, and keep watching after.",
+  sources: "Your contracts",
+  hub: "MonadStudio",
+  target: "Monad testnet",
+} as const;
+
+export const checksCopy = {
+  label: "What the reviews look for",
+  items: [
+    "Reentrancy",
+    "Missing access control",
+    "tx.origin authorisation",
+    "Unchecked maths",
+    "Unbounded fees",
+    "Stale owner checks",
+    "Storage reads in loops",
+    "memory where calldata will do",
+    "Revert strings",
+    "Unchecked loop counters",
+    "Values that could be immutable",
+    "Missing events",
+    "Front-running windows",
+    "Centralisation risk",
+  ],
+} as const;
 
 export type ShowcaseTabId = (typeof showcaseTabs)[number]["id"];
 

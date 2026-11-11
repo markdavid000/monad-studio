@@ -7,14 +7,16 @@ import {
   sectionCopy,
   sentinelMocks,
 } from "../copy";
+import { ChecksMarquee } from "./checks-marquee";
 import { ClosingCta } from "./closing-cta";
-import { Hero } from "./hero";
+import { FlowSection } from "./flow-section";
+import { HeroAside } from "./hero-aside";
+import { HeroStage } from "./hero-stage";
 import { ForgeMock } from "./mocks/forge-mock";
 import { GaslensMock } from "./mocks/gaslens-mock";
 import { MonguardMock } from "./mocks/monguard-mock";
 import { ParadebugMock } from "./mocks/paradebug-mock";
 import { SentinelMock } from "./mocks/sentinel-mock";
-import { Showcase } from "./showcase";
 import { ToolSection } from "./tool-section";
 
 const SECTIONS = [
@@ -28,19 +30,18 @@ const SECTIONS = [
 export function LandingPage() {
   return (
     <>
-      <Hero
-        showcase={
-          <Showcase
-            panels={{
-              review: <MonguardMock data={monguardMocks.hero} />,
-              optimise: <GaslensMock data={gaslensMocks.hero} />,
-              deploy: <ForgeMock data={forgeMocks.hero} />,
-              watch: <SentinelMock data={sentinelMocks.hero} />,
-              contention: <ParadebugMock data={paradebugMocks.hero} />,
-            }}
-          />
-        }
+      <HeroStage
+        aside={<HeroAside />}
+        panels={{
+          review: <MonguardMock data={monguardMocks.hero} />,
+          optimise: <GaslensMock data={gaslensMocks.hero} />,
+          deploy: <ForgeMock data={forgeMocks.hero} />,
+          watch: <SentinelMock data={sentinelMocks.hero} />,
+          contention: <ParadebugMock data={paradebugMocks.hero} />,
+        }}
       />
+      <ChecksMarquee />
+      <FlowSection />
       <div id="tools" className="divide-y border-t">
         {SECTIONS.map(({ slug, tone, preview }) => {
           const tool = toolBySlug[slug];

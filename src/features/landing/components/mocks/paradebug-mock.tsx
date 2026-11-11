@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { mockLabels } from "../../copy";
+import { step } from "../../lib/step";
 import type { ParadebugMockData } from "../../types";
 import { MockWindow } from "./mock-window";
 
@@ -22,13 +23,20 @@ export function ParadebugMock({ data }: ParadebugMockProps) {
             {mockLabels.blocksLabel}
           </p>
           <ul className="flex flex-col gap-2">
-            {data.blocks.map((block) => (
-              <li key={block.number} className="rounded-md border p-2.5">
+            {data.blocks.map((block, blockIndex) => (
+              <li
+                key={block.number}
+                data-step
+                style={step(blockIndex * 3)}
+                className="rounded-md border p-2.5"
+              >
                 <p className="font-mono text-xs text-muted-foreground">{block.number}</p>
                 <div className="mt-1.5 flex flex-wrap gap-1">
                   {block.calls.map((call, index) => (
                     <span
                       key={`${block.number}-${index}`}
+                      data-step="pop"
+                      style={step(blockIndex * 3 + 1 + index * 0.5)}
                       className={cn(
                         "rounded border px-1.5 py-0.5 font-mono text-[11px]",
                         isRepeated(block.calls, call)
@@ -49,8 +57,8 @@ export function ParadebugMock({ data }: ParadebugMockProps) {
             {mockLabels.functionsLabel}
           </p>
           <ul className="flex flex-col gap-3">
-            {data.functions.map((fn) => (
-              <li key={fn.name}>
+            {data.functions.map((fn, index) => (
+              <li key={fn.name} data-step style={step(4 + index * 2)}>
                 <div className="flex justify-between font-mono text-xs">
                   <span>{fn.name}</span>
                   <span className="text-muted-foreground">
@@ -59,8 +67,9 @@ export function ParadebugMock({ data }: ParadebugMockProps) {
                 </div>
                 <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
                   <div
+                    data-grow
+                    style={{ ...step(4 + index * 2), width: `${(fn.blocks / fn.of) * 100}%` }}
                     className="h-full rounded-full bg-severity-high"
-                    style={{ width: `${(fn.blocks / fn.of) * 100}%` }}
                   />
                 </div>
               </li>

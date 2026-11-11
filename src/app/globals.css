@@ -113,11 +113,203 @@
   }
 }
 
+@property --score {
+  syntax: "<integer>";
+  inherits: true;
+  initial-value: 0;
+}
+
 @keyframes showcase-progress {
   from {
     transform: scaleX(0);
   }
   to {
     transform: scaleX(1);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes char-in {
+  0% {
+    opacity: 0;
+    transform: translateY(0.45em) rotateX(-70deg);
+    color: var(--eyebrow);
+  }
+  55% {
+    opacity: 1;
+    color: var(--eyebrow);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotateX(0);
+    color: inherit;
+  }
+}
+
+@keyframes scan-sweep {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(2000%);
+    opacity: 0;
+  }
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes count-up {
+  from {
+    --score: 100;
+  }
+}
+
+@keyframes flow-dash {
+  to {
+    stroke-dashoffset: -400;
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes color-travel {
+  to {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes soft-ping {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--severity-high) 45%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0.6rem transparent;
+  }
+}
+
+@layer components {
+  .scene[data-play="false"] [data-step],
+  .scene[data-play="false"] [data-grow] {
+    opacity: 0;
+  }
+
+  .scene[data-play="true"] [data-step] {
+    animation: rise-in 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--step, 0) * 110ms);
+  }
+
+  .scene[data-play="true"] [data-step="pop"] {
+    animation-name: pop-in;
+  }
+
+  .scene[data-play="true"] [data-grow] {
+    transform-origin: left;
+    animation: grow-x 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--step, 0) * 110ms + 200ms);
+  }
+
+  .scene[data-play="true"] [data-scan] {
+    animation: scan-sweep 1.6s ease-in-out 0.1s both;
+  }
+
+  .scene[data-play="true"] [data-ping] {
+    animation: soft-ping 1.4s ease-out 1.2s 3;
+  }
+
+  .scene [data-score]::after {
+    counter-reset: score var(--score);
+    content: counter(score);
+  }
+
+  .scene[data-play="true"] [data-score] {
+    animation: count-up 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s both;
+  }
+
+  .flow-line {
+    stroke-dasharray: 14 22;
+    animation: flow-dash 9s linear infinite;
+  }
+
+  .marquee-track {
+    animation: marquee 40s linear infinite;
+  }
+
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+
+  .color-bar {
+    background-image: linear-gradient(
+      90deg,
+      var(--eyebrow),
+      var(--success),
+      var(--severity-medium),
+      var(--severity-critical),
+      var(--eyebrow)
+    );
+    background-size: 200% 100%;
+    animation: color-travel 6s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scene[data-play="false"] [data-step],
+    .scene[data-play="false"] [data-grow],
+    .scene[data-play="true"] [data-step],
+    .scene[data-play="true"] [data-grow],
+    .scene[data-play="true"] [data-score] {
+      animation: none;
+      opacity: 1;
+    }
+
+    .scene [data-scan],
+    .flow-line,
+    .marquee-track,
+    .color-bar,
+    [data-char] {
+      animation: none;
+    }
   }
 }

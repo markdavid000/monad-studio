@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { mockLabels } from "../../copy";
+import { scoreVar, step } from "../../lib/step";
 import type { MonguardMockData } from "../../types";
 import { DiffLines } from "./diff-lines";
 import { MockWindow } from "./mock-window";
@@ -11,30 +12,31 @@ interface MonguardMockProps {
   data: MonguardMockData;
 }
 
+function scoreTone(score: number) {
+  if (score >= 80) return "text-success";
+  if (score >= 50) return "text-severity-medium";
+  return "text-severity-high";
+}
+
 export function MonguardMock({ data }: MonguardMockProps) {
   const [first, ...rest] = data.findings;
 
   return (
-    <MockWindow title={data.file} meta={data.tool}>
+    <MockWindow title={data.file} meta={data.tool} hasScan>
       <div className="flex items-end justify-between gap-4 border-b pb-4">
         <p className="text-sm text-muted-foreground">{mockLabels.scoreLabel}</p>
         <p className="font-mono">
+          <span className="sr-only">{data.score}</span>
           <span
-            className={cn(
-              "text-3xl font-medium",
-              data.score >= 80
-                ? "text-success"
-                : data.score >= 50
-                  ? "text-severity-medium"
-                  : "text-severity-high"
-            )}
-          >
-            {data.score}
-          </span>
+            aria-hidden
+            data-score
+            style={scoreVar(data.score)}
+            className={cn("text-3xl font-medium tabular-nums", scoreTone(data.score))}
+          />
           <span className="text-sm text-muted-foreground">{mockLabels.scoreOutOf}</span>
         </p>
       </div>
-      <div className="mt-4 rounded-md border p-3">
+      <div data-step style={step(3)} className="mt-4 rounded-md border p-3">
         <div className="flex flex-wrap items-center gap-2">
           <SeverityPill level={first.severity} />
           <p className="text-sm font-medium">{first.title}</p>
@@ -44,11 +46,16 @@ export function MonguardMock({ data }: MonguardMockProps) {
         <p className="mt-3 mb-1.5 font-mono text-[11px] text-muted-foreground uppercase">
           {mockLabels.fixLabel}
         </p>
-        <DiffLines lines={data.fix} />
+        <DiffLines lines={data.fix} firstStep={5} />
       </div>
       <ul className="mt-3 divide-y">
-        {rest.map((finding) => (
-          <li key={finding.title} className="flex items-center gap-2 py-2.5">
+        {rest.map((finding, index) => (
+          <li
+            key={finding.title}
+            data-step
+            style={step(10 + index)}
+            className="flex items-center gap-2 py-2.5"
+          >
             <SeverityPill level={finding.severity} />
             <span className="truncate text-sm">{finding.title}</span>
             <span className="ml-auto shrink-0 font-mono text-xs text-muted-foreground">
