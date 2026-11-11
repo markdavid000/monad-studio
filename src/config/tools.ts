@@ -10,13 +10,15 @@ export interface Tool {
   href?: `/studio/${ToolSlug}`;
 }
 
-export const tools: readonly Tool[] = [
-  { slug: "monguard", ...toolCopy.monguard },
-  { slug: "gaslens", ...toolCopy.gaslens },
-  { slug: "forge", ...toolCopy.forge },
-  { slug: "sentinel", ...toolCopy.sentinel },
-  { slug: "paradebug", ...toolCopy.paradebug },
-];
+export const toolBySlug: Record<ToolSlug, Tool> = {
+  monguard: { slug: "monguard", ...toolCopy.monguard },
+  gaslens: { slug: "gaslens", ...toolCopy.gaslens },
+  forge: { slug: "forge", ...toolCopy.forge },
+  sentinel: { slug: "sentinel", ...toolCopy.sentinel },
+  paradebug: { slug: "paradebug", ...toolCopy.paradebug },
+};
+
+export const tools: readonly Tool[] = Object.values(toolBySlug);
 
 export type LinkedTool = Tool & Required<Pick<Tool, "href">>;
 

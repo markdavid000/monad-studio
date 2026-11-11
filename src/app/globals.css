@@ -1,11 +1,9 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono:
     ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   --color-background: var(--background);
@@ -31,6 +29,11 @@
   --color-severity-medium: var(--severity-medium);
   --color-severity-low: var(--severity-low);
   --color-success: var(--success);
+  --color-frame-warm: var(--frame-warm);
+  --color-frame-sand: var(--frame-sand);
+  --color-eyebrow: var(--eyebrow);
+  --color-diff-add: var(--diff-add);
+  --color-diff-remove: var(--diff-remove);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -62,12 +65,17 @@
   --severity-medium: oklch(0.52 0.12 85);
   --severity-low: oklch(0.5 0.1 240);
   --success: oklch(0.5 0.13 150);
+  --frame-warm: oklch(0.82 0.03 40);
+  --frame-sand: oklch(0.88 0.025 80);
+  --eyebrow: #6e54e8;
+  --diff-add: oklch(0.95 0.04 150);
+  --diff-remove: oklch(0.95 0.035 25);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: oklch(0.16 0.005 286);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.18 0 0);
+  --card: oklch(0.2 0.005 286);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.18 0 0);
   --popover-foreground: oklch(0.985 0 0);
@@ -88,6 +96,11 @@
   --severity-medium: oklch(0.83 0.13 90);
   --severity-low: oklch(0.75 0.1 240);
   --success: oklch(0.75 0.14 150);
+  --frame-warm: oklch(0.42 0.03 35);
+  --frame-sand: oklch(0.8 0.03 75);
+  --eyebrow: #9b8afb;
+  --diff-add: oklch(0.29 0.045 150);
+  --diff-remove: oklch(0.28 0.045 25);
 }
 
 @layer base {
@@ -97,5 +110,14 @@
 
   body {
     @apply bg-background font-sans text-foreground;
+  }
+}
+
+@keyframes showcase-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
   }
 }

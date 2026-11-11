@@ -7,11 +7,15 @@ import { ThemeToggle } from "./theme-toggle";
 export function SiteHeader() {
   return (
     <header className="border-b">
-      <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-6">
+      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-6">
         <BrandLink />
         <nav aria-label={layoutCopy.studio} className="flex items-center gap-2">
           <ThemeToggle />
-          <Button asChild size="sm">
+          <Button
+            asChild
+            size="sm"
+            className="bg-foreground text-background hover:bg-foreground/90"
+          >
             <Link href="/studio">{layoutCopy.openStudio}</Link>
           </Button>
         </nav>

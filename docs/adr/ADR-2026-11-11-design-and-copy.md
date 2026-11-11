@@ -2,6 +2,7 @@
 
 - **Status:** Accepted
 - **Approved by:** (MarkDavid, 11th Nov 2026)
+- **Superseded in part by:** [ADR-2026-11-11-landing-design-v2.md](ADR-2026-11-11-landing-design-v2.md) (visual direction, type, landing page), if approved
 - **Companion:** [ADR-2026-11-11-design-and-copy-for-dummies.md](ADR-2026-11-11-design-and-copy-for-dummies.md)
 
 ## Context
