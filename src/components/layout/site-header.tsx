@@ -7,7 +7,7 @@ import { ThemeToggle } from "./theme-toggle";
 export function SiteHeader() {
   return (
     <header className="border-b">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-6">
+      <div className="page-container flex h-14 items-center justify-between">
         <BrandLink />
         <nav aria-label={layoutCopy.studio} className="flex items-center gap-2">
           <ThemeToggle />

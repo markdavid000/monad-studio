@@ -6,7 +6,7 @@ export default function HomePage() {
   return (
     <>
       <SiteHeader />
-      <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-6">
+      <main id="main" className="page-container flex-1">
         <LandingPage />
       </main>
       <SiteFooter />

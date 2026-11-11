@@ -103,6 +103,22 @@
   --diff-remove: oklch(0.28 0.045 25);
 }
 
+@utility page-container {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+
+  @media (width >= 64rem) {
+    max-width: 80rem;
+    padding-inline: 3rem;
+  }
+
+  @media (width >= 80rem) {
+    max-width: 120rem;
+    padding-inline: 7.5rem;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

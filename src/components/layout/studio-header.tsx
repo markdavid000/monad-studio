@@ -9,7 +9,7 @@ export function StudioHeader() {
 
   return (
     <header className="border-b">
-      <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-6 px-6">
+      <div className="page-container flex h-14 items-center gap-6">
         <BrandLink />
         <nav aria-label={layoutCopy.tools} className="flex flex-1 items-center gap-4 text-sm">
           {linkedTools.map((tool) => (
