@@ -219,9 +219,22 @@
   }
 }
 
-@keyframes flow-dash {
+@keyframes flow-travel {
+  from {
+    stroke-dashoffset: 1500;
+  }
   to {
-    stroke-dashoffset: -400;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes icon-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
   }
 }
 
@@ -284,9 +297,18 @@
     animation: count-up 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s both;
   }
 
-  .flow-line {
-    stroke-dasharray: 14 22;
-    animation: flow-dash 9s linear infinite;
+  .flow-pulse {
+    stroke-dasharray: 70 1430;
+    animation: flow-travel 6s linear infinite;
+  }
+
+  .flow-pulse-long {
+    stroke-dasharray: 140 1360;
+    animation-duration: 4.5s;
+  }
+
+  .flow-icon {
+    animation: icon-glow 3.6s ease-in-out infinite;
   }
 
   .marquee-track {
@@ -321,9 +343,10 @@
     }
 
     .scene [data-scan],
-    .flow-line,
+    .flow-icon,
     .marquee-track,
     .color-bar,
+    .flow-pulse,
     [data-char] {
       animation: none;
     }

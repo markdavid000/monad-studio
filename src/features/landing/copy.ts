@@ -50,7 +50,6 @@ export const showcaseTabs = [
 ] as const;
 
 export const flowCopy = {
-  eyebrow: "Why it matters",
   title: "Monad is fast. So are its bugs.",
   body: "Blocks land in well under a second and transactions run in parallel. A broken contract can be drained before anyone opens the explorer. Check it before it ships, and keep watching after.",
   sources: "Your contracts",

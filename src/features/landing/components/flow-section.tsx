@@ -5,31 +5,25 @@ import { Scene } from "./scene";
 
 export function FlowSection() {
   return (
-    <Scene className="border-t py-20 sm:py-28">
-      <section
-        aria-labelledby="flow-title"
-        className="grid items-center gap-12 lg:grid-cols-[1.6fr_1fr]"
-      >
-        <div className="relative" data-step style={step(1)}>
+    <Scene className="border-t py-16 sm:py-24">
+      <section aria-labelledby="flow-title" className="relative">
+        <div data-step style={step(0)} className="lg:-mx-12 xl:-mx-30">
           <FlowDiagram />
         </div>
-        <div className="flex flex-col gap-4">
-          <p
-            data-step
-            style={step(0)}
-            className="font-mono text-xs tracking-wide text-eyebrow uppercase"
-          >
-            {flowCopy.eyebrow}
-          </p>
+        <div className="mt-10 flex flex-col gap-4 lg:absolute lg:inset-y-0 lg:right-0 lg:mt-0 lg:w-[36%]">
           <h2
             id="flow-title"
             data-step
             style={step(1)}
-            className="text-3xl font-medium tracking-[-0.02em] sm:text-4xl"
+            className="text-3xl font-medium tracking-[-0.02em] sm:text-4xl lg:absolute lg:bottom-[calc(50%+2.5rem)]"
           >
             {flowCopy.title}
           </h2>
-          <p data-step style={step(2)} className="text-lg text-muted-foreground">
+          <p
+            data-step
+            style={step(2)}
+            className="text-lg text-muted-foreground lg:absolute lg:top-[calc(50%+2.5rem)]"
+          >
             {flowCopy.body}
           </p>
         </div>
