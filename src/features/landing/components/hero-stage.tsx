@@ -1,10 +1,12 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { landingCopy, showcaseTabs, type ShowcaseTabId } from "../copy";
-import { useShowcase } from "../hooks/use-showcase";
+import { landingCopy, type ShowcaseTabId } from "../copy";
+import { useCycle } from "../hooks/use-cycle";
 import { RotatingWord } from "./rotating-word";
 import { Showcase } from "./showcase";
+
+const WORD_MS = 2800;
 
 interface HeroStageProps {
   aside: ReactNode;
@@ -12,8 +14,7 @@ interface HeroStageProps {
 }
 
 export function HeroStage({ aside, panels }: HeroStageProps) {
-  const showcase = useShowcase(showcaseTabs.length);
-  const verb = showcaseTabs[showcase.active].verb;
+  const { index, hasCycled } = useCycle(landingCopy.titleVerbs.length, WORD_MS);
 
   return (
     <section aria-labelledby="hero-title" className="flex flex-col gap-14 pt-20 pb-24 sm:pt-28">
@@ -24,24 +25,21 @@ export function HeroStage({ aside, panels }: HeroStageProps) {
           </p>
           <h1
             id="hero-title"
-            className="text-5xl leading-[1.05] font-medium tracking-[-0.03em] sm:text-6xl"
+            className="text-5xl leading-[1.05] font-medium tracking-[-0.03em] sm:text-6xl xl:text-7xl"
           >
             <span className="sr-only">{landingCopy.titleAccessible}</span>
             <span aria-hidden className="block">
               {landingCopy.titleLead}
             </span>
             <span aria-hidden className="flex flex-wrap gap-x-[0.25em]">
-              <RotatingWord word={verb} shouldAnimate={showcase.hasChanged} />
+              <RotatingWord word={landingCopy.titleVerbs[index]} shouldAnimate={hasCycled} />
               <span>{landingCopy.titleSuffix}</span>
             </span>
           </h1>
         </div>
         {aside}
       </div>
-      <div className="relative overflow-hidden rounded-xl border bg-muted/30 p-4 sm:p-6">
-        <Showcase panels={panels} {...showcase} />
-        <div aria-hidden className="color-bar absolute inset-x-0 bottom-0 h-0.5 opacity-70" />
-      </div>
+      <Showcase panels={panels} />
     </section>
   );
 }

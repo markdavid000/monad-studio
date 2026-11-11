@@ -5,28 +5,18 @@ import type { KeyboardEvent, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { landingCopy, showcaseTabs, type ShowcaseTabId } from "../copy";
 import { useIsClient } from "../hooks/use-is-client";
+import { useShowcase } from "../hooks/use-showcase";
 
 const SLIDE_SECONDS = 7;
 
 interface ShowcaseProps {
   panels: Record<ShowcaseTabId, ReactNode>;
-  active: number;
-  isPaused: boolean;
-  changes: number;
-  select: (index: number) => void;
-  advance: () => void;
-  togglePause: () => void;
 }
 
-export function Showcase({
-  panels,
-  active,
-  isPaused,
-  changes,
-  select,
-  advance,
-  togglePause,
-}: ShowcaseProps) {
+export function Showcase({ panels }: ShowcaseProps) {
+  const { active, isPaused, changes, select, advance, togglePause } = useShowcase(
+    showcaseTabs.length
+  );
   const isClient = useIsClient();
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -39,19 +29,25 @@ export function Showcase({
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex items-start gap-3">
-        <div
-          role="tablist"
-          aria-label={landingCopy.showcaseLabel}
-          onKeyDown={handleKeyDown}
-          className="grid min-w-0 flex-1 grid-cols-[repeat(5,minmax(6.5rem,1fr))] gap-2 overflow-x-auto pb-1"
-        >
-          {showcaseTabs.map((tab, index) => {
-            const isActive = index === active;
-            return (
+    <div className="flex flex-col gap-3">
+      <div
+        role="tablist"
+        aria-label={landingCopy.showcaseLabel}
+        onKeyDown={handleKeyDown}
+        className="flex flex-col overflow-hidden rounded-xl border bg-card/40 lg:h-[36rem] lg:flex-row"
+      >
+        {showcaseTabs.map((tab, index) => {
+          const isActive = index === active;
+          return (
+            <div
+              key={tab.id}
+              onMouseEnter={() => select(index)}
+              className={cn(
+                "relative flex min-w-0 flex-col border-b transition-[flex-grow] duration-700 ease-[cubic-bezier(0.2,0.7,0.2,1)] last:border-b-0 motion-reduce:transition-none lg:border-b-0 lg:border-l lg:first:border-l-0",
+                isActive ? "lg:flex-[3.75]" : "lg:flex-1"
+              )}
+            >
               <button
-                key={tab.id}
                 id={`showcase-tab-${tab.id}`}
                 type="button"
                 role="tab"
@@ -59,84 +55,77 @@ export function Showcase({
                 aria-controls={`showcase-panel-${tab.id}`}
                 tabIndex={isActive ? 0 : -1}
                 onClick={() => select(index)}
-                className={cn(
-                  "flex flex-col gap-2 pt-1 text-left font-mono text-xs transition-colors duration-300",
-                  isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                )}
+                className="flex h-14 shrink-0 items-center gap-3 overflow-hidden px-5 text-left whitespace-nowrap lg:border-b lg:px-6"
               >
-                <span className="h-0.5 w-full overflow-hidden rounded-full bg-border">
-                  {isActive ? (
-                    <span
-                      key={`${tab.id}-${changes}`}
-                      onAnimationEnd={advance}
-                      className="block h-full origin-left bg-eyebrow motion-reduce:[animation:none]"
-                      style={{
-                        animation: `showcase-progress ${SLIDE_SECONDS}s linear forwards`,
-                        animationPlayState: isPaused ? "paused" : "running",
-                      }}
-                    />
-                  ) : null}
+                <span className="font-mono text-sm text-muted-foreground">{tab.number}</span>
+                <span
+                  className={cn(
+                    "font-medium transition-colors",
+                    isActive ? "text-foreground" : "text-muted-foreground"
+                  )}
+                >
+                  {tab.label}
                 </span>
-                <span>
-                  <span className="text-eyebrow">{tab.number}</span> {tab.label}
-                  <span className="hidden text-muted-foreground xl:inline"> {tab.caption}</span>
+                <span
+                  className={cn(
+                    "truncate text-muted-foreground transition-opacity duration-500",
+                    isActive ? "opacity-100" : "opacity-0"
+                  )}
+                >
+                  {tab.caption}
                 </span>
               </button>
-            );
-          })}
-        </div>
-        <button
-          type="button"
-          onClick={togglePause}
-          aria-label={isPaused ? landingCopy.play : landingCopy.pause}
-          className="mt-2 hidden rounded-md border p-1.5 text-muted-foreground transition-colors hover:text-foreground motion-safe:block"
-        >
-          {isPaused ? (
-            <Play aria-hidden className="size-3.5" />
-          ) : (
-            <Pause aria-hidden className="size-3.5" />
-          )}
-        </button>
-      </div>
-      <div className="lg:flex lg:h-[33rem] lg:gap-3">
-        {showcaseTabs.map((tab, index) => {
-          const isActive = index === active;
-          return (
-            <div
-              key={tab.id}
-              className={cn(
-                "relative min-w-0 overflow-hidden rounded-lg transition-[flex-grow,opacity] duration-700 ease-[cubic-bezier(0.2,0.7,0.2,1)] motion-reduce:transition-none",
-                isActive ? "lg:flex-[10]" : "hidden opacity-35 hover:opacity-60 lg:block lg:flex-1"
-              )}
-            >
               <div
                 id={`showcase-panel-${tab.id}`}
                 role="tabpanel"
                 aria-labelledby={`showcase-tab-${tab.id}`}
                 aria-hidden={!isActive}
                 inert={!isActive}
+                className={cn(
+                  "relative flex-1 overflow-hidden px-5 pb-6 transition-opacity duration-500 lg:px-6 lg:pt-8",
+                  isActive ? "opacity-100" : "hidden opacity-30 lg:block"
+                )}
               >
                 <div
                   key={isActive ? `active-${changes}` : "idle"}
                   data-play={isActive ? "true" : "static"}
-                  className="scene lg:w-full lg:min-w-[42rem]"
+                  className="scene lg:min-w-[42rem]"
                 >
                   {isActive || isClient ? panels[tab.id] : null}
                 </div>
               </div>
-              {isActive ? null : (
-                <button
-                  type="button"
-                  tabIndex={-1}
-                  aria-label={`${landingCopy.showPreview} ${tab.label}`}
-                  onClick={() => select(index)}
-                  className="absolute inset-0 cursor-pointer"
-                />
-              )}
+              {isActive ? (
+                <span
+                  aria-hidden
+                  className="absolute inset-x-0 bottom-0 h-0.5 overflow-hidden bg-border"
+                >
+                  <span
+                    key={`${tab.id}-${changes}`}
+                    onAnimationEnd={advance}
+                    className="block h-full origin-left bg-eyebrow motion-reduce:[animation:none]"
+                    style={{
+                      animation: `showcase-progress ${SLIDE_SECONDS}s linear forwards`,
+                      animationPlayState: isPaused ? "paused" : "running",
+                    }}
+                  />
+                </span>
+              ) : null}
             </div>
           );
         })}
       </div>
+      <button
+        type="button"
+        onClick={togglePause}
+        aria-label={isPaused ? landingCopy.play : landingCopy.pause}
+        className="hidden self-end rounded-md border p-2 text-muted-foreground transition-colors hover:text-foreground motion-safe:block"
+      >
+        {isPaused ? (
+          <Play aria-hidden className="size-3.5" />
+        ) : (
+          <Pause aria-hidden className="size-3.5" />
+        )}
+      </button>
     </div>
   );
 }

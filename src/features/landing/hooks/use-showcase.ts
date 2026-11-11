@@ -28,7 +28,6 @@ export function useShowcase(count: number) {
   return {
     active: state.active,
     isPaused: state.isPaused,
-    hasChanged: state.changes > 0,
     changes: state.changes,
     select: (index: number) => dispatch({ type: "select", index }),
     advance: () => dispatch({ type: "advance" }),
