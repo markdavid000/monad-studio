@@ -35,7 +35,7 @@ const FILLER = [
 ];
 const FILLER_PATTERN = new RegExp(`(^|[^\\w-])(${FILLER.join("|")})(?![\\w-])`, "i");
 const DASHES = /[–—]/;
-const EMOJI = /\p{Extended_Pictographic}/u;
+const EMOJI = /(?![©®™])\p{Extended_Pictographic}/u;
 const EXCLAMATION = /!/;
 
 function filesToCheck() {

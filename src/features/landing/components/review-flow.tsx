@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { reviewFlowCopy } from "../copy";
+import { useIsClient } from "../hooks/use-is-client";
 import { useScrollProgress } from "../hooks/use-scroll-progress";
 import { ReviewStage } from "./review-stage";
 
@@ -9,6 +10,7 @@ const STEP_COUNT = reviewFlowCopy.steps.length;
 
 export function ReviewFlow() {
   const { ref, progress } = useScrollProgress<HTMLDivElement>();
+  const isClient = useIsClient();
   const step = Math.min(STEP_COUNT - 1, Math.floor(progress * STEP_COUNT));
 
   return (
@@ -61,7 +63,7 @@ export function ReviewFlow() {
             </ol>
           </div>
           <div role="img" aria-label={reviewFlowCopy.stageLabel} className="hidden lg:block">
-            <ReviewStage step={step} />
+            {isClient ? <ReviewStage step={step} /> : null}
           </div>
         </div>
       </div>

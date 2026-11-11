@@ -45,7 +45,17 @@ The owner found the first v2 page still too static and asked for CodeRabbit's mo
 | Travelling colour bar under each frame      | Same, in the accent, success, warning and critical colours.                                                                                                               |
 | Fade-up on scroll                           | Each section's eyebrow, heading, frame and points rise in when 15% of it is visible.                                                                                      |
 
-Rules: only `transform` and `opacity` move (plus the score counter, a registered `@property`); everything stops under `prefers-reduced-motion`; nothing visible on first paint starts hidden, so the largest contentful paint is not delayed.
+### Second review by the owner
+
+The owner compared the page with CodeRabbit again and asked for four changes, now built:
+
+- **Width.** One `page-container` utility copies the reference container: full width with 1.5rem gutters, 80rem with 3rem gutters from 64rem, 120rem with 7.5rem gutters from 80rem.
+- **Hero.** The headline verb cycles on its own timer (every 2.8 s) and no longer follows the showcase. The showcase is one bordered strip of columns, each with its own header; hovering or clicking a column opens it to about 3.75 times the width of the others, and the progress line runs along its bottom. The columns use the disclosure pattern (`aria-expanded` on each header, `role="region"` on each panel) because a panel inside a tab list breaks ARIA.
+- **Flow section.** Full width: a faint grid of contract icons, lines that fade in towards a vertical wall, one bundle that runs to the right edge and fades out, and light pulses travelling along every line. The heading sits above the bundle and the body below it.
+- **Scroll section.** "What happens when you press Scan": a sticky panel inside a 260vh track. Scroll position picks one of five true steps (your contract, the checklist, the fixed reply shape, the scoring rules, the next tool); a progress line grows down the step list and the stage on the right changes with each step.
+- **Footer.** A large outlined MonadStudio wordmark fading downward, a bordered box with a call to open the studio and the AI note in place of a newsletter (no mailing service exists), and a row linking the studio and the public GitHub repository. Legal pages and a newsletter wait for their own decisions.
+
+(plus the score counter, a registered `@property`); everything stops under `prefers-reduced-motion`; nothing visible on first paint starts hidden, so the largest contentful paint is not delayed.
 
 To keep Lighthouse at 98 or more, the four inactive showcase previews and the five section previews render on the client after hydration (`useIsClient`), and their frames reserve their height so nothing shifts. The page's text, the active preview and every heading stay in the server HTML.
 

@@ -31,7 +31,7 @@ export function Showcase({ panels }: ShowcaseProps) {
   return (
     <div className="flex flex-col gap-3">
       <div
-        role="tablist"
+        role="group"
         aria-label={landingCopy.showcaseLabel}
         onKeyDown={handleKeyDown}
         className="flex flex-col overflow-hidden rounded-xl border bg-card/40 lg:h-[36rem] lg:flex-row"
@@ -50,10 +50,9 @@ export function Showcase({ panels }: ShowcaseProps) {
               <button
                 id={`showcase-tab-${tab.id}`}
                 type="button"
-                role="tab"
-                aria-selected={isActive}
+                aria-label={`${tab.number} ${tab.label}`}
+                aria-expanded={isActive}
                 aria-controls={`showcase-panel-${tab.id}`}
-                tabIndex={isActive ? 0 : -1}
                 onClick={() => select(index)}
                 className="flex h-14 shrink-0 items-center gap-3 overflow-hidden px-5 text-left whitespace-nowrap lg:border-b lg:px-6"
               >
@@ -77,7 +76,7 @@ export function Showcase({ panels }: ShowcaseProps) {
               </button>
               <div
                 id={`showcase-panel-${tab.id}`}
-                role="tabpanel"
+                role="region"
                 aria-labelledby={`showcase-tab-${tab.id}`}
                 aria-hidden={!isActive}
                 inert={!isActive}

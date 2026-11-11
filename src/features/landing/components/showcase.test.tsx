@@ -12,7 +12,7 @@ const panels = {
 };
 
 function tab(label: string) {
-  return screen.getByRole("tab", { name: new RegExp(label) });
+  return screen.getByRole("button", { name: new RegExp(`^\\d+ ${label}$`) });
 }
 
 function panel(id: string) {
@@ -22,8 +22,10 @@ function panel(id: string) {
 describe("Showcase", () => {
   it("opens the first column and hides the rest from screen readers", () => {
     render(<Showcase panels={panels} />);
-    expect(screen.getAllByRole("tab")).toHaveLength(showcaseTabs.length);
-    expect(tab("Review")).toHaveAttribute("aria-selected", "true");
+    expect(screen.getAllByRole("button", { expanded: false })).toHaveLength(
+      showcaseTabs.length - 1
+    );
+    expect(tab("Review")).toHaveAttribute("aria-expanded", "true");
     expect(panel("review")).toHaveAttribute("aria-hidden", "false");
     expect(panel("deploy")).toHaveAttribute("aria-hidden", "true");
   });
@@ -33,24 +35,28 @@ describe("Showcase", () => {
     const column = tab("Watch").parentElement;
     expect(column).not.toBeNull();
     if (column) fireEvent.mouseEnter(column);
-    expect(tab("Watch")).toHaveAttribute("aria-selected", "true");
+    expect(tab("Watch")).toHaveAttribute("aria-expanded", "true");
     expect(panel("watch")).toHaveAttribute("aria-hidden", "false");
   });
 
   it("opens a column when its header is clicked", () => {
     render(<Showcase panels={panels} />);
     fireEvent.click(tab("Deploy"));
-    expect(tab("Deploy")).toHaveAttribute("aria-selected", "true");
+    expect(tab("Deploy")).toHaveAttribute("aria-expanded", "true");
     expect(panel("review")).toHaveAttribute("aria-hidden", "true");
   });
 
   it("moves between columns with the arrow keys and wraps around", () => {
     render(<Showcase panels={panels} />);
-    fireEvent.keyDown(screen.getByRole("tablist"), { key: "ArrowLeft" });
-    expect(tab("Contention")).toHaveAttribute("aria-selected", "true");
+    fireEvent.keyDown(screen.getByRole("group", { name: landingCopy.showcaseLabel }), {
+      key: "ArrowLeft",
+    });
+    expect(tab("Contention")).toHaveAttribute("aria-expanded", "true");
     expect(tab("Contention")).toHaveFocus();
-    fireEvent.keyDown(screen.getByRole("tablist"), { key: "ArrowRight" });
-    expect(tab("Review")).toHaveAttribute("aria-selected", "true");
+    fireEvent.keyDown(screen.getByRole("group", { name: landingCopy.showcaseLabel }), {
+      key: "ArrowRight",
+    });
+    expect(tab("Review")).toHaveAttribute("aria-expanded", "true");
   });
 
   it("advances when the progress line finishes", () => {
@@ -58,7 +64,7 @@ describe("Showcase", () => {
     const progress = container.querySelector("[aria-hidden='true'] > span[style]");
     expect(progress).not.toBeNull();
     if (progress) fireEvent.animationEnd(progress);
-    expect(tab("Optimise")).toHaveAttribute("aria-selected", "true");
+    expect(tab("Optimise")).toHaveAttribute("aria-expanded", "true");
   });
 
   it("pauses and resumes", () => {

@@ -51,11 +51,4 @@ describe("LandingPage", () => {
     render(<LandingPage />);
     expect(screen.getAllByText(landingCopy.exampleData).length).toBeGreaterThan(0);
   });
-
-  it("ends with a call to open the studio", () => {
-    render(<LandingPage />);
-    expect(
-      screen.getByRole("heading", { level: 2, name: landingCopy.closingTitle })
-    ).toBeInTheDocument();
-  });
 });

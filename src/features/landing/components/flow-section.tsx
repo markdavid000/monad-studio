@@ -1,5 +1,6 @@
 import { flowCopy } from "../copy";
 import { step } from "../lib/step";
+import { ClientPreview } from "./client-preview";
 import { FlowDiagram } from "./flow-diagram";
 import { Scene } from "./scene";
 
@@ -8,7 +9,11 @@ export function FlowSection() {
     <Scene className="border-t py-16 sm:py-24">
       <section aria-labelledby="flow-title" className="relative">
         <div data-step style={step(0)} className="lg:-mx-12 xl:-mx-30">
-          <FlowDiagram />
+          <div className="aspect-[16/5]">
+            <ClientPreview>
+              <FlowDiagram />
+            </ClientPreview>
+          </div>
         </div>
         <div className="mt-10 flex flex-col gap-4 lg:absolute lg:inset-y-0 lg:right-0 lg:mt-0 lg:w-[36%]">
           <h2

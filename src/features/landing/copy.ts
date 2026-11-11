@@ -20,10 +20,7 @@ export const landingCopy = {
   pause: "Pause the previews",
   play: "Play the previews",
   exampleData: "Example output",
-  closingTitle: "Paste a contract and see what it finds.",
   openTool: "Open",
-  closingLead:
-    "Nothing to install and no account to make. Reviews are written by an AI model: treat them as a second pair of eyes, not an audit.",
 } as const;
 
 export const showcaseTabs = [

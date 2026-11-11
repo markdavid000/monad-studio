@@ -8,7 +8,6 @@ import {
   sentinelMocks,
 } from "../copy";
 import { ChecksMarquee } from "./checks-marquee";
-import { ClosingCta } from "./closing-cta";
 import { FlowSection } from "./flow-section";
 import { HeroAside } from "./hero-aside";
 import { HeroStage } from "./hero-stage";
@@ -61,7 +60,6 @@ export function LandingPage() {
         })}
       </div>
       <ReviewFlow />
-      <ClosingCta />
     </>
   );
 }
