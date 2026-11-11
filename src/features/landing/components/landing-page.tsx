@@ -15,6 +15,7 @@ import { HeroStage } from "./hero-stage";
 import { ForgeMock } from "./mocks/forge-mock";
 import { GaslensMock } from "./mocks/gaslens-mock";
 import { MonguardMock } from "./mocks/monguard-mock";
+import { ReviewFlow } from "./review-flow";
 import { ParadebugMock } from "./mocks/paradebug-mock";
 import { SentinelMock } from "./mocks/sentinel-mock";
 import { ToolSection } from "./tool-section";
@@ -59,6 +60,7 @@ export function LandingPage() {
           );
         })}
       </div>
+      <ReviewFlow />
       <ClosingCta />
     </>
   );

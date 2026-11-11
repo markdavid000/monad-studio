@@ -57,6 +57,61 @@ export const flowCopy = {
   target: "Monad testnet",
 } as const;
 
+export const reviewFlowCopy = {
+  eyebrow: "Inside a review",
+  title: "What happens when you press Scan.",
+  lead: "Five steps between pasting a contract and reading what is wrong with it.",
+  stageLabel: "How a MonGuard review is built",
+  contract: "VulnerableBank",
+  functions: [
+    "deposit()",
+    "withdraw()",
+    "emergencyDrain()",
+    "adminTransfer()",
+    "balances",
+    "owner",
+  ],
+  checklist: ["Reentrancy", "Access control", "tx.origin", "Unchecked maths", "Fee bounds"],
+  schemaTitle: "Reply shape",
+  schemaFields: ["severity", "title", "lines", "explanation", "fix"],
+  schemaValid: "Matches. Anything else is rejected.",
+  scoreTitle: "Score",
+  scoreRows: [
+    { label: "Start", value: "100" },
+    { label: "1 critical", value: "25" },
+    { label: "2 high", value: "30" },
+    { label: "1 low", value: "3" },
+  ],
+  scoreTotal: "42",
+  nextTitle: "Send it on",
+  nextTools: [
+    { name: "GasLens", body: "Find the gas it wastes" },
+    { name: "MonadForge", body: "Fix, compile and deploy it" },
+  ],
+  steps: [
+    {
+      title: "Your contract",
+      body: "Up to 60 KB of Solidity, sent once with your request and never stored.",
+    },
+    {
+      title: "A checklist, not a guess",
+      body: "The model traces every external call, unchecked block, access check and fee path.",
+    },
+    {
+      title: "A fixed answer shape",
+      body: "The reply must match a strict schema. A reply that does not is rejected, never patched up.",
+    },
+    {
+      title: "Scored by rules",
+      body: "Critical 25, high 15, medium 8, low 3 and info 1, taken from 100. Same findings, same score.",
+    },
+    {
+      title: "Straight to the next tool",
+      body: "Send the same contract to GasLens or MonadForge without copying it around.",
+    },
+  ],
+} as const;
+
 export const checksCopy = {
   label: "What the reviews look for",
   items: [
