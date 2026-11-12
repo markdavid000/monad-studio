@@ -13,7 +13,7 @@ export function SiteHeader() {
           <ThemeToggle />
           <Button
             asChild
-            size="sm"
+            size="cta"
             className="bg-foreground text-background hover:bg-foreground/90"
           >
             <Link href="/studio">{layoutCopy.openStudio}</Link>

@@ -6,7 +6,7 @@ import { TryScan } from "./try-scan";
 
 export function ClosingCta() {
   return (
-    <section aria-labelledby="cta-title" className="border-t py-20 sm:py-28">
+    <section aria-labelledby="cta-title" className="py-20 sm:py-28">
       <div className="grid items-center gap-14 lg:grid-cols-[1fr_1.05fr] lg:gap-20">
         <div className="flex flex-col items-start gap-7">
           <h2
@@ -18,8 +18,8 @@ export function ClosingCta() {
           <p className="text-xl text-muted-foreground">{ctaCopy.lead}</p>
           <Button
             asChild
-            size="lg"
-            className="group h-12 bg-foreground px-6 text-base text-background hover:bg-foreground/90"
+            size="cta"
+            className="group bg-foreground text-background hover:bg-foreground/90"
           >
             <Link href="/studio">
               {ctaCopy.primary}

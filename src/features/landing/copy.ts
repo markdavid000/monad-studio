@@ -15,7 +15,6 @@ export const landingCopy = {
   lead: "Review a contract for security holes and wasted gas, generate one from a sentence, deploy it from your own wallet, then watch how it behaves on testnet.",
   cta: "Open the studio",
   secondaryCta: "See what each tool does",
-  noWallet: "No sign-in. A wallet is only needed to deploy.",
   showcaseLabel: "Tool previews",
   pause: "Pause the previews",
   play: "Play the previews",

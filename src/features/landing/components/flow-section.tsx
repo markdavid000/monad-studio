@@ -6,7 +6,7 @@ import { Scene } from "./scene";
 
 export function FlowSection() {
   return (
-    <Scene className="border-t py-16 sm:py-24">
+    <Scene className="py-16 sm:py-24">
       <section aria-labelledby="flow-title" className="relative">
         <div data-step style={step(0)} className="lg:-mx-12 xl:-mx-30">
           <div className="aspect-[16/5]">

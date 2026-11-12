@@ -127,6 +127,12 @@
   body {
     @apply bg-background font-sans text-foreground;
   }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
 }
 
 @property --score {
