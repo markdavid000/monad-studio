@@ -227,7 +227,7 @@
 
 @keyframes flow-travel {
   from {
-    stroke-dashoffset: 1500;
+    stroke-dashoffset: 2000;
   }
   to {
     stroke-dashoffset: 0;
@@ -304,13 +304,8 @@
   }
 
   .flow-pulse {
-    stroke-dasharray: 70 1430;
-    animation: flow-travel 6s linear infinite;
-  }
-
-  .flow-pulse-long {
-    stroke-dasharray: 140 1360;
-    animation-duration: 4.5s;
+    stroke-dasharray: 110 1890;
+    animation: flow-travel 2.6s linear infinite;
   }
 
   .flow-icon {

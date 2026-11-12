@@ -1,50 +1,41 @@
 "use client";
 
 import { flowCopy } from "../copy";
+import { useReducedMotion } from "../hooks/use-reduced-motion";
+import {
+  FLOW_HEIGHT,
+  FLOW_WALL,
+  FLOW_WIDTH,
+  buildWires,
+  loopKeyTimes,
+  loopValues,
+} from "../lib/flow-wires";
 
-const WIDTH = 1600;
-const HEIGHT = 500;
-const MID = HEIGHT / 2;
-const WALL = 780;
 const TONES = [
   "var(--success)",
   "var(--severity-critical)",
   "var(--severity-medium)",
   "var(--eyebrow)",
 ];
-
-const COLUMNS = [90, 150, 210, 270, 330];
-const ROWS = [70, 125, 180, 235, 290, 345, 400];
-
-const icons = ROWS.flatMap((y, row) =>
-  COLUMNS.map((x, column) => ({ x, y, seed: (row * 7 + column * 13) % 11 }))
-).filter((icon) => icon.seed % 3 !== 0);
-
-const sources = icons
-  .filter((icon) => icon.seed % 2 === 0)
-  .slice(0, 10)
-  .map((icon, index) => {
-    const target = MID - 60 + index * 13;
-    return {
-      key: `${icon.x}-${icon.y}`,
-      path: `M ${icon.x + 16} ${icon.y} C ${WALL - 300} ${icon.y}, ${WALL - 220} ${target}, ${WALL} ${target}`,
-      tone: index % TONES.length,
-      delay: `${-index * 0.9}s`,
-      duration: `${5 + (index % 4)}s`,
-    };
-  });
-
-const bundle = [-6, -3, 0, 3, 6].map((offset, index) => ({
-  key: offset,
-  path: `M ${WALL} ${MID + offset} C ${WALL + 300} ${MID + offset}, ${WALL + 520} ${MID + offset * 0.4}, ${WIDTH} ${MID + offset * 0.3}`,
-  tone: index % TONES.length,
-  delay: `${-index * 1.3}s`,
-}));
+const CYCLE_SECONDS = 18;
+const wires = buildWires(TONES.length, CYCLE_SECONDS);
+const STOP_COUNT = wires[0]?.stops.length ?? 1;
+const KEY_TIMES = loopKeyTimes(STOP_COUNT);
+const KEY_SPLINES = Array.from({ length: STOP_COUNT * 2 }, () => "0.45 0 0.2 1").join(";");
+const timing = {
+  dur: `${CYCLE_SECONDS}s`,
+  repeatCount: "indefinite",
+  calcMode: "spline",
+  keyTimes: KEY_TIMES,
+  keySplines: KEY_SPLINES,
+} as const;
 
 export function FlowDiagram() {
+  const isStill = useReducedMotion();
+
   return (
     <svg
-      viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+      viewBox={`0 0 ${FLOW_WIDTH} ${FLOW_HEIGHT}`}
       role="img"
       aria-label={`${flowCopy.sources}, ${flowCopy.hub}, ${flowCopy.target}`}
       className="h-auto w-full"
@@ -52,27 +43,15 @@ export function FlowDiagram() {
       <defs>
         {TONES.map((tone, index) => (
           <linearGradient
-            key={`in-${tone}`}
-            id={`flow-in-${index}`}
+            key={tone}
+            id={`flow-wire-${index}`}
             gradientUnits="userSpaceOnUse"
-            x1="100"
-            x2={WALL}
+            x1="60"
+            x2={FLOW_WIDTH}
           >
-            <stop offset="0" stopColor={tone} stopOpacity="0" />
-            <stop offset="0.55" stopColor={tone} stopOpacity="0.35" />
-            <stop offset="1" stopColor={tone} stopOpacity="0.9" />
-          </linearGradient>
-        ))}
-        {TONES.map((tone, index) => (
-          <linearGradient
-            key={`out-${tone}`}
-            id={`flow-out-${index}`}
-            gradientUnits="userSpaceOnUse"
-            x1={WALL}
-            x2={WIDTH}
-          >
-            <stop offset="0" stopColor={tone} stopOpacity="0.95" />
-            <stop offset="0.7" stopColor={tone} stopOpacity="0.45" />
+            <stop offset="0" stopColor={tone} stopOpacity="0.15" />
+            <stop offset="0.45" stopColor={tone} stopOpacity="0.85" />
+            <stop offset="0.8" stopColor={tone} stopOpacity="0.5" />
             <stop offset="1" stopColor={tone} stopOpacity="0" />
           </linearGradient>
         ))}
@@ -89,53 +68,84 @@ export function FlowDiagram() {
           <stop offset="1" stopColor="white" stopOpacity="0" />
         </radialGradient>
         <mask id="flow-grid-mask">
-          <rect x="0" y="0" width={WALL - 140} height={HEIGHT} fill="url(#flow-grid-fade)" />
+          <rect
+            x="0"
+            y="0"
+            width={FLOW_WALL - 140}
+            height={FLOW_HEIGHT}
+            fill="url(#flow-grid-fade)"
+          />
         </mask>
       </defs>
       <rect
         x="0"
         y="0"
-        width={WALL - 140}
-        height={HEIGHT}
+        width={FLOW_WALL - 140}
+        height={FLOW_HEIGHT}
         fill="url(#flow-grid)"
         mask="url(#flow-grid-mask)"
       />
-      {sources.map((source) => (
-        <g key={source.key}>
+      {wires.map((wire) => (
+        <g key={wire.key} data-wire>
           <path
-            d={source.path}
+            d={wire.paths[0]}
             fill="none"
-            stroke={`url(#flow-in-${source.tone})`}
+            stroke={`url(#flow-wire-${wire.tone})`}
             strokeWidth="1.6"
-          />
+          >
+            {isStill ? null : (
+              <animate
+                attributeName="d"
+                values={loopValues(wire.paths).join(";")}
+                begin={wire.begin}
+                {...timing}
+              />
+            )}
+          </path>
           <path
-            d={source.path}
+            d={wire.paths[0]}
             fill="none"
-            stroke={TONES[source.tone]}
-            strokeWidth="2.4"
+            stroke={TONES[wire.tone]}
+            strokeWidth="2.6"
             strokeLinecap="round"
             className="flow-pulse"
-            style={{ animationDelay: source.delay, animationDuration: source.duration }}
-          />
+            style={{ animationDelay: wire.pulseDelay }}
+          >
+            {isStill ? null : (
+              <animate
+                attributeName="d"
+                values={loopValues(wire.paths).join(";")}
+                begin={wire.begin}
+                {...timing}
+              />
+            )}
+          </path>
         </g>
       ))}
-      {icons.map((icon) => {
-        const isLinked = sources.some((source) => source.key === `${icon.x}-${icon.y}`);
-        return (
-          <g
-            key={`${icon.x}-${icon.y}`}
-            transform={`translate(${icon.x - 14} ${icon.y - 14})`}
-            className={isLinked ? "flow-icon" : undefined}
-            style={isLinked ? { animationDelay: `${-icon.seed * 0.6}s` } : undefined}
-            opacity={isLinked ? 1 : 0.35}
-          >
+      {wires.map((wire) => (
+        <g
+          key={`icon-${wire.key}`}
+          transform={`translate(${wire.stops[0].x - 14} ${wire.stops[0].y - 14})`}
+        >
+          {isStill ? null : (
+            <animateTransform
+              attributeName="transform"
+              type="translate"
+              values={loopValues(wire.stops)
+                .map((stop) => `${stop.x - 14} ${stop.y - 14}`)
+                .join(";")}
+              begin={wire.begin}
+              {...timing}
+            />
+          )}
+          <g className="flow-icon" style={{ animationDelay: wire.begin }}>
             <rect
               width="28"
               height="28"
               rx="6"
               fill="var(--card)"
               stroke="var(--muted-foreground)"
-              strokeOpacity={isLinked ? 0.7 : 0.4}
+              strokeOpacity="0.7"
               strokeWidth="1.2"
             />
             <path
@@ -147,35 +157,16 @@ export function FlowDiagram() {
               strokeLinejoin="round"
             />
           </g>
-        );
-      })}
+        </g>
+      ))}
       <line
-        x1={WALL}
-        x2={WALL}
+        x1={FLOW_WALL}
+        x2={FLOW_WALL}
         y1="90"
-        y2={HEIGHT - 90}
+        y2={FLOW_HEIGHT - 90}
         stroke="url(#flow-wall)"
         strokeWidth="1.5"
       />
-      {bundle.map((line) => (
-        <g key={line.key}>
-          <path
-            d={line.path}
-            fill="none"
-            stroke={`url(#flow-out-${line.tone})`}
-            strokeWidth="1.8"
-          />
-          <path
-            d={line.path}
-            fill="none"
-            stroke={TONES[line.tone]}
-            strokeWidth="2.6"
-            strokeLinecap="round"
-            className="flow-pulse flow-pulse-long"
-            style={{ animationDelay: line.delay }}
-          />
-        </g>
-      ))}
     </svg>
   );
 }
