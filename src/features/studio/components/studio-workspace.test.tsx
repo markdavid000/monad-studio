@@ -53,11 +53,14 @@ describe("StudioWorkspace", () => {
     expect(screen.getByText(studioCopy.tooLarge)).toBeInTheDocument();
   });
 
-  it("says the tool actions are coming next instead of pretending to work", () => {
+  it("opens MonGuard to scan and marks the tools that are not built yet", () => {
     render(<StudioWorkspace />);
-    for (const action of Object.values(studioCopy.actions)) {
+    expect(
+      screen.getByRole("link", { name: new RegExp(studioCopy.actions.scan.label) })
+    ).toHaveAttribute("href", "/studio/monguard");
+    for (const action of [studioCopy.actions.optimise, studioCopy.actions.deploy]) {
       expect(screen.getByRole("button", { name: new RegExp(action.label) })).toBeDisabled();
     }
-    expect(screen.getAllByText(new RegExp(studioCopy.comingNext))).toHaveLength(3);
+    expect(screen.getAllByText(new RegExp(studioCopy.comingNext))).toHaveLength(2);
   });
 });

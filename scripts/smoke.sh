@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PORT="${SMOKE_PORT:-3099}"
-ROUTES=("/" "/studio" "/robots.txt" "/sitemap.xml")
+ROUTES=("/" "/studio" "/studio/monguard" "/robots.txt" "/sitemap.xml")
 LOG="$(mktemp)"
 
 pnpm exec next start --port "$PORT" >"$LOG" 2>&1 &
