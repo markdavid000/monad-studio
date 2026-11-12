@@ -1,7 +1,7 @@
 # ADR-2026-11-12: Activity history without sign-up
 
-- **Status:** Proposed
-- **Approved by:** (name, date; filled in by the maintainer)
+- **Status:** Accepted
+- **Approved by:** (MarkDavid, 12th Nov 2026)
 - **Companion:** [ADR-2026-11-12-activity-history-for-dummies.md](ADR-2026-11-12-activity-history-for-dummies.md)
 
 ## Context

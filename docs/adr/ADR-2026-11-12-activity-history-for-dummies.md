@@ -1,6 +1,6 @@
 # Keeping a record of your work without signing up
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Technical version:** [ADR-2026-11-12-activity-history.md](ADR-2026-11-12-activity-history.md)
 
 ## What is the problem?
