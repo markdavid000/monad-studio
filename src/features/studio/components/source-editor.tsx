@@ -3,7 +3,7 @@
 import { useRef, type UIEvent } from "react";
 import { cn } from "@/lib/utils";
 import { studioCopy } from "../copy";
-import { SOURCE_LIMIT_BYTES, byteSize, formatKilobytes } from "../lib/byte-size";
+import { SOURCE_LIMIT_BYTES, byteSize, formatKilobytes } from "@/lib/byte-size";
 
 interface SourceEditorProps {
   name: string;

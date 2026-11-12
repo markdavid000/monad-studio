@@ -38,3 +38,7 @@ if (typeof window.matchMedia !== "function") {
     writable: true,
   });
 }
+
+if (typeof Element.prototype.scrollTo !== "function") {
+  Element.prototype.scrollTo = function scrollTo() {};
+}

@@ -11,7 +11,7 @@ export interface Tool {
 }
 
 export const toolBySlug: Record<ToolSlug, Tool> = {
-  monguard: { slug: "monguard", ...toolCopy.monguard },
+  monguard: { slug: "monguard", ...toolCopy.monguard, href: "/studio/monguard" },
   gaslens: { slug: "gaslens", ...toolCopy.gaslens },
   forge: { slug: "forge", ...toolCopy.forge },
   sentinel: { slug: "sentinel", ...toolCopy.sentinel },

@@ -2,7 +2,7 @@
 
 import { studioCopy } from "../copy";
 import { exampleContracts } from "../examples";
-import { useContractDraft } from "../hooks/use-contract-draft";
+import { useContractDraft } from "@/hooks/use-contract-draft";
 import { ActionBar } from "./action-bar";
 import { ExamplePicker } from "./example-picker";
 import { SourceEditor } from "./source-editor";
