@@ -12,7 +12,7 @@ export interface Tool {
 
 export const toolBySlug: Record<ToolSlug, Tool> = {
   monguard: { slug: "monguard", ...toolCopy.monguard, href: "/studio/monguard" },
-  gaslens: { slug: "gaslens", ...toolCopy.gaslens },
+  gaslens: { slug: "gaslens", ...toolCopy.gaslens, href: "/studio/gaslens" },
   forge: { slug: "forge", ...toolCopy.forge },
   sentinel: { slug: "sentinel", ...toolCopy.sentinel },
   paradebug: { slug: "paradebug", ...toolCopy.paradebug },

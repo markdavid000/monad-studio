@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { monguardCopy, retryIn } from "../copy";
+import { aiCopy, retryIn } from "@/lib/copy";
+import { monguardCopy } from "../copy";
 import type { ScanReport } from "../types";
 import { MonguardTool } from "./monguard-tool";
 
@@ -94,7 +95,7 @@ describe("MonguardTool", () => {
     renderTool();
     expect(screen.getByText("Bank.sol")).toBeInTheDocument();
     expect(screen.getByText("function withdraw() public {", { exact: false })).toBeInTheDocument();
-    expect(screen.getByText(monguardCopy.aiNote)).toBeInTheDocument();
+    expect(screen.getByText(aiCopy.note)).toBeInTheDocument();
     expect(scanButton()).toBeEnabled();
   });
 
@@ -178,8 +179,8 @@ describe("MonguardTool", () => {
     renderTool();
     fireEvent.click(scanButton());
 
-    expect(await screen.findByRole("alert")).toHaveTextContent(monguardCopy.errors.invalid_reply);
-    fireEvent.click(screen.getByRole("button", { name: monguardCopy.retry }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(aiCopy.errors.invalid_reply);
+    fireEvent.click(screen.getByRole("button", { name: aiCopy.retry }));
     expect(await screen.findByText(report.summary)).toBeInTheDocument();
   });
 
@@ -196,9 +197,9 @@ describe("MonguardTool", () => {
     fireEvent.click(scanButton());
 
     const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent(monguardCopy.errors.rate_limited);
+    expect(alert).toHaveTextContent(aiCopy.errors.rate_limited);
     expect(within(alert).getByText(retryIn(300))).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: monguardCopy.retry })).toBeNull();
+    expect(screen.queryByRole("button", { name: aiCopy.retry })).toBeNull();
   });
 
   it("treats a reply in the wrong shape as an invalid reply", async () => {
@@ -206,7 +207,7 @@ describe("MonguardTool", () => {
     fetchMock.mockResolvedValue(json({ data: { score: "high" } }));
     renderTool();
     fireEvent.click(scanButton());
-    expect(await screen.findByRole("alert")).toHaveTextContent(monguardCopy.errors.invalid_reply);
+    expect(await screen.findByRole("alert")).toHaveTextContent(aiCopy.errors.invalid_reply);
   });
 
   it("refuses to scan a contract over 60 KB", () => {

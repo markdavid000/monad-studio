@@ -1,7 +1,8 @@
 import { Check, ChevronDown, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { linesLabel, monguardCopy } from "../copy";
-import { useCopy } from "../hooks/use-copy";
+import { useCopy } from "@/hooks/use-copy";
+import { linesLabel } from "@/lib/copy";
+import { monguardCopy } from "../copy";
 import type { Finding } from "../types";
 import { SeverityBadge } from "./severity-badge";
 

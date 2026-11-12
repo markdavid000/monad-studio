@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-export function useLineScroll(line: number | undefined) {
+export function useLineScroll(line: string | undefined) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

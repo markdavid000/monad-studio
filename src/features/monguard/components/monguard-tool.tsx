@@ -3,6 +3,7 @@
 import { Info } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { aiCopy } from "@/lib/copy";
 import { monguardCopy } from "../copy";
 import { useMonguard } from "../hooks/use-monguard";
 import { ReportPanel } from "./report-panel";
@@ -18,7 +19,7 @@ export function MonguardTool() {
         <p className="max-w-2xl text-lg text-muted-foreground">{monguardCopy.lead}</p>
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
           <Info aria-hidden className="size-4 shrink-0" />
-          {monguardCopy.aiNote}
+          {aiCopy.note}
         </p>
       </div>
       {monguard.isEmpty ? (

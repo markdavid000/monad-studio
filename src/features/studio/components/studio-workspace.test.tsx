@@ -53,14 +53,17 @@ describe("StudioWorkspace", () => {
     expect(screen.getByText(studioCopy.tooLarge)).toBeInTheDocument();
   });
 
-  it("opens MonGuard to scan and marks the tools that are not built yet", () => {
+  it("opens the built tools and marks the one that is not built yet", () => {
     render(<StudioWorkspace />);
     expect(
       screen.getByRole("link", { name: new RegExp(studioCopy.actions.scan.label) })
     ).toHaveAttribute("href", "/studio/monguard");
-    for (const action of [studioCopy.actions.optimise, studioCopy.actions.deploy]) {
-      expect(screen.getByRole("button", { name: new RegExp(action.label) })).toBeDisabled();
-    }
-    expect(screen.getAllByText(new RegExp(studioCopy.comingNext))).toHaveLength(2);
+    expect(
+      screen.getByRole("link", { name: new RegExp(studioCopy.actions.optimise.label) })
+    ).toHaveAttribute("href", "/studio/gaslens");
+    expect(
+      screen.getByRole("button", { name: new RegExp(studioCopy.actions.deploy.label) })
+    ).toBeDisabled();
+    expect(screen.getAllByText(new RegExp(studioCopy.comingNext))).toHaveLength(1);
   });
 });

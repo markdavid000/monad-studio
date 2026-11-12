@@ -1,4 +1,5 @@
 import "server-only";
+import { numberLines } from "@/lib/code-text";
 import { completeStructured } from "@/lib/server/groq";
 import { scanReplySchema, toScanReport } from "../lib/schema";
 
@@ -24,18 +25,11 @@ Rules for the reply:
 - lines: the line numbers shown at the start of each source line where the problem sits. Use an empty list only if no line applies.
 - contractName: the main contract's name. summary: two or three sentences on the overall state and the most serious finding.`;
 
-function withLineNumbers(source: string) {
-  return source
-    .split("\n")
-    .map((line, index) => `${index + 1}| ${line}`)
-    .join("\n");
-}
-
 export async function scanContract({ source }: { source: string }) {
   const reply = await completeStructured({
     name: "monguard_scan",
     system: SYSTEM_PROMPT,
-    user: `Review this Solidity contract. Each line starts with its line number and a bar.\n\n${withLineNumbers(source)}`,
+    user: `Review this Solidity contract. Each line starts with its line number and a bar.\n\n${numberLines(source)}`,
     schema: scanReplySchema,
   });
   return toScanReport(reply, source);
