@@ -10,6 +10,7 @@ export const layoutCopy = {
   github: "GitHub",
   copyright: "© 2026 MonadStudio",
   workspace: "Workspace",
+  activity: "Activity",
   soon: "Soon",
   studioNav: "Studio",
 } as const;

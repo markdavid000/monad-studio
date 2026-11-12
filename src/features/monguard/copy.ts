@@ -1,4 +1,6 @@
+import { findingsCount } from "@/lib/copy";
 import type { Severity } from "@/lib/severity";
+import type { ScanReport } from "./types";
 
 export const monguardCopy = {
   title: "MonGuard",
@@ -44,3 +46,7 @@ export const monguardCopy = {
     info: "Info",
   } satisfies Record<Severity, string>,
 } as const;
+
+export function runSummary(report: ScanReport) {
+  return `Score ${report.score}, ${findingsCount(report.findings.length)}`;
+}

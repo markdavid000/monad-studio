@@ -2,7 +2,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Toaster } from "@/components/ui/toaster";
-import { aiCopy, retryIn } from "@/lib/copy";
+import { aiCopy, historyCopy, retryIn } from "@/lib/copy";
+import { clearRuns, listRuns, saveRun } from "@/lib/history";
 import { toast } from "@/lib/toast";
 import { gaslensCopy } from "../copy";
 import type { GasReport } from "../types";
@@ -79,11 +80,11 @@ function readDraft() {
   return JSON.parse(window.localStorage.getItem("monad-studio:draft") ?? "{}");
 }
 
-function renderTool() {
+function renderTool(runId?: string) {
   const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
-      <GaslensTool />
+      <GaslensTool runId={runId} />
       <Toaster closeLabel={aiCopy.closeNotification} regionLabel={aiCopy.notifications} />
     </QueryClientProvider>
   );
@@ -115,7 +116,8 @@ function linesOfKind(kind: "add" | "remove") {
   );
 }
 
-beforeEach(() => {
+beforeEach(async () => {
+  await clearRuns();
   for (const item of toast.items()) toast.dismiss(item.id);
   window.localStorage.clear();
   fetchMock.mockReset();
@@ -132,6 +134,40 @@ afterEach(() => {
 });
 
 describe("GaslensTool", () => {
+  it("saves each finished run to the activity", async () => {
+    saveDraft(SOURCE);
+    fetchMock.mockImplementation(async () => json({ data: report }));
+    renderTool();
+    fireEvent.click(screen.getByRole("button", { name: gaslensCopy.analyse }));
+    await screen.findByRole("dialog", { name: gaslensCopy.resultsTitle });
+    await vi.waitFor(async () => expect(await listRuns()).toHaveLength(1));
+    const [saved] = await listRuns();
+    expect(saved).toMatchObject({ tool: "gaslens", source: SOURCE, summary: "2 findings" });
+  });
+
+  it("reopens a saved run without calling the AI", async () => {
+    saveDraft(SOURCE);
+    const saved = await saveRun({
+      tool: "gaslens",
+      fileName: "Saved.sol",
+      contractName: report.contractName,
+      summary: "2 findings",
+      source: SOURCE,
+      report: report,
+    });
+    renderTool(saved.id);
+    const dialog = await screen.findByRole("dialog", { name: gaslensCopy.resultsTitle });
+    expect(within(dialog).getByText(report.summary)).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("says when a saved run is gone", async () => {
+    saveDraft(SOURCE);
+    renderTool("missing-run");
+    expect(await screen.findByText(historyCopy.missing)).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
   it("points to the workspace when there is no contract", () => {
     renderTool();
     expect(screen.getByText(gaslensCopy.emptyTitle)).toBeInTheDocument();

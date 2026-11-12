@@ -106,8 +106,11 @@ When two features keep needing each other, they are one feature. Merge them; do 
 | `forge`     | `/studio/forge`     | Generate, compile, deploy, verify                      |
 | `sentinel`  | `/studio/sentinel`  | Watch list, activity polling, flagged patterns         |
 | `paradebug` | `/studio/paradebug` | Same-function contention report                        |
+| `activity`  | `/studio/activity`  | List, filter, reopen and delete saved runs             |
 
 Source code handed from one tool to another goes through `hooks/use-contract-draft.ts`, never a feature import.
+
+Finished runs are saved in the browser's IndexedDB through `lib/history.ts` and `hooks/use-history.ts`. A tool records its own run and validates a saved report with its own schema; the activity feature only sees the shared `HistoryRun` shape, and reopens a run by loading its source into the draft and linking to `/studio/<tool>?run=<id>`.
 
 ## Rendering and caching
 

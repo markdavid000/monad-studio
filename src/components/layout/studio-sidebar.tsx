@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, Fuel, GitBranch, Hammer, LayoutGrid, ShieldCheck } from "lucide-react";
+import { Eye, Fuel, GitBranch, Hammer, History, LayoutGrid, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { tools, type Tool } from "@/config/tools";
@@ -39,6 +39,19 @@ export function StudioSidebar() {
         >
           <LayoutGrid aria-hidden className="size-4" />
           {layoutCopy.workspace}
+        </Link>
+        <Link
+          href="/studio/activity"
+          aria-current={pathname === "/studio/activity" ? "page" : undefined}
+          className={cn(
+            itemClass,
+            pathname === "/studio/activity"
+              ? "bg-muted text-foreground"
+              : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+          )}
+        >
+          <History aria-hidden className="size-4" />
+          {layoutCopy.activity}
         </Link>
         <p className="mt-4 mb-1 hidden px-3 font-mono text-[11px] tracking-wide text-muted-foreground uppercase lg:block">
           {layoutCopy.tools}

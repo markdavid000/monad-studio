@@ -4,6 +4,7 @@ import { GaslensTool } from "@/features/gaslens";
 
 export const metadata: Metadata = { title: toolCopy.gaslens.name };
 
-export default function GaslensPage() {
-  return <GaslensTool />;
+export default async function GaslensPage({ searchParams }: PageProps<"/studio/gaslens">) {
+  const { run } = await searchParams;
+  return <GaslensTool runId={typeof run === "string" ? run : undefined} />;
 }
