@@ -12,7 +12,7 @@ export const aiCopy = {
     upstream_unavailable: "The AI service did not respond. Try again in a moment.",
     invalid_reply: "The AI reply was incomplete, so nothing is shown. Try again.",
     internal: "Something went wrong on our side. Try again.",
-    unauthorized: "Your wallet session ended. Sync with your wallet again.",
+    unauthorized: "Your wallet session ended. Connect your wallet again.",
     not_found: "That item no longer exists.",
   } satisfies Record<ApiErrorCode, string>,
 } as const;
@@ -38,11 +38,9 @@ export const historyCopy = {
   saveFailedBody: "This browser blocked local storage, so this run will not appear in Activity.",
   missing: "That saved run is no longer in this browser's activity.",
   syncEndedTitle: "Wallet sync stopped",
-  syncEndedBody: "Your wallet session ended. Sync again from the Activity page.",
+  syncEndedBody: "Your wallet session ended. Connect your wallet again to keep syncing.",
   syncFailedTitle: "Not synced",
   syncFailedBody: "The run is saved in this browser but could not reach your synced history.",
-  signInStatement:
-    "Sync my MonadStudio activity with this wallet. This does not send a transaction or cost gas.",
 } as const;
 
 export function linesLabel(lines: readonly number[]) {

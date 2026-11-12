@@ -58,6 +58,7 @@ export default defineConfig([
       "boundaries/include": ["src/**/*"],
       "boundaries/elements": [
         { type: "app", pattern: "src/app" },
+        { type: "app", pattern: ["src/proxy.ts", "src/proxy.test.ts"], mode: "file" },
         { type: "layout", pattern: "src/components/layout" },
         { type: "ui", pattern: "src/components/ui" },
         { type: "feature", pattern: "src/features/*", capture: ["featureName"] },

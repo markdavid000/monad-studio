@@ -17,6 +17,15 @@ export function verifySignature(message: string, signature: string) {
   });
 }
 
+export async function fetchSession() {
+  const { address } = await requestJson(
+    "GET",
+    "/api/auth/session",
+    z.object({ address: addressSchema.nullable() })
+  );
+  return address;
+}
+
 export function endSession() {
   return requestJson("DELETE", "/api/auth/session", z.object({ address: z.null() }));
 }

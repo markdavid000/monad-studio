@@ -30,19 +30,15 @@ export const activityCopy = {
   cleared: "Activity cleared",
   syncLabel: "Wallet sync",
   syncOffTitle: "Keep your activity on any device",
-  syncNoWalletBody:
-    "Connect a wallet with the button at the top right, then sync your activity to it. Signing is free and sends no transaction.",
+  syncNoWalletBody: "Reconnect your wallet with the button at the top right to sync your activity.",
   syncOffBody:
-    "Sign one message to store your activity under this wallet. Your contracts and results are then kept on the MonadStudio server, and removed 180 days after your last sync or when you clear them here.",
+    "Store your activity under this wallet so it shows up wherever you connect it. Your contracts and results are then kept on the MonadStudio server, and removed 180 days after your last sync or when you clear them here.",
   syncButton: "Sync with this wallet",
-  syncConfirm: "Confirm in your wallet",
   syncOtherWallet: "The connected wallet is not the one you synced with.",
   stopSync: "Stop syncing",
   stopSyncNote: "Stopping keeps the synced copy. Clear activity first if you want it gone.",
   syncPendingTitle: "Syncing your activity",
-  syncPendingBody: "Sign the message in your wallet. It is free and sends no transaction.",
   syncDoneTitle: "Activity synced",
-  syncCancelled: "Sync cancelled",
   syncFailedTitle: "Sync failed",
   syncStopped: "Sync stopped on this browser",
   filteredTitle: "Nothing from this tool yet",
@@ -57,7 +53,7 @@ export const activityCopy = {
       },
       {
         title: "Sync with your wallet",
-        body: "Sign one free message to keep your activity on any device where you use the same wallet.",
+        body: "Turn on sync to keep your activity on any device where you connect the same wallet.",
       },
       {
         title: "Delete what you do not need",
