@@ -10,7 +10,7 @@ export function HeroAside() {
       <div className="flex flex-wrap items-center gap-3">
         <Button
           asChild
-          size="lg"
+          size="cta"
           className="group bg-foreground text-background hover:bg-foreground/90"
         >
           <Link href="/studio">
@@ -22,7 +22,6 @@ export function HeroAside() {
           <Link href="#tools">{landingCopy.secondaryCta}</Link>
         </Button>
       </div>
-      <p className="font-mono text-xs text-muted-foreground">{landingCopy.noWallet}</p>
     </div>
   );
 }

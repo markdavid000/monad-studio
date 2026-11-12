@@ -113,7 +113,7 @@ export function TryScan() {
               ))}
             </ul>
             <div className="flex flex-wrap items-center gap-3 pt-1">
-              <Button asChild className="group">
+              <Button asChild size="cta" className="group">
                 <Link href="/studio">
                   {ctaCopy.openReport}
                   <ArrowRight

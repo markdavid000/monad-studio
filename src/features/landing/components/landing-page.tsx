@@ -63,7 +63,7 @@ export function LandingPage() {
       />
       <ChecksMarquee />
       <FlowSection />
-      <div id="tools" className="divide-y border-t">
+      <div id="tools">
         {SECTIONS.map(({ slug, tone, layout, preview }) => {
           const tool = toolBySlug[slug];
           return (

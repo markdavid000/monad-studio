@@ -6,7 +6,7 @@ export function ChecksMarquee() {
   const items = [...checksCopy.items, ...checksCopy.items];
 
   return (
-    <section aria-label={checksCopy.label} className="flex flex-col gap-4 border-t py-12">
+    <section aria-label={checksCopy.label} className="flex flex-col gap-4 py-12">
       <p className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
         {checksCopy.label}
       </p>
