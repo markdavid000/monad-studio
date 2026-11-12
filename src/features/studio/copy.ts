@@ -1,5 +1,6 @@
 export const studioCopy = {
   title: "Workspace",
+  about: "About the workspace",
   lead: "Paste a contract or start from an example. It stays in this browser and follows you into every tool.",
   examplesLabel: "Start from an example",
   untitled: "Untitled.sol",

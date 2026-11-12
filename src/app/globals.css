@@ -353,3 +353,83 @@
     }
   }
 }
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes sheet-out {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@layer components {
+  .toast[data-state="open"] {
+    animation: toast-in 0.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .toast[data-state="closed"] {
+    animation: toast-out 0.15s ease-in forwards;
+  }
+
+  .toast[data-swipe="move"] {
+    transform: translateX(var(--radix-toast-swipe-move-x));
+  }
+
+  .toast[data-swipe="end"] {
+    animation: toast-out 0.15s ease-out forwards;
+  }
+
+  .sheet[data-state="open"] {
+    animation: sheet-in 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .sheet[data-state="closed"] {
+    animation: sheet-out 0.2s ease-in forwards;
+  }
+
+  .sheet-overlay[data-state="open"] {
+    animation: fade-in 0.2s ease-out;
+  }
+
+  .sheet-overlay[data-state="closed"] {
+    animation: fade-out 0.2s ease-in forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toast,
+    .sheet,
+    .sheet-overlay {
+      animation: none !important;
+    }
+  }
+}

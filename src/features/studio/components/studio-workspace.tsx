@@ -7,16 +7,16 @@ import { ActionBar } from "./action-bar";
 import { ExamplePicker } from "./example-picker";
 import { SourceEditor } from "./source-editor";
 import { StatusRail } from "./status-rail";
+import { PageTitle } from "@/components/ui/page-title";
 
 export function StudioWorkspace() {
   const draft = useContractDraft();
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-medium tracking-[-0.02em]">{studioCopy.title}</h1>
-        <p className="max-w-2xl text-muted-foreground">{studioCopy.lead}</p>
-      </div>
+      <PageTitle title={studioCopy.title} aboutLabel={studioCopy.about}>
+        <p>{studioCopy.lead}</p>
+      </PageTitle>
       <ExamplePicker
         examples={exampleContracts}
         activeName={draft.name}
