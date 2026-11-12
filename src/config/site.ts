@@ -1,9 +1,10 @@
 import { siteCopy } from "./copy";
+import { publicEnv } from "./env";
 
 export const siteConfig = {
   name: siteCopy.name,
   description: siteCopy.description,
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  url: publicEnv.siteUrl,
 } as const;
 
 export const siteLinks = {
