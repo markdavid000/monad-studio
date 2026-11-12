@@ -6,6 +6,6 @@ const shared = { borderRadius: "small", fontStack: "system", overlayBlur: "small
 export function useRainbowTheme() {
   const { resolvedTheme } = useTheme();
   return resolvedTheme === "light"
-    ? lightTheme({ ...shared, accentColor: "#6e54e8", accentColorForeground: "#ffffff" })
-    : darkTheme({ ...shared, accentColor: "#9b8afb", accentColorForeground: "#121114" });
+    ? lightTheme({ ...shared, accentColor: "#171717", accentColorForeground: "#ffffff" })
+    : darkTheme({ ...shared, accentColor: "#f5f5f5", accentColorForeground: "#121114" });
 }
