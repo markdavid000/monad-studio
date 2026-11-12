@@ -16,7 +16,6 @@ export function SyncPanel() {
           <Cloud aria-hidden className="mt-0.5 size-5 shrink-0 text-success" />
           <div className="flex flex-col gap-1">
             <p className="font-medium">{syncedWith(sync.syncedAddress)}</p>
-            <p className="max-w-2xl text-sm text-muted-foreground">{activityCopy.syncOnBody}</p>
             <p className="text-xs text-muted-foreground">{activityCopy.stopSyncNote}</p>
           </div>
         </div>
