@@ -1,6 +1,6 @@
 # A landing page that shows the product, in plain English
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Technical version:** [ADR-2026-11-11-landing-design-v2.md](ADR-2026-11-11-landing-design-v2.md)
 
 ## What is the problem?

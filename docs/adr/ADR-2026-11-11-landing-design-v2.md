@@ -1,7 +1,7 @@
 # ADR-2026-11-11: Landing design v2
 
-- **Status:** Proposed
-- **Approved by:** (name, date; filled in by the maintainer)
+- **Status:** Accepted
+- **Approved by:** (MarkDavid, 12th Nov 2026)
 - **Supersedes:** the visual direction, type and landing page parts of [ADR-2026-11-11-design-and-copy.md](ADR-2026-11-11-design-and-copy.md). Its copy rules stand.
 - **Companion:** [ADR-2026-11-11-landing-design-v2-for-dummies.md](ADR-2026-11-11-landing-design-v2-for-dummies.md)
 
