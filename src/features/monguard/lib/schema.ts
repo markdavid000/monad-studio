@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { SOURCE_LIMIT_BYTES, byteSize } from "@/lib/byte-size";
+import { stripCodeFences } from "@/lib/code-text";
 import { SEVERITIES, compareSeverity, securityScore } from "@/lib/severity";
 import type { ScanReport } from "../types";
 
@@ -35,14 +36,6 @@ export const scanReportSchema = z.object({
 
 type ScanReply = z.infer<typeof scanReplySchema>;
 
-function withoutFences(code: string) {
-  return code
-    .trim()
-    .replace(/^```[\w-]*\n?/, "")
-    .replace(/\n?```$/, "")
-    .trim();
-}
-
 function validLines(lines: readonly number[], lineCount: number) {
   const inRange = lines.filter((line) => Number.isInteger(line) && line >= 1 && line <= lineCount);
   return [...new Set(inRange)].sort((a, b) => a - b);
@@ -59,7 +52,7 @@ export function toScanReport(reply: ScanReply, source: string): ScanReport {
       description: finding.description.trim(),
       impact: finding.impact.trim(),
       fix: finding.fix.trim(),
-      fixCode: withoutFences(finding.fixCode),
+      fixCode: stripCodeFences(finding.fixCode),
       lines: validLines(finding.lines, lineCount),
     }));
 

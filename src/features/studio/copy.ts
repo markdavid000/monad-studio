@@ -15,7 +15,7 @@ export const studioCopy = {
   actionsLabel: "Next step",
   comingNext: "Coming next",
   actionNote:
-    "Each action opens the matching tool with this contract. GasLens and MonadForge arrive in the next updates.",
+    "Each action opens the matching tool with this contract. MonadForge arrives in a later update.",
   actions: {
     scan: { label: "Scan for bugs", tool: "MonGuard" },
     optimise: { label: "Optimise gas", tool: "GasLens" },
