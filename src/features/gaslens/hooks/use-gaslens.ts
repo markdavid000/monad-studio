@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useContractDraft } from "@/hooks/use-contract-draft";
+import { useRecordRun, useSavedRun } from "@/hooks/use-history";
 import { SOURCE_LIMIT_BYTES, byteSize } from "@/lib/byte-size";
 import { showAiErrorToast } from "@/lib/ai-toast";
 import { findingsCount } from "@/lib/copy";
 import { toast } from "@/lib/toast";
-import { flaggedTitle, gaslensCopy } from "../copy";
+import { flaggedTitle, gaslensCopy, runSummary } from "../copy";
 import { diffLines, diffLineKey, type DiffLine } from "../lib/diff";
+import { gasReportSchema } from "../lib/schema";
 import type { GasReport } from "../types";
 import { useGasAnalysis } from "./use-gas-analysis";
 
@@ -41,15 +43,24 @@ function defaultFocus(report: GasReport | undefined) {
   return report?.check.risks[0]?.id ?? report?.optimizations[0]?.id ?? null;
 }
 
-export function useGaslens() {
+export function useGaslens(runId?: string) {
   const draft = useContractDraft();
   const analysis = useGasAnalysis();
+  const saved = useSavedRun("gaslens", runId, gasReportSchema);
+  const recordRun = useRecordRun("gaslens");
   const [openId, setOpenId] = useState<string | null | undefined>(undefined);
   const [chosenMode, setChosenMode] = useState<CodeMode | undefined>(undefined);
-  const [isResultsOpen, setResultsOpen] = useState(false);
+  const [isResultsOpen, setResultsOpen] = useState(runId !== undefined);
 
-  const report = analysis.status === "success" ? analysis.report : undefined;
-  const reviewedSource = report ? (analysis.analysedSource ?? draft.source) : draft.source;
+  const isFresh = analysis.status !== "idle";
+  const report = isFresh
+    ? analysis.status === "success"
+      ? analysis.report
+      : undefined
+    : saved.report;
+  const reviewedSource = report
+    ? ((isFresh ? analysis.analysedSource : saved.source) ?? draft.source)
+    : draft.source;
   const risks = report?.check.risks ?? [];
   const activeId = openId === undefined ? defaultFocus(report) : openId;
   const activeOptimization = report?.optimizations.find((item) => item.id === activeId);
@@ -61,8 +72,16 @@ export function useGaslens() {
     setChosenMode(undefined);
     setResultsOpen(false);
     toast.loading(gaslensCopy.pendingTitle, { id: TOAST_ID, description: gaslensCopy.pendingBody });
-    analysis.analyse(draft.source, {
+    const source = draft.source;
+    analysis.analyse(source, {
       onSuccess: (next) => {
+        recordRun({
+          fileName: draft.name || gaslensCopy.untitled,
+          contractName: next.contractName,
+          summary: runSummary(next),
+          source,
+          report: next,
+        });
         showDoneToast(next);
         setResultsOpen(true);
       },
@@ -82,7 +101,8 @@ export function useGaslens() {
     isEmpty: draft.source.trim().length === 0,
     isTooLarge: byteSize(draft.source) > SOURCE_LIMIT_BYTES,
     isPending: analysis.status === "pending",
-    report: analysis.report,
+    report,
+    isMissing: saved.isMissing && !isFresh,
     diff,
     hasChanges,
     mode,

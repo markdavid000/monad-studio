@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/ui/page-title";
 import { ResultsSheet } from "@/components/ui/results-sheet";
 import { ToolActions } from "@/components/ui/tool-actions";
-import { aiCopy } from "@/lib/copy";
+import { aiCopy, historyCopy } from "@/lib/copy";
 import { monguardCopy } from "../copy";
 import { useMonguard } from "../hooks/use-monguard";
 import { ReportPanel } from "./report-panel";
@@ -17,8 +17,12 @@ function scanLabel(isPending: boolean, hasReport: boolean) {
   return hasReport ? monguardCopy.rescan : monguardCopy.scan;
 }
 
-export function MonguardTool() {
-  const monguard = useMonguard();
+interface MonguardToolProps {
+  runId?: string;
+}
+
+export function MonguardTool({ runId }: MonguardToolProps) {
+  const monguard = useMonguard(runId);
   const { report } = monguard;
 
   return (
@@ -63,6 +67,11 @@ export function MonguardTool() {
               </Button>
             ) : null}
           </ToolActions>
+          {monguard.isMissing ? (
+            <p role="status" className="text-sm text-muted-foreground">
+              {historyCopy.missing}
+            </p>
+          ) : null}
         </>
       )}
       {report ? (

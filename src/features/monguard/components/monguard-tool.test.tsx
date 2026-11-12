@@ -2,7 +2,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Toaster } from "@/components/ui/toaster";
-import { aiCopy, retryIn } from "@/lib/copy";
+import { aiCopy, historyCopy, retryIn } from "@/lib/copy";
+import { clearRuns, listRuns, saveRun } from "@/lib/history";
 import { toast } from "@/lib/toast";
 import { monguardCopy } from "../copy";
 import type { ScanReport } from "../types";
@@ -52,11 +53,11 @@ function saveDraft(source: string, name = "Bank.sol") {
   window.dispatchEvent(new Event("monad-studio:draft-change"));
 }
 
-function renderTool() {
+function renderTool(runId?: string) {
   const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
-      <MonguardTool />
+      <MonguardTool runId={runId} />
       <Toaster closeLabel={aiCopy.closeNotification} regionLabel={aiCopy.notifications} />
     </QueryClientProvider>
   );
@@ -84,7 +85,8 @@ function highlightedLines() {
   );
 }
 
-beforeEach(() => {
+beforeEach(async () => {
+  await clearRuns();
   for (const item of toast.items()) toast.dismiss(item.id);
   window.localStorage.clear();
   fetchMock.mockReset();
@@ -97,6 +99,44 @@ afterEach(() => {
 });
 
 describe("MonguardTool", () => {
+  it("saves each finished run to the activity", async () => {
+    saveDraft(SOURCE);
+    fetchMock.mockImplementation(async () => json({ data: report }));
+    renderTool();
+    fireEvent.click(screen.getByRole("button", { name: monguardCopy.scan }));
+    await screen.findByRole("dialog", { name: monguardCopy.resultsTitle });
+    await vi.waitFor(async () => expect(await listRuns()).toHaveLength(1));
+    const [saved] = await listRuns();
+    expect(saved).toMatchObject({
+      tool: "monguard",
+      source: SOURCE,
+      summary: "Score 75, 2 findings",
+    });
+  });
+
+  it("reopens a saved run without calling the AI", async () => {
+    saveDraft(SOURCE);
+    const saved = await saveRun({
+      tool: "monguard",
+      fileName: "Saved.sol",
+      contractName: report.contractName,
+      summary: "Score 75, 2 findings",
+      source: SOURCE,
+      report: report,
+    });
+    renderTool(saved.id);
+    const dialog = await screen.findByRole("dialog", { name: monguardCopy.resultsTitle });
+    expect(within(dialog).getByText(report.summary)).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("says when a saved run is gone", async () => {
+    saveDraft(SOURCE);
+    renderTool("missing-run");
+    expect(await screen.findByText(historyCopy.missing)).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
   it("points to the workspace when there is no contract", () => {
     renderTool();
     expect(screen.getByText(monguardCopy.emptyTitle)).toBeInTheDocument();

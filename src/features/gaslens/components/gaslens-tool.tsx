@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/ui/page-title";
 import { ResultsSheet } from "@/components/ui/results-sheet";
 import { ToolActions } from "@/components/ui/tool-actions";
-import { aiCopy } from "@/lib/copy";
+import { aiCopy, historyCopy } from "@/lib/copy";
 import { gaslensCopy } from "../copy";
 import { useGaslens } from "../hooks/use-gaslens";
 import { CodePanel } from "./code-panel";
@@ -17,8 +17,12 @@ function runLabel(isPending: boolean, hasReport: boolean) {
   return hasReport ? gaslensCopy.rerun : gaslensCopy.analyse;
 }
 
-export function GaslensTool() {
-  const gaslens = useGaslens();
+interface GaslensToolProps {
+  runId?: string;
+}
+
+export function GaslensTool({ runId }: GaslensToolProps) {
+  const gaslens = useGaslens(runId);
   const { report } = gaslens;
 
   return (
@@ -73,6 +77,11 @@ export function GaslensTool() {
               </Button>
             ) : null}
           </ToolActions>
+          {gaslens.isMissing ? (
+            <p role="status" className="text-sm text-muted-foreground">
+              {historyCopy.missing}
+            </p>
+          ) : null}
         </>
       )}
       {report ? (

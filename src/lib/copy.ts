@@ -31,6 +31,12 @@ function lineRanges(lines: readonly number[]) {
   return ranges.join(", ");
 }
 
+export const historyCopy = {
+  saveFailedTitle: "Not saved to your activity",
+  saveFailedBody: "This browser blocked local storage, so this run will not appear in Activity.",
+  missing: "That saved run is no longer in this browser's activity.",
+} as const;
+
 export function linesLabel(lines: readonly number[]) {
   if (lines.length === 0) return "";
   return `${lines.length === 1 ? "Line" : "Lines"} ${lineRanges(lines)}`;

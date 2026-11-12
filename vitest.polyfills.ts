@@ -42,3 +42,4 @@ if (typeof window.matchMedia !== "function") {
 if (typeof Element.prototype.scrollTo !== "function") {
   Element.prototype.scrollTo = function scrollTo() {};
 }
+import "fake-indexeddb/auto";

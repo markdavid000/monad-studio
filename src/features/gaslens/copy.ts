@@ -1,5 +1,6 @@
-import { linesLabel } from "@/lib/copy";
+import { findingsCount, linesLabel } from "@/lib/copy";
 import type { IMPACTS, SAVING_SCOPES } from "./lib/schema";
+import type { GasReport } from "./types";
 
 type Impact = (typeof IMPACTS)[number];
 type SavingScope = (typeof SAVING_SCOPES)[number];
@@ -73,4 +74,10 @@ export function flaggedTitle(count: number) {
 export function rewriteLinesLabel(lines: readonly number[]) {
   const label = linesLabel(lines);
   return label ? `${label} of the rewrite` : "";
+}
+
+export function runSummary(report: GasReport) {
+  const findings = findingsCount(report.optimizations.length);
+  const flagged = report.check.risks.length;
+  return flagged > 0 ? `${findings}, ${flagged} flagged` : findings;
 }
