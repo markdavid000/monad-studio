@@ -9,5 +9,7 @@ export const layoutCopy = {
   footerLinksLabel: "Footer",
   github: "GitHub",
   copyright: "© 2026 MonadStudio",
-  comingNext: "Being rebuilt",
+  workspace: "Workspace",
+  soon: "Soon",
+  studioNav: "Studio",
 } as const;

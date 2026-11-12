@@ -19,9 +19,3 @@ export const toolBySlug: Record<ToolSlug, Tool> = {
 };
 
 export const tools: readonly Tool[] = Object.values(toolBySlug);
-
-export type LinkedTool = Tool & Required<Pick<Tool, "href">>;
-
-export function isLinked(tool: Tool): tool is LinkedTool {
-  return tool.href !== undefined;
-}

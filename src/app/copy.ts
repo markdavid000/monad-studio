@@ -6,5 +6,4 @@ export const appCopy = {
   errorBody: "The page failed to load. Try again, and if it keeps failing, reload the tab.",
   retry: "Try again",
   studioTitle: "Studio",
-  studioLead: "Pick a tool. Nothing here needs a wallet except deploying a contract.",
 } as const;
