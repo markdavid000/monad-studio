@@ -1,0 +1,15 @@
+export const layoutCopy = {
+  home: "MonadStudio home",
+  openStudio: "Open the studio",
+  studio: "Studio",
+  tools: "Tools",
+  toggleTheme: "Switch between light and dark theme",
+  skipToContent: "Skip to content",
+  footerNote: "AI findings are suggestions, not an audit. Built for Monad testnet.",
+  footerLinksLabel: "Footer",
+  github: "GitHub",
+  copyright: "© 2026 MonadStudio",
+  workspace: "Workspace",
+  soon: "Soon",
+  studioNav: "Studio",
+} as const;
