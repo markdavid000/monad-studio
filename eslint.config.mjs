@@ -8,14 +8,7 @@ const FEATURE_ENTRY = { element: { type: "feature", fileInternalPath: ["index.ts
 export default defineConfig([
   ...nextVitals,
   ...nextTs,
-  globalIgnores([
-    ".next/**",
-    ".vercel/**",
-    ".lighthouseci/**",
-    "coverage/**",
-    ".worktrees/**",
-    "next-env.d.ts",
-  ]),
+  globalIgnores([".next/**", ".vercel/**", "coverage/**", ".worktrees/**", "next-env.d.ts"]),
   {
     rules: {
       "no-console": ["error", { allow: ["warn", "error"] }],

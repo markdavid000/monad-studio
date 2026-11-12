@@ -1,6 +1,5 @@
 .next
 .vercel
-.lighthouseci
 coverage
 node_modules
 pnpm-lock.yaml

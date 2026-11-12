@@ -10,40 +10,37 @@ step() {
   echo -e "\n${BLUE}[$1] $2${NC}"
 }
 
-step "1/10" "Format"
+step "1/9" "Format"
 pnpm format:check
 
-step "2/10" "Lint"
+step "2/9" "Lint"
 pnpm lint
 
-step "3/10" "Comments"
+step "3/9" "Comments"
 pnpm comments:check
 
-step "4/10" "Copy"
+step "4/9" "Copy"
 pnpm copy:check
 
-step "5/10" "Typecheck"
+step "5/9" "Typecheck"
 pnpm typecheck
 
-step "6/10" "Unit tests"
+step "6/9" "Unit tests"
 pnpm test
 
-step "7/10" "Unused files, exports and dependencies"
+step "7/9" "Unused files, exports and dependencies"
 pnpm knip
 
 if [ "$MODE" = "--fast" ]; then
-  echo -e "\n${GREEN}Fast preflight passed. Build, smoke test and Lighthouse run in CI and in a full preflight.${NC}"
+  echo -e "\n${GREEN}Fast preflight passed. The build and smoke test run in CI and in a full preflight.${NC}"
   exit 0
 fi
 
-step "8/10" "Production build (clean)"
+step "8/9" "Production build (clean)"
 rm -rf .next
 pnpm build
 
-step "9/10" "Smoke test (production server)"
+step "9/9" "Smoke test (production server)"
 pnpm smoke
-
-step "10/10" "Lighthouse on public routes (mobile, every category 98 or more)"
-pnpm lighthouse
 
 echo -e "\n${GREEN}All preflight gates passed.${NC}"

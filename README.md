@@ -28,14 +28,14 @@ Open http://localhost:3000.
 
 ## Stack
 
-| Concern         | Choice                                                                                                       |
-| --------------- | ------------------------------------------------------------------------------------------------------------ |
-| Framework       | Next.js 16.4, App Router, React 19.3 with the React Compiler                                                 |
-| Language        | TypeScript, strict                                                                                           |
-| Styling         | Tailwind CSS v4                                                                                              |
-| UI              | shadcn/ui                                                                                                    |
-| Tests           | Vitest, Testing Library                                                                                      |
-| Quality         | ESLint with architecture boundaries, Prettier, knip, copy and comment checks, Lighthouse CI on public routes |
-| Git hooks       | Lefthook, commitlint                                                                                         |
-| Hosting         | Vercel                                                                                                       |
-| Package manager | pnpm                                                                                                         |
+| Concern         | Choice                                                                       |
+| --------------- | ---------------------------------------------------------------------------- |
+| Framework       | Next.js 16.4, App Router, React 19.3 with the React Compiler                 |
+| Language        | TypeScript, strict                                                           |
+| Styling         | Tailwind CSS v4                                                              |
+| UI              | shadcn/ui                                                                    |
+| Tests           | Vitest, Testing Library                                                      |
+| Quality         | ESLint with architecture boundaries, Prettier, knip, copy and comment checks |
+| Git hooks       | Lefthook, commitlint                                                         |
+| Hosting         | Vercel                                                                       |
+| Package manager | pnpm                                                                         |

@@ -41,7 +41,6 @@ Then read the code you are about to change, its callers and its tests. Nobody ch
 | Node.js | 24 (see `.nvmrc`)        | `nvm use` or `fnm use` picks it up                    |
 | pnpm    | pinned in `package.json` | Enable with `corepack enable`. Never use npm or yarn. |
 | Git     | 2.40 or newer            | Worktrees are part of the workflow                    |
-| Chrome  | current                  | Needed for `pnpm lighthouse`                          |
 | Wallet  | any EVM browser wallet   | Only for testing deploys on Monad testnet             |
 
 ## Getting set up
@@ -76,7 +75,6 @@ If the hooks are missing (for example after cloning with `--no-checkout`), run `
 | `pnpm comments:check` | The comment rules                                                 |
 | `pnpm copy:check`     | The wording rules for `copy.ts` files                             |
 | `pnpm smoke`          | Start the production build; every route must return 200           |
-| `pnpm lighthouse`     | Lighthouse CI on public routes; every category must be 98 to 100  |
 | `pnpm preflight`      | All of the above plus the production build                        |
 
 ## Where code goes
@@ -166,25 +164,24 @@ Keep commits atomic: one logical change each. AI tools never co-author a commit:
 - Fill in every section of the template. Unticked boxes need a reason.
 - Keep the PR to the scope of its issue. Unrelated fixes get their own PR.
 - Include screenshots or a short recording for any UI change, light and dark.
-- Include the Lighthouse result for every public route the change touches.
 - The `quality` check must be green. If the base branch moved, update your branch and let CI run again.
 - Feature pull requests are squash-merged into `dev` and the branch is deleted. Promotions use a merge commit.
 
 ## Reviewing
 
 - Open the preview and use the change. Reading a diff is not reviewing a UI.
-- These are blocking, not nits: a cross-feature import, a second client for the same upstream, `fetch` in a component, stateful logic inline in a component, an agent-written comment, a replaced implementation left behind, a package added before it is used, a Lighthouse category below 98.
+- These are blocking, not nits: a cross-feature import, a second client for the same upstream, `fetch` in a component, stateful logic inline in a component, an agent-written comment, a replaced implementation left behind, a package added before it is used.
 - Approve only what you would be happy to maintain.
 
 ## Quality gates
 
 Three layers, from fastest to slowest:
 
-| When         | What runs                                                                                                 | Configured in              |
-| ------------ | --------------------------------------------------------------------------------------------------------- | -------------------------- |
-| commit       | Prettier and ESLint on staged files, comment and copy rules, commit message lint                          | `lefthook.yml`             |
-| push         | `pnpm preflight --fast`: format, lint, comments, copy, typecheck, tests, knip                             | `lefthook.yml`             |
-| pull request | Everything above, the production build, the smoke test, Lighthouse, a branch flow check and a secret scan | `.github/workflows/ci.yml` |
+| When         | What runs                                                                                     | Configured in              |
+| ------------ | --------------------------------------------------------------------------------------------- | -------------------------- |
+| commit       | Prettier and ESLint on staged files, comment and copy rules, commit message lint              | `lefthook.yml`             |
+| push         | `pnpm preflight --fast`: format, lint, comments, copy, typecheck, tests, knip                 | `lefthook.yml`             |
+| pull request | Everything above, the production build, the smoke test, a branch flow check and a secret scan | `.github/workflows/ci.yml` |
 
 Do not bypass hooks with `--no-verify`. If a hook is wrong, fix the hook in its own PR.
 

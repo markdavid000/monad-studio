@@ -2,6 +2,7 @@
 
 - **Status:** Accepted
 - **Approved by:** (MarkDavid, 11th Nov 2026)
+- **Superseded in part by:** [ADR-2026-11-12-remove-lighthouse-gate.md](ADR-2026-11-12-remove-lighthouse-gate.md) (Lighthouse)
 - **Companion:** [ADR-2026-11-11-project-foundation-for-dummies.md](ADR-2026-11-11-project-foundation-for-dummies.md)
 
 ## Context

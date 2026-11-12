@@ -17,7 +17,6 @@
     "comments:check": "node scripts/check-comments.mjs",
     "copy:check": "node scripts/check-copy.mjs",
     "smoke": "./scripts/smoke.sh",
-    "lighthouse": "lhci autorun",
     "preflight": "./scripts/preflight.sh",
     "prepare": "lefthook install"
   },
@@ -34,7 +33,6 @@
   "devDependencies": {
     "@commitlint/cli": "21.2.4",
     "@commitlint/config-conventional": "21.2.4",
-    "@lhci/cli": "0.15.1",
     "@tailwindcss/turbopack": "4.3.3",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",

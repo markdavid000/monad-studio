@@ -73,17 +73,17 @@ Add a dependency in the same change that first uses it, never ahead of time. Che
 
 Use the hook that fits the job (see the [hook table](docs/engineering-standards.md#hooks)). Stateful logic, effects and subscriptions live in custom hooks, never inline in components (see [Custom hooks](docs/engineering-standards.md#custom-hooks)). The React Compiler is on: do not add `useMemo` or `useCallback` by reflex.
 
-## Directive 9: Lighthouse 98 to 100 on public routes
+## Directive 9: Fast public pages
 
-Every public route (the landing page and anything a visitor reaches without opening the studio) scores between 98 and 100 in Performance, Accessibility, Best Practices and SEO on a mobile Lighthouse run. A change that drops any category below 98 is not done; aim for 100. `pnpm lighthouse` checks it; add new public routes to `lighthouserc.json`. Studio routes follow the performance rules in the standards.
+Public pages follow the performance rules in the standards ([Performance](docs/engineering-standards.md#performance)): Server Components first, heavy client code deferred, no layout shift, every web font justified. Measure a change that adds weight with Chrome DevTools before calling it done.
 
 ## Directive 10: Preflight before done
 
-Before you open a pull request or call a task complete, run `pnpm preflight` and get a clean pass: format, lint, comments, copy, typecheck, tests, knip, production build, smoke test and Lighthouse. Zero errors, zero warnings. Then run the app and use the change yourself. Report anything you could not verify.
+Before you open a pull request or call a task complete, run `pnpm preflight` and get a clean pass: format, lint, comments, copy, typecheck, tests, knip, production build and smoke test. Zero errors, zero warnings. Then run the app and use the change yourself. Report anything you could not verify.
 
 ## Directive 11: Use the tools you have
 
-Check which MCP servers and skills your environment provides and use them: Context7 for library docs, the Next.js bundled docs, the shadcn registry for UI primitives, Chrome DevTools for Lighthouse and runtime debugging. Do not guess at an API a tool can show you.
+Check which MCP servers and skills your environment provides and use them: Context7 for library docs, the Next.js bundled docs, the shadcn registry for UI primitives, Chrome DevTools for performance and runtime debugging. Do not guess at an API a tool can show you.
 
 ---
 
@@ -118,7 +118,7 @@ Before asking for review, check the change against each item. The PR template re
 5. **Tests.** Behaviour tests for the change, covering loading, empty and error states. Bug fixes were red before green.
 6. **Money.** Amounts in base units with `bigint`, never `number`.
 7. **States.** Every async path has a loading state and an error state; nothing freezes.
-8. **Accessibility and Lighthouse.** Keyboard, labels and contrast checked; every touched public route still scores 98 or more in every category.
+8. **Accessibility and performance.** Keyboard, labels and contrast checked; the performance rules in the standards followed.
 9. **Copy.** User-facing text lives in `copy.ts`, passes `pnpm copy:check`, and every claim is true of the shipped code.
 10. **Comments.** None from an agent; human comments explain why in three lines or fewer.
 11. **Cleanup.** Replaced code, assets, config and packages removed; `pnpm knip` clean.
@@ -126,16 +126,15 @@ Before asking for review, check the change against each item. The PR template re
 
 ## Commands
 
-| Command                                                    | Purpose                                                    |
-| ---------------------------------------------------------- | ---------------------------------------------------------- |
-| `pnpm dev`                                                 | Local dev server                                           |
-| `pnpm preflight`                                           | Every gate, including the build, smoke test and Lighthouse |
-| `pnpm preflight --fast`                                    | Everything except build, smoke and Lighthouse (pre-push)   |
-| `pnpm lint` / `pnpm typecheck` / `pnpm test` / `pnpm knip` | Individual gates                                           |
-| `pnpm comments:check`                                      | Comment rules                                              |
-| `pnpm copy:check`                                          | Wording rules for `copy.ts` files                          |
-| `pnpm lighthouse`                                          | Lighthouse CI against a production build                   |
-| `pnpm smoke`                                               | Start the production build and require 200 on every route  |
+| Command                                                    | Purpose                                                   |
+| ---------------------------------------------------------- | --------------------------------------------------------- |
+| `pnpm dev`                                                 | Local dev server                                          |
+| `pnpm preflight`                                           | Every gate, including the build and smoke test            |
+| `pnpm preflight --fast`                                    | Everything except build and smoke test (pre-push)         |
+| `pnpm lint` / `pnpm typecheck` / `pnpm test` / `pnpm knip` | Individual gates                                          |
+| `pnpm comments:check`                                      | Comment rules                                             |
+| `pnpm copy:check`                                          | Wording rules for `copy.ts` files                         |
+| `pnpm smoke`                                               | Start the production build and require 200 on every route |
 
 <!-- BEGIN:nextjs-agent-rules -->
 

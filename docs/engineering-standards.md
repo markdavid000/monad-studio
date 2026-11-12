@@ -2,7 +2,7 @@
 
 The coding bar for this repository. It binds every contributor, human or AI. Where a rule can be checked by a machine, it is, and the check is named next to the rule. The rest is enforced in review.
 
-Contents: [Before you start](#before-you-start) · [Principles](#principles) · [TypeScript](#typescript) · [Components](#components) · [Hooks](#hooks) · [Custom hooks](#custom-hooks) · [Data and server code](#data-and-server-code) · [Styling and UI kit](#styling-and-ui-kit) · [Performance and Lighthouse](#performance-and-lighthouse) · [Accessibility](#accessibility) · [Errors](#errors) · [Testing](#testing) · [Copy](#copy) · [Comments](#comments) · [Naming](#naming) · [Dependencies and cleanup](#dependencies-and-cleanup) · [Security](#security) · [Documentation](#documentation)
+Contents: [Before you start](#before-you-start) · [Principles](#principles) · [TypeScript](#typescript) · [Components](#components) · [Hooks](#hooks) · [Custom hooks](#custom-hooks) · [Data and server code](#data-and-server-code) · [Styling and UI kit](#styling-and-ui-kit) · [Performance](#performance) · [Accessibility](#accessibility) · [Errors](#errors) · [Testing](#testing) · [Copy](#copy) · [Comments](#comments) · [Naming](#naming) · [Dependencies and cleanup](#dependencies-and-cleanup) · [Security](#security) · [Documentation](#documentation)
 
 ---
 
@@ -135,19 +135,19 @@ How to write one:
 - Colour carries meaning only: the accent for primary actions and focus, severity colours where severity is shown. Tools are told apart by name, not colour.
 - Dark mode uses the `.dark` class and the `.dark` token block. Every component works in both.
 
-## Performance and Lighthouse
+## Performance
 
-Every public route scores **98 to 100 in Performance, Accessibility, Best Practices and SEO** in a Lighthouse mobile run. Below 98 in any category fails CI; aim for 100. CI enforces it (`pnpm lighthouse`, see `lighthouserc.json`); add each new public route to its URL list. Studio routes are not in the Lighthouse run but follow every rule below.
+Public pages must load fast on a mid-range phone. There is no Lighthouse gate (see [the ADR](adr/ADR-2026-11-12-remove-lighthouse-gate.md)); these rules carry the bar.
 
 - Server Components first. Client JavaScript is the main cost on a mid-range phone; ship as little as possible.
 - No client component above a layout boundary unless the whole subtree needs it.
 - Heavy client code (charts, editors, motion-heavy sections) loads with `next/dynamic` or after interaction.
-- The system font stack is the default. A web font costs about 30 KB on the LCP path; add one only through `next/font`, with `display: "swap"`, and only with a Lighthouse run in the PR proving the page still scores 98 or more.
+- The system font stack is the default. A web font costs about 30 KB on the LCP path; add one only through `next/font`, with `display: "swap"` and with a measurement in the PR showing what it costs.
 - Images through `next/image` with explicit `width`/`height` or `fill` plus `sizes`; `priority` only on the largest above-the-fold image. Decide the image strategy in an ADR before the first raster image.
 - No layout shift: reserve space for anything that loads late, including Suspense fallbacks.
 - Third-party scripts through `next/script` with `lazyOnload` or `afterInteractive`, and only after an ADR.
 - No barrel files that re-export a whole library. A feature's `index.ts` exports only its public API.
-- Measure before optimising. Use the Chrome DevTools MCP or `pnpm lighthouse` to prove a change.
+- Measure before optimising. Use Chrome DevTools to prove a change.
 
 ## Accessibility
 
