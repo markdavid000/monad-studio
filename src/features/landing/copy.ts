@@ -110,19 +110,74 @@ export const reviewFlowCopy = {
 } as const;
 
 export const ctaCopy = {
-  eyebrow: "Free on Monad testnet",
-  title: "Your next contract deserves a second look.",
-  lead: "Paste it in, get a security review and gas findings, then deploy it from your own wallet. No sign-in, nothing to install.",
-  primary: "Scan a contract",
-  secondary: "See how a review works",
-  editorFile: "YourContract.sol",
-  editorHint: "Paste your Solidity here",
-  editorAction: "Scan",
-  editorLines: [
-    "// SPDX-License-Identifier: MIT",
-    "pragma solidity ^0.8.28;",
-    "",
-    "contract YourContract {",
+  title: "Find the bug before it finds your users.",
+  lead: "Pick a contract and run the scan. Then run it on yours.",
+  primary: "Scan your own contract",
+  facts: "No sign-in. Nothing to install. Monad testnet.",
+  tryLabel: "Try it",
+  samplesLabel: "Example contracts",
+  run: "Run the example scan",
+  scanning: "Scanning",
+  rerun: "Run it again",
+  findingsLabel: "findings",
+  outOf: " / 100",
+  exampleNote: "Example output. The studio runs the same review on your code.",
+  openReport: "Scan your own contract",
+  samples: [
+    {
+      id: "bank",
+      file: "VulnerableBank.sol",
+      code: [
+        "function withdraw(uint256 amount) public {",
+        "  require(balances[msg.sender] >= amount);",
+        '  (bool ok, ) = msg.sender.call{value: amount}("");',
+        "  require(ok);",
+        "  balances[msg.sender] -= amount;",
+        "}",
+      ],
+      score: 42,
+      findings: [
+        { severity: "Critical", title: "Reentrancy in withdraw()" },
+        { severity: "High", title: "emergencyDrain() has no access control" },
+        { severity: "High", title: "tx.origin used for authorisation" },
+        { severity: "Low", title: "No event on deposit()" },
+      ],
+    },
+    {
+      id: "staking",
+      file: "StakingPool.sol",
+      code: [
+        "function withdraw(uint256 amount) external {",
+        "  uint256 fee = amount * feeBps / 10_000;",
+        "  unchecked {",
+        "    payable(msg.sender).transfer(amount - fee);",
+        "  }",
+        "}",
+      ],
+      score: 64,
+      findings: [
+        { severity: "Critical", title: "Fee can exceed the amount withdrawn" },
+        { severity: "Medium", title: "Owner can change the fee with no delay" },
+        { severity: "Low", title: "setTreasury() accepts the zero address" },
+      ],
+    },
+    {
+      id: "airdrop",
+      file: "Airdrop.sol",
+      code: [
+        "function claim(uint256 amount) external {",
+        "  require(claimed[msg.sender] == false);",
+        "  require(amount <= maxClaim);",
+        "  claimed[msg.sender] = true;",
+        "  token.transfer(msg.sender, amount);",
+        "}",
+      ],
+      score: 89,
+      findings: [
+        { severity: "Medium", title: "Return value of transfer() is ignored" },
+        { severity: "Low", title: "maxClaim could be a constant" },
+      ],
+    },
   ],
 } as const;
 

@@ -174,7 +174,7 @@ export function ToolSection({
         ) : null}
         {layout === "frame-right" ? (
           <>
-            <Header {...header} className="max-w-2xl lg:ml-auto lg:text-right" />
+            <Header {...header} className="max-w-2xl" />
             <div className="grid gap-10 lg:grid-cols-[1fr_2fr] lg:gap-12">
               <div className="order-2 flex flex-col gap-7 lg:order-1 lg:pt-4">
                 <Points points={points} variant="numbered" />
@@ -188,10 +188,8 @@ export function ToolSection({
         ) : null}
         {layout === "wide" ? (
           <>
-            <Header {...header} className="mx-auto max-w-3xl items-center text-center" />
-            <Frame tone={tone} className="mx-auto w-full max-w-5xl">
-              {children}
-            </Frame>
+            <Header {...header} className="max-w-2xl" />
+            <Frame tone={tone}>{children}</Frame>
             <Points points={points} variant="columns" />
             <ToolLink href={href} toolName={toolName} />
           </>
