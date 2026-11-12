@@ -12,5 +12,6 @@ export default defineConfig({
     setupFiles: ["./vitest.polyfills.ts", "./vitest.setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
     css: false,
+    env: { NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: "test-project-id" },
   },
 });

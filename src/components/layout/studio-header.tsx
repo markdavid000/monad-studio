@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { isLinked, tools } from "@/config/tools";
+import { WalletButton } from "@/features/wallet";
 import { BrandLink } from "./brand-link";
 import { layoutCopy } from "./copy";
 import { ThemeToggle } from "./theme-toggle";
@@ -22,7 +23,7 @@ export function StudioHeader() {
             </Link>
           ))}
         </nav>
-        <span className="text-sm text-muted-foreground">{layoutCopy.network}</span>
+        <WalletButton />
         <ThemeToggle />
       </div>
     </header>
