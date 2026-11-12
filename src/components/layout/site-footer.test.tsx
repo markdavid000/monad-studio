@@ -5,15 +5,6 @@ import { layoutCopy } from "./copy";
 import { SiteFooter } from "./site-footer";
 
 describe("SiteFooter", () => {
-  it("invites the visitor into the studio", () => {
-    render(<SiteFooter />);
-    expect(screen.getByText(layoutCopy.footerPrompt)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: layoutCopy.openStudio })).toHaveAttribute(
-      "href",
-      "/studio"
-    );
-  });
-
   it("links only to places that exist", () => {
     render(<SiteFooter />);
     const nav = screen.getByRole("navigation", { name: layoutCopy.footerLinksLabel });

@@ -8,6 +8,7 @@ import {
   sentinelMocks,
 } from "../copy";
 import { ChecksMarquee } from "./checks-marquee";
+import { ClosingCta } from "./closing-cta";
 import { FlowSection } from "./flow-section";
 import { HeroAside } from "./hero-aside";
 import { HeroStage } from "./hero-stage";
@@ -20,11 +21,31 @@ import { SentinelMock } from "./mocks/sentinel-mock";
 import { ToolSection } from "./tool-section";
 
 const SECTIONS = [
-  { slug: "monguard", tone: "warm", preview: <MonguardMock data={monguardMocks.section} /> },
-  { slug: "gaslens", tone: "sand", preview: <GaslensMock data={gaslensMocks.section} /> },
-  { slug: "forge", tone: "warm", preview: <ForgeMock data={forgeMocks.section} /> },
-  { slug: "sentinel", tone: "sand", preview: <SentinelMock data={sentinelMocks.section} /> },
-  { slug: "paradebug", tone: "warm", preview: <ParadebugMock data={paradebugMocks.section} /> },
+  {
+    slug: "monguard",
+    tone: "warm",
+    layout: "frame-left",
+    preview: <MonguardMock data={monguardMocks.section} />,
+  },
+  {
+    slug: "gaslens",
+    tone: "sand",
+    layout: "frame-right",
+    preview: <GaslensMock data={gaslensMocks.section} />,
+  },
+  { slug: "forge", tone: "warm", layout: "wide", preview: <ForgeMock data={forgeMocks.section} /> },
+  {
+    slug: "sentinel",
+    tone: "sand",
+    layout: "side",
+    preview: <SentinelMock data={sentinelMocks.section} />,
+  },
+  {
+    slug: "paradebug",
+    tone: "warm",
+    layout: "cards",
+    preview: <ParadebugMock data={paradebugMocks.section} />,
+  },
 ] as const;
 
 export function LandingPage() {
@@ -43,13 +64,14 @@ export function LandingPage() {
       <ChecksMarquee />
       <FlowSection />
       <div id="tools" className="divide-y border-t">
-        {SECTIONS.map(({ slug, tone, preview }) => {
+        {SECTIONS.map(({ slug, tone, layout, preview }) => {
           const tool = toolBySlug[slug];
           return (
             <ToolSection
               key={slug}
               id={slug}
               tone={tone}
+              layout={layout}
               toolName={tool.name}
               href={tool.href}
               {...sectionCopy[slug]}
@@ -60,6 +82,7 @@ export function LandingPage() {
         })}
       </div>
       <ReviewFlow />
+      <ClosingCta />
     </>
   );
 }

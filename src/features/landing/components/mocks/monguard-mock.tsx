@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { mockLabels } from "../../copy";
 import { scoreVar, step } from "../../lib/step";
@@ -19,10 +20,19 @@ function scoreTone(score: number) {
 }
 
 export function MonguardMock({ data }: MonguardMockProps) {
-  const [first, ...rest] = data.findings;
+  const [openIndex, setOpenIndex] = useState(0);
+  const raw = {
+    contract: data.file,
+    score: data.score,
+    findings: data.findings.map(({ severity, title, lines }) => ({
+      severity: severity.toLowerCase(),
+      title,
+      lines,
+    })),
+  };
 
   return (
-    <MockWindow title={data.file} meta={data.tool} hasScan>
+    <MockWindow title={data.file} meta={data.tool} raw={raw} hasScan>
       <div className="flex items-end justify-between gap-4 border-b pb-4">
         <p className="text-sm text-muted-foreground">{mockLabels.scoreLabel}</p>
         <p className="font-mono">
@@ -36,33 +46,46 @@ export function MonguardMock({ data }: MonguardMockProps) {
           <span className="text-sm text-muted-foreground">{mockLabels.scoreOutOf}</span>
         </p>
       </div>
-      <div data-step style={step(3)} className="mt-4 rounded-md border p-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <SeverityPill level={first.severity} />
-          <p className="text-sm font-medium">{first.title}</p>
-          <p className="font-mono text-xs text-muted-foreground">{first.lines}</p>
-        </div>
-        <p className="mt-2 text-sm text-muted-foreground">{first.detail}</p>
-        <p className="mt-3 mb-1.5 font-mono text-[11px] text-muted-foreground uppercase">
-          {mockLabels.fixLabel}
-        </p>
-        <DiffLines lines={data.fix} firstStep={5} />
-      </div>
-      <ul className="mt-3 divide-y">
-        {rest.map((finding, index) => (
-          <li
-            key={finding.title}
-            data-step
-            style={step(10 + index)}
-            className="flex items-center gap-2 py-2.5"
-          >
-            <SeverityPill level={finding.severity} />
-            <span className="truncate text-sm">{finding.title}</span>
-            <span className="ml-auto shrink-0 font-mono text-xs text-muted-foreground">
-              {finding.lines}
-            </span>
-          </li>
-        ))}
+      <ul className="mt-3 flex flex-col gap-2">
+        {data.findings.map((finding, index) => {
+          const isOpen = index === openIndex;
+          return (
+            <li key={finding.title} data-step style={step(3 + index * 2)}>
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                onClick={() => setOpenIndex(index)}
+                className={cn(
+                  "flex w-full flex-col rounded-md border p-3 text-left transition-colors",
+                  isOpen
+                    ? "border-foreground/20 bg-muted/30"
+                    : "border-transparent hover:bg-muted/30"
+                )}
+              >
+                <span className="flex flex-wrap items-center gap-2">
+                  <SeverityPill level={finding.severity} />
+                  <span className="text-sm font-medium">{finding.title}</span>
+                  <span className="ml-auto font-mono text-xs text-muted-foreground">
+                    {finding.lines}
+                  </span>
+                </span>
+                {isOpen ? (
+                  <span className="mt-2 block animate-[rise-in_0.3s_ease-out] text-sm text-muted-foreground">
+                    {finding.detail}
+                  </span>
+                ) : null}
+              </button>
+              {isOpen && index === 0 ? (
+                <div className="mt-2 px-3">
+                  <p className="mb-1.5 font-mono text-[11px] text-muted-foreground uppercase">
+                    {mockLabels.fixLabel}
+                  </p>
+                  <DiffLines lines={data.fix} firstStep={5} />
+                </div>
+              ) : null}
+            </li>
+          );
+        })}
       </ul>
     </MockWindow>
   );

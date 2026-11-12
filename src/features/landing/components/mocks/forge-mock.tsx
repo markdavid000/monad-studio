@@ -11,8 +11,16 @@ interface ForgeMockProps {
 }
 
 export function ForgeMock({ data }: ForgeMockProps) {
+  const raw = {
+    contract: data.file,
+    network: mockLabels.network,
+    chainId: Number(mockLabels.chainId),
+    deployer: data.wallet,
+    steps: data.steps.map(({ label, state }) => ({ label, state })),
+  };
+
   return (
-    <MockWindow title={data.file} meta={mockLabels.network}>
+    <MockWindow title={data.file} meta={mockLabels.network} raw={raw}>
       <div className="grid gap-4 md:grid-cols-[1fr_15rem]">
         <div className="flex min-w-0 flex-col gap-3">
           <div data-step style={step(0)} className="rounded-md border bg-muted/40 p-3">

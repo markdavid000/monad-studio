@@ -17,7 +17,7 @@ export interface GaslensMockData {
   summary: string;
   saving: string;
   diff: readonly DiffLine[];
-  findings: readonly { impact: string; title: string; saving: string }[];
+  findings: readonly { impact: string; title: string; saving: string; lines: readonly number[] }[];
 }
 
 export interface ForgeMockData {

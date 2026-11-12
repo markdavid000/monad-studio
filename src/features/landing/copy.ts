@@ -109,6 +109,23 @@ export const reviewFlowCopy = {
   ],
 } as const;
 
+export const ctaCopy = {
+  eyebrow: "Free on Monad testnet",
+  title: "Your next contract deserves a second look.",
+  lead: "Paste it in, get a security review and gas findings, then deploy it from your own wallet. No sign-in, nothing to install.",
+  primary: "Scan a contract",
+  secondary: "See how a review works",
+  editorFile: "YourContract.sol",
+  editorHint: "Paste your Solidity here",
+  editorAction: "Scan",
+  editorLines: [
+    "// SPDX-License-Identifier: MIT",
+    "pragma solidity ^0.8.28;",
+    "",
+    "contract YourContract {",
+  ],
+} as const;
+
 export const checksCopy = {
   label: "What the reviews look for",
   items: [
@@ -243,7 +260,16 @@ export const mockLabels = {
   blocksLabel: "Blocks with calls",
   functionsLabel: "Same-block repeats",
   blocksSuffix: "of 50 blocks",
+  showRaw: "Example output",
+  hideRaw: "Back to preview",
+  rawTitle: "What the tool returns for this example",
+  status: { ok: "Succeeded", flagged: "Flagged", failed: "Reverted" },
+  pickFunction: "Pick a function to see where it repeats",
 } as const;
+
+export function callSummary(method: string, from: string, ago: string, status: string) {
+  return `${method} called by ${from}, ${ago} ago. ${status}.`;
+}
 
 export const monguardMocks = {
   hero: {
@@ -262,10 +288,23 @@ export const monguardMocks = {
         severity: "High",
         title: "emergencyDrain() has no access control",
         lines: "Line 21",
-        detail: "",
+        detail:
+          "Anyone can call emergencyDrain() and send the whole balance to the owner address, wiping out every depositor.",
       },
-      { severity: "High", title: "tx.origin used for authorisation", lines: "Line 26", detail: "" },
-      { severity: "Low", title: "No event on deposit()", lines: "Line 9", detail: "" },
+      {
+        severity: "High",
+        title: "tx.origin used for authorisation",
+        lines: "Line 26",
+        detail:
+          "adminTransfer() trusts tx.origin, so a malicious contract the owner interacts with can credit itself any balance.",
+      },
+      {
+        severity: "Low",
+        title: "No event on deposit()",
+        lines: "Line 9",
+        detail:
+          "Deposits change balances without an event, so indexers and monitors cannot see them.",
+      },
     ],
     fix: [
       { kind: "remove", text: '(bool ok, ) = msg.sender.call{value: amount}("");' },
@@ -290,13 +329,14 @@ export const monguardMocks = {
         severity: "Medium",
         title: "Owner can change the fee with no delay",
         lines: "Line 48",
-        detail: "",
+        detail:
+          "setFee() takes effect at once, so stakers cannot react before a fee change hits their withdrawal.",
       },
       {
         severity: "Low",
         title: "setTreasury() accepts the zero address",
         lines: "Line 52",
-        detail: "",
+        detail: "Setting the treasury to address(0) burns every fee collected from then on.",
       },
     ],
     fix: [
@@ -330,9 +370,9 @@ export const gaslensMocks = {
       { kind: "same", text: "    }" },
     ],
     findings: [
-      { impact: "High", title: "calldata instead of memory", saving: "~1,900 gas" },
-      { impact: "High", title: "Storage read inside loop", saving: "~2,100 gas" },
-      { impact: "Medium", title: "Unchecked loop counter", saving: "~60 gas per item" },
+      { impact: "High", title: "calldata instead of memory", saving: "~1,900 gas", lines: [1, 2] },
+      { impact: "High", title: "Storage read inside loop", saving: "~2,100 gas", lines: [3, 4] },
+      { impact: "Medium", title: "Unchecked loop counter", saving: "~60 gas per item", lines: [6] },
     ],
   },
   section: {
@@ -354,9 +394,14 @@ export const gaslensMocks = {
       { kind: "same", text: "    claimed[msg.sender] = true;" },
     ],
     findings: [
-      { impact: "High", title: "Constant instead of storage", saving: "~2,100 gas" },
-      { impact: "Medium", title: "Custom error instead of a string", saving: "~50 gas" },
-      { impact: "Low", title: "Bool compared to false", saving: "~10 gas" },
+      { impact: "High", title: "Constant instead of storage", saving: "~2,100 gas", lines: [1, 2] },
+      {
+        impact: "Medium",
+        title: "Custom error instead of a string",
+        saving: "~50 gas",
+        lines: [3, 5, 6],
+      },
+      { impact: "Low", title: "Bool compared to false", saving: "~10 gas", lines: [5, 6] },
     ],
   },
 } satisfies Record<string, GaslensMockData>;

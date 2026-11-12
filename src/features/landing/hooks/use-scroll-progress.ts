@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
+function travelOf(node: HTMLElement) {
+  return Math.max(1, node.getBoundingClientRect().height - window.innerHeight);
+}
+
 export function useScrollProgress<T extends HTMLElement>() {
   const ref = useRef<T>(null);
   const [progress, setProgress] = useState(0);
@@ -10,9 +14,7 @@ export function useScrollProgress<T extends HTMLElement>() {
       frame = 0;
       const node = ref.current;
       if (!node) return;
-      const rect = node.getBoundingClientRect();
-      const travel = rect.height - window.innerHeight;
-      const value = travel > 0 ? -rect.top / travel : rect.top < 0 ? 1 : 0;
+      const value = -node.getBoundingClientRect().top / travelOf(node);
       setProgress(Math.min(1, Math.max(0, value)));
     }
     function schedule() {
@@ -28,5 +30,12 @@ export function useScrollProgress<T extends HTMLElement>() {
     };
   }, []);
 
-  return { ref, progress };
+  function scrollToFraction(fraction: number) {
+    const node = ref.current;
+    if (!node) return;
+    const top = node.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: top + fraction * travelOf(node), behavior: "smooth" });
+  }
+
+  return { ref, progress, scrollToFraction };
 }
