@@ -3,6 +3,8 @@
 import { Fuel, LoaderCircle, PanelRightOpen } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { IntroDialog } from "@/components/ui/intro-dialog";
 import { PageTitle } from "@/components/ui/page-title";
 import { ResultsSheet } from "@/components/ui/results-sheet";
 import { ToolActions } from "@/components/ui/tool-actions";
@@ -27,20 +29,21 @@ export function GaslensTool({ runId }: GaslensToolProps) {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
+      <IntroDialog screen="gaslens" content={gaslensCopy.intro} />
       <PageTitle title={gaslensCopy.title} aboutLabel={gaslensCopy.about}>
         <p>{gaslensCopy.lead}</p>
         <p className="text-muted-foreground">{gaslensCopy.checks}</p>
       </PageTitle>
       {gaslens.isEmpty ? (
-        <div className="flex flex-col items-start gap-4 rounded-xl border bg-card p-6">
-          <div className="flex flex-col gap-1.5">
-            <h2 className="text-lg font-medium">{gaslensCopy.emptyTitle}</h2>
-            <p className="text-muted-foreground">{gaslensCopy.emptyBody}</p>
-          </div>
-          <Button asChild>
-            <Link href="/studio">{gaslensCopy.openWorkspace}</Link>
-          </Button>
-        </div>
+        <EmptyState
+          title={gaslensCopy.emptyTitle}
+          body={gaslensCopy.emptyBody}
+          action={
+            <Button asChild>
+              <Link href="/studio">{gaslensCopy.openWorkspace}</Link>
+            </Button>
+          }
+        />
       ) : (
         <>
           <CodePanel

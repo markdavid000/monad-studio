@@ -16,7 +16,9 @@ export function SiteHeader() {
             size="cta"
             className="bg-foreground text-background hover:bg-foreground/90"
           >
-            <Link href="/studio">{layoutCopy.openStudio}</Link>
+            <Link href="/studio" data-studio-entry>
+              {layoutCopy.openStudio}
+            </Link>
           </Button>
         </nav>
       </div>

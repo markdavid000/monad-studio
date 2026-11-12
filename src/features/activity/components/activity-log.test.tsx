@@ -84,6 +84,7 @@ function rows() {
 beforeEach(async () => {
   for (const item of toast.items()) toast.dismiss(item.id);
   window.localStorage.clear();
+  window.localStorage.setItem("monad-studio:seen:activity", "seen");
   push.mockReset();
   wallet.address = undefined;
   wallet.signMessageAsync.mockReset();
@@ -100,6 +101,18 @@ afterEach(() => {
 });
 
 describe("ActivityLog", () => {
+  it("explains the screen once on the first visit", async () => {
+    window.localStorage.removeItem("monad-studio:seen:activity");
+    const view = renderLog();
+    const intro = await screen.findByRole("dialog", { name: activityCopy.intro.title });
+    expect(intro).toHaveTextContent(activityCopy.intro.points[0].title);
+    fireEvent.click(screen.getByRole("button", { name: activityCopy.intro.done }));
+    await vi.waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    view.unmount();
+    renderLog();
+    expect(screen.queryByRole("dialog", { name: activityCopy.intro.title })).toBeNull();
+  });
+
   it("says there is no activity yet and links to the workspace", async () => {
     renderLog();
     expect(await screen.findByText(activityCopy.emptyTitle)).toBeInTheDocument();

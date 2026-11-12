@@ -120,6 +120,7 @@ beforeEach(async () => {
   await clearRuns();
   for (const item of toast.items()) toast.dismiss(item.id);
   window.localStorage.clear();
+  window.localStorage.setItem("monad-studio:seen:gaslens", "seen");
   fetchMock.mockReset();
   vi.stubGlobal("fetch", fetchMock);
   Object.defineProperty(navigator, "clipboard", {
@@ -134,6 +135,18 @@ afterEach(() => {
 });
 
 describe("GaslensTool", () => {
+  it("explains the screen once on the first visit", async () => {
+    window.localStorage.removeItem("monad-studio:seen:gaslens");
+    const view = renderTool();
+    const intro = await screen.findByRole("dialog", { name: gaslensCopy.intro.title });
+    expect(intro).toHaveTextContent(gaslensCopy.intro.points[0].title);
+    fireEvent.click(screen.getByRole("button", { name: gaslensCopy.intro.done }));
+    await vi.waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    view.unmount();
+    renderTool();
+    expect(screen.queryByRole("dialog", { name: gaslensCopy.intro.title })).toBeNull();
+  });
+
   it("saves each finished run to the activity", async () => {
     saveDraft(SOURCE);
     fetchMock.mockImplementation(async () => json({ data: report }));

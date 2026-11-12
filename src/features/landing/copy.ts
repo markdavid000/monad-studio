@@ -112,7 +112,7 @@ export const ctaCopy = {
   title: "Find the bug before it finds your users.",
   lead: "Pick a contract and run the scan. Then run it on yours.",
   primary: "Scan your own contract",
-  facts: "No sign-in. Nothing to install. Monad testnet.",
+  facts: "Connect any wallet. No account. Nothing to install. Monad testnet.",
   tryLabel: "Try it",
   samplesLabel: "Example contracts",
   run: "Run the example scan",

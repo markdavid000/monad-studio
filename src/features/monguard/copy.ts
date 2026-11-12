@@ -45,6 +45,25 @@ export const monguardCopy = {
     low: "Low",
     info: "Info",
   } satisfies Record<Severity, string>,
+  intro: {
+    title: "MonGuard: security review",
+    body: "MonGuard reads the contract in your workspace the way an attacker would and lists what it finds.",
+    points: [
+      {
+        title: "Scan",
+        body: "Press Scan contract under the code. A scan usually takes 10 to 40 seconds.",
+      },
+      {
+        title: "Read the findings",
+        body: "Each finding has a severity, the lines involved, why it matters and a suggested fix. Select one to highlight its lines.",
+      },
+      {
+        title: "Check before you rely on it",
+        body: "The score starts at 100 and drops with each finding. It is AI analysis, not an audit.",
+      },
+    ],
+    done: "Got it",
+  },
 } as const;
 
 export function runSummary(report: ScanReport) {

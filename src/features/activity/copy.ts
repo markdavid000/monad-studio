@@ -12,7 +12,6 @@ export const activityCopy = {
   deleteRun: "Delete this run",
   emptyTitle: "No activity yet",
   emptyBody: "Run a MonGuard scan or a GasLens review and it will show up here.",
-  emptyFiltered: "No runs from this tool yet.",
   openWorkspace: "Open the workspace",
   unavailable:
     "Activity is not available in this browser. It may be blocking site storage, for example in a private window.",
@@ -46,6 +45,27 @@ export const activityCopy = {
   syncCancelled: "Sync cancelled",
   syncFailedTitle: "Sync failed",
   syncStopped: "Sync stopped on this browser",
+  filteredTitle: "Nothing from this tool yet",
+  filteredBody: "Runs from the other tools are under All.",
+  intro: {
+    title: "Your activity",
+    body: "Every MonGuard scan and GasLens review you run is listed here, newest first.",
+    points: [
+      {
+        title: "Open a past run",
+        body: "Open puts the contract back in the workspace and shows its results again, without using an AI request.",
+      },
+      {
+        title: "Sync with your wallet",
+        body: "Sign one free message to keep your activity on any device where you use the same wallet.",
+      },
+      {
+        title: "Delete what you do not need",
+        body: "Remove one run or clear everything. Synced copies are removed too.",
+      },
+    ],
+    done: "Got it",
+  },
 } as const;
 
 export function runCount(count: number) {

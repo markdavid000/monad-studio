@@ -57,6 +57,25 @@ export const gaslensCopy = {
     deployment: "on deployment",
     iteration: "per loop iteration",
   } satisfies Record<SavingScope, string>,
+  intro: {
+    title: "GasLens: gas review",
+    body: "GasLens finds gas waste in the contract in your workspace and rewrites it.",
+    points: [
+      {
+        title: "Review",
+        body: "Press Review gas under the code. A review usually takes 15 to 60 seconds.",
+      },
+      {
+        title: "Compare the rewrite",
+        body: "Each optimisation shows its estimated saving, and the rewritten contract is shown as a diff against yours.",
+      },
+      {
+        title: "Watch for flagged changes",
+        body: "A second check marks any change that may alter behaviour. Read every change before you copy the rewrite.",
+      },
+    ],
+    done: "Got it",
+  },
 } as const;
 
 export function savingLabel(gas: number, per: SavingScope) {

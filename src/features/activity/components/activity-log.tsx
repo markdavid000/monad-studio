@@ -1,9 +1,11 @@
 "use client";
 
-import { History, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Dialog } from "radix-ui";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { IntroDialog } from "@/components/ui/intro-dialog";
 import { PageTitle } from "@/components/ui/page-title";
 import { toolBySlug } from "@/config/tools";
 import { HISTORY_TOOLS } from "@/lib/history";
@@ -24,6 +26,7 @@ export function ActivityLog() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
+      <IntroDialog screen="activity" content={activityCopy.intro} />
       <PageTitle title={activityCopy.title} aboutLabel={activityCopy.about}>
         <p>{activityCopy.aboutBody}</p>
         <p className="text-muted-foreground">{activityCopy.aboutStorage}</p>
@@ -42,16 +45,15 @@ export function ActivityLog() {
         </p>
       ) : null}
       {activity.status === "success" && activity.total === 0 ? (
-        <div className="flex flex-col items-start gap-4 rounded-xl border bg-card p-6">
-          <History aria-hidden className="size-6 text-muted-foreground" />
-          <div className="flex flex-col gap-1.5">
-            <h2 className="text-lg font-medium">{activityCopy.emptyTitle}</h2>
-            <p className="text-muted-foreground">{activityCopy.emptyBody}</p>
-          </div>
-          <Button asChild>
-            <Link href="/studio">{activityCopy.openWorkspace}</Link>
-          </Button>
-        </div>
+        <EmptyState
+          title={activityCopy.emptyTitle}
+          body={activityCopy.emptyBody}
+          action={
+            <Button asChild>
+              <Link href="/studio">{activityCopy.openWorkspace}</Link>
+            </Button>
+          }
+        />
       ) : null}
       {activity.status === "success" && activity.total > 0 ? (
         <>
@@ -84,7 +86,7 @@ export function ActivityLog() {
             <p className="text-sm text-muted-foreground">{runCount(activity.total)}</p>
           </div>
           {activity.items.length === 0 ? (
-            <p className="text-muted-foreground">{activityCopy.emptyFiltered}</p>
+            <EmptyState title={activityCopy.filteredTitle} body={activityCopy.filteredBody} />
           ) : (
             <ul className="flex flex-col gap-2">
               {activity.items.map((run) => (
