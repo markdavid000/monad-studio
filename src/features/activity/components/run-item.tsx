@@ -1,7 +1,8 @@
-import { Fuel, ShieldCheck, Trash2 } from "lucide-react";
+import { Cloud, Fuel, LoaderCircle, ShieldCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toolBySlug } from "@/config/tools";
-import type { HistoryRun, HistoryTool } from "@/lib/history";
+import type { ActivityItem } from "@/hooks/use-history";
+import type { HistoryTool } from "@/lib/history";
 import { activityCopy } from "../copy";
 
 const ICONS = { monguard: ShieldCheck, gaslens: Fuel } satisfies Record<HistoryTool, unknown>;
@@ -14,12 +15,13 @@ const dateFormat = new Intl.DateTimeFormat("en-GB", {
 });
 
 interface RunItemProps {
-  run: HistoryRun;
+  run: ActivityItem;
+  isOpening: boolean;
   onOpen: () => void;
   onDelete: () => void;
 }
 
-export function RunItem({ run, onOpen, onDelete }: RunItemProps) {
+export function RunItem({ run, isOpening, onOpen, onDelete }: RunItemProps) {
   const Icon = ICONS[run.tool];
 
   return (
@@ -31,6 +33,12 @@ export function RunItem({ run, onOpen, onDelete }: RunItemProps) {
         <p className="flex flex-wrap items-baseline gap-x-2">
           <span className="truncate font-mono text-sm">{run.contractName}</span>
           <span className="text-xs text-muted-foreground">{toolBySlug[run.tool].name}</span>
+          {run.isLocal ? null : (
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Cloud aria-hidden className="size-3" />
+              {activityCopy.syncedOnly}
+            </span>
+          )}
         </p>
         <p className="text-sm text-muted-foreground">{run.summary}</p>
       </div>
@@ -41,7 +49,8 @@ export function RunItem({ run, onOpen, onDelete }: RunItemProps) {
         {dateFormat.format(run.createdAt)}
       </time>
       <div className="flex items-center gap-1">
-        <Button size="sm" onClick={onOpen}>
+        <Button size="sm" onClick={onOpen} disabled={isOpening}>
+          {isOpening ? <LoaderCircle aria-hidden className="animate-spin" /> : null}
           {activityCopy.open}
         </Button>
         <Button size="sm" variant="ghost" aria-label={activityCopy.deleteRun} onClick={onDelete}>

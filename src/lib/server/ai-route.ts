@@ -4,11 +4,18 @@ import type { ApiErrorCode } from "@/lib/api-error";
 import { limitAiCall } from "./rate-limit";
 import { UpstreamError } from "./upstream-error";
 
-function errorResponse(status: number, code: ApiErrorCode, message: string, headers?: HeadersInit) {
+export function errorResponse(
+  status: number,
+  code: ApiErrorCode,
+  message: string,
+  headers?: HeadersInit
+) {
   return Response.json({ error: { code, message } }, { status, headers });
 }
 
-async function readJson(request: Request): Promise<{ ok: true; body: unknown } | { ok: false }> {
+export async function readJson(
+  request: Request
+): Promise<{ ok: true; body: unknown } | { ok: false }> {
   try {
     return { ok: true, body: await request.json() };
   } catch (error) {

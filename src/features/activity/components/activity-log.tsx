@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { activityCopy, runCount } from "../copy";
 import { useActivity, type ActivityFilter } from "../hooks/use-activity";
 import { RunItem } from "./run-item";
+import { SyncPanel } from "./sync-panel";
 
 const FILTERS: readonly ActivityFilter[] = ["all", ...HISTORY_TOOLS];
 
@@ -27,6 +28,7 @@ export function ActivityLog() {
         <p>{activityCopy.aboutBody}</p>
         <p className="text-muted-foreground">{activityCopy.aboutStorage}</p>
       </PageTitle>
+      <SyncPanel />
       {activity.status === "pending" ? (
         <ul aria-hidden className="flex flex-col gap-2">
           {[0, 1, 2].map((row) => (
@@ -89,6 +91,7 @@ export function ActivityLog() {
                 <RunItem
                   key={run.id}
                   run={run}
+                  isOpening={activity.openingId === run.id}
                   onOpen={() => activity.open(run)}
                   onDelete={() => activity.remove(run.id)}
                 />
@@ -109,7 +112,7 @@ export function ActivityLog() {
                   {activityCopy.clearTitle}
                 </Dialog.Title>
                 <Dialog.Description className="text-muted-foreground">
-                  {activityCopy.clearBody}
+                  {activity.isSynced ? activityCopy.clearSyncedBody : activityCopy.clearBody}
                 </Dialog.Description>
                 <div className="flex justify-end gap-2">
                   <Dialog.Close asChild>

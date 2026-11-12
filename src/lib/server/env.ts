@@ -16,3 +16,12 @@ export function serverEnv() {
   cached ??= serverEnvSchema.parse(process.env);
   return cached;
 }
+
+const sessionSecretSchema = z.string().min(32);
+
+let cachedSecret: string | undefined;
+
+export function sessionSecret() {
+  cachedSecret ??= sessionSecretSchema.parse(process.env.SESSION_SECRET);
+  return cachedSecret;
+}

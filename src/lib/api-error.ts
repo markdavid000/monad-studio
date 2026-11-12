@@ -5,6 +5,8 @@ const API_ERROR_CODES = [
   "invalid_input",
   "rate_limited",
   "internal",
+  "unauthorized",
+  "not_found",
   ...UPSTREAM_ERROR_CODES,
 ] as const;
 
@@ -32,15 +34,24 @@ function retryAfter(response: Response) {
   return Number.isFinite(value) && value > 0 ? value : undefined;
 }
 
-export async function postJson<T extends z.ZodType>(
+export function postJson<T extends z.ZodType>(
   url: string,
   body: unknown,
   dataSchema: T
 ): Promise<z.infer<T>> {
+  return requestJson("POST", url, dataSchema, body);
+}
+
+export async function requestJson<T extends z.ZodType>(
+  method: "GET" | "POST" | "DELETE",
+  url: string,
+  dataSchema: T,
+  body?: unknown
+): Promise<z.infer<T>> {
   const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    method,
+    headers: body === undefined ? undefined : { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
   });
   const payload: unknown = await response.json().catch((error: unknown) => {
     console.error(error);
