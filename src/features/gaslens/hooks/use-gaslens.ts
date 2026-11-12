@@ -1,10 +1,22 @@
 import { useState } from "react";
 import { useContractDraft } from "@/hooks/use-contract-draft";
 import { SOURCE_LIMIT_BYTES, byteSize } from "@/lib/byte-size";
-import { diffLines } from "../lib/diff";
+import { diffLines, diffLineKey, type DiffLine } from "../lib/diff";
+import type { GasReport } from "../types";
 import { useGasAnalysis } from "./use-gas-analysis";
 
 type CodeMode = "source" | "changes";
+
+function rewriteKeys(diff: readonly DiffLine[], lines: readonly number[]) {
+  const wanted = new Set(lines);
+  return diff
+    .filter((line) => line.newNumber !== undefined && wanted.has(line.newNumber))
+    .map(diffLineKey);
+}
+
+function defaultFocus(report: GasReport | undefined) {
+  return report?.check.risks[0]?.id ?? report?.optimizations[0]?.id ?? null;
+}
 
 export function useGaslens() {
   const draft = useContractDraft();
@@ -14,16 +26,14 @@ export function useGaslens() {
 
   const report = analysis.status === "success" ? analysis.report : undefined;
   const reviewedSource = report ? (analysis.analysedSource ?? draft.source) : draft.source;
-  const optimizations = report?.optimizations ?? [];
-  const activeId = openId === undefined ? (optimizations[0]?.id ?? null) : openId;
-  const active = optimizations.find((item) => item.id === activeId) ?? null;
+  const risks = report?.check.risks ?? [];
+  const activeId = openId === undefined ? defaultFocus(report) : openId;
+  const activeOptimization = report?.optimizations.find((item) => item.id === activeId);
+  const activeRisk = risks.find((risk) => risk.id === activeId);
   const diff = report ? diffLines(reviewedSource, report.optimizedSource) : [];
   const hasChanges = diff.some((line) => line.kind !== "same");
-  const isApplied =
-    report !== undefined &&
-    hasChanges &&
-    draft.source === report.optimizedSource &&
-    draft.source !== reviewedSource;
+  const mode: CodeMode =
+    report && hasChanges ? (activeRisk ? "changes" : (chosenMode ?? "changes")) : "source";
 
   return {
     fileName: draft.name,
@@ -35,16 +45,21 @@ export function useGaslens() {
     error: analysis.error,
     diff,
     hasChanges,
-    mode: report && hasChanges ? (chosenMode ?? "changes") : "source",
-    isApplied,
-    isStale: report !== undefined && !isApplied && draft.source !== reviewedSource,
+    mode,
+    isStale: report !== undefined && draft.source !== reviewedSource,
     activeId,
-    highlightedLines: active?.lines ?? [],
-    setMode: setChosenMode,
-    toggle: (id: string) => setOpenId(activeId === id ? null : id),
-    apply: () => {
-      if (report) draft.load(draft.name, report.optimizedSource);
+    highlightedKeys: activeRisk
+      ? rewriteKeys(diff, activeRisk.lines)
+      : (activeOptimization?.lines.map((line) => `o${line}`) ?? []),
+    flaggedKeys: rewriteKeys(
+      diff,
+      risks.flatMap((risk) => risk.lines)
+    ),
+    setMode: (next: CodeMode) => {
+      if (activeRisk) setOpenId(null);
+      setChosenMode(next);
     },
+    toggle: (id: string) => setOpenId(activeId === id ? null : id),
     run: () => {
       setOpenId(undefined);
       setChosenMode(undefined);

@@ -7,6 +7,7 @@ export interface CodeLine {
   text: string;
   kind?: "add" | "remove";
   highlighted?: boolean;
+  flagged?: boolean;
 }
 
 interface CodeViewProps {
@@ -39,9 +40,14 @@ export function CodeView({ label, lines, scrollTo, className }: CodeViewProps) {
           data-line={line.key}
           data-kind={line.kind}
           data-highlighted={line.highlighted || undefined}
+          data-flagged={line.flagged || undefined}
           className={cn(
             "flex border-l-2 pr-4",
-            line.highlighted ? "border-eyebrow" : "border-transparent",
+            line.flagged
+              ? "border-severity-critical"
+              : line.highlighted
+                ? "border-eyebrow"
+                : "border-transparent",
             line.kind === "add" && "bg-diff-add",
             line.kind === "remove" && "bg-diff-remove",
             line.highlighted && !line.kind && "bg-eyebrow/10"
@@ -49,7 +55,10 @@ export function CodeView({ label, lines, scrollTo, className }: CodeViewProps) {
         >
           <span
             aria-hidden
-            className="w-12 shrink-0 pr-3 text-right text-muted-foreground/60 select-none"
+            className={cn(
+              "w-12 shrink-0 pr-3 text-right select-none",
+              line.flagged ? "font-semibold text-severity-critical" : "text-muted-foreground/60"
+            )}
           >
             {line.number}
           </span>

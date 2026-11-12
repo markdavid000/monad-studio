@@ -41,6 +41,22 @@ const report: GasReport = {
       lines: [3],
     },
   ],
+  check: { status: "clear", risks: [] },
+};
+
+const flagged: GasReport = {
+  ...report,
+  check: {
+    status: "flagged",
+    risks: [
+      {
+        id: "CK-01",
+        functionName: "owner",
+        description: "The getter now returns a value fixed at deployment.",
+        lines: [2],
+      },
+    ],
+  },
 };
 
 const fetchMock = vi.fn<typeof fetch>();
@@ -159,14 +175,55 @@ describe("GaslensTool", () => {
     expect(await screen.findByText(gaslensCopy.copied)).toBeInTheDocument();
   });
 
-  it("puts the optimised contract in the workspace and says so", async () => {
+  it("never replaces the workspace contract itself", async () => {
     saveDraft(SOURCE);
     await analyse();
-    fireEvent.click(screen.getByRole("button", { name: gaslensCopy.useOptimised }));
-    expect(readDraft()).toEqual({ name: "Pool.sol", source: OPTIMIZED });
-    expect(screen.getByText(gaslensCopy.applied)).toBeInTheDocument();
-    expect(screen.queryByText(gaslensCopy.stale)).toBeNull();
-    expect(screen.queryByRole("button", { name: gaslensCopy.useOptimised })).toBeNull();
+    expect(screen.queryByRole("button", { name: /use in workspace/i })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: gaslensCopy.copyOptimised }));
+    expect(readDraft()).toEqual({ name: "Pool.sol", source: SOURCE });
+  });
+
+  it("says when the behaviour check found nothing", async () => {
+    saveDraft(SOURCE);
+    await analyse();
+    const check = screen.getByRole("region", { name: gaslensCopy.check.label });
+    expect(check).toHaveTextContent(gaslensCopy.check.clearTitle);
+    expect(document.querySelectorAll("[data-flagged]")).toHaveLength(0);
+  });
+
+  it("lists flagged changes, marks their lines in the diff and focuses the first", async () => {
+    saveDraft(SOURCE);
+    await analyse(flagged);
+    const check = screen.getByRole("region", { name: gaslensCopy.check.label });
+    expect(check).toHaveTextContent("1 change may alter behaviour");
+    expect(check).toHaveTextContent("Line 2 of the rewrite");
+    const risk = screen.getByRole("button", { name: /getter now returns/ });
+    expect(risk).toHaveAttribute("aria-pressed", "true");
+    const flaggedLines = Array.from(document.querySelectorAll("[data-flagged]"));
+    expect(flaggedLines.map((node) => node.getAttribute("data-line"))).toEqual(["n2"]);
+    expect(flaggedLines[0]).toHaveAttribute("data-highlighted");
+
+    fireEvent.click(screen.getByRole("button", { name: /Make owner immutable/ }));
+    expect(risk).toHaveAttribute("aria-pressed", "false");
+    expect(document.querySelector('[data-line="o2"]')).toHaveAttribute("data-highlighted");
+    expect(document.querySelectorAll("[data-flagged]")).toHaveLength(1);
+  });
+
+  it("brings back the diff when a flagged change is chosen in source view", async () => {
+    saveDraft(SOURCE);
+    await analyse(flagged);
+    fireEvent.click(screen.getByRole("button", { name: gaslensCopy.viewSource }));
+    expect(screen.getByRole("region", { name: gaslensCopy.viewSource })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /getter now returns/ }));
+    expect(screen.getByRole("region", { name: gaslensCopy.viewChanges })).toBeInTheDocument();
+  });
+
+  it("warns when the behaviour check did not run", async () => {
+    saveDraft(SOURCE);
+    await analyse({ ...report, check: { status: "unavailable", risks: [] } });
+    expect(screen.getByRole("region", { name: gaslensCopy.check.label })).toHaveTextContent(
+      gaslensCopy.check.unavailableTitle
+    );
   });
 
   it("flags the review as out of date when the contract is edited", async () => {
@@ -181,7 +238,7 @@ describe("GaslensTool", () => {
     await analyse({ ...report, summary: "Tight.", optimizedSource: SOURCE, optimizations: [] });
     expect(screen.getByText(gaslensCopy.noFindingsTitle)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: gaslensCopy.viewChanges })).toBeNull();
-    expect(screen.queryByRole("button", { name: gaslensCopy.useOptimised })).toBeNull();
+    expect(screen.queryByRole("region", { name: gaslensCopy.check.label })).toBeNull();
   });
 
   it("explains a failed review and retries", async () => {

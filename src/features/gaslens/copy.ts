@@ -1,3 +1,4 @@
+import { linesLabel } from "@/lib/copy";
 import type { IMPACTS, SAVING_SCOPES } from "./lib/schema";
 
 type Impact = (typeof IMPACTS)[number];
@@ -20,13 +21,23 @@ export const gaslensCopy = {
   rerun: "Review again",
   idleTitle: "Ready to review gas",
   idleBody:
-    "GasLens looks for storage reads in loops, memory where calldata will do, string reverts, missing immutables and loop counters, then rewrites the contract.",
+    "GasLens looks for storage reads in loops, memory where calldata will do, string reverts, missing immutables and loop counters, rewrites the contract, then checks the rewrite for behaviour changes.",
   pendingTitle: "Rewriting the contract",
   pendingBody: "This usually takes 15 to 60 seconds, longer for big contracts.",
   stale: "The contract changed since this review. Review again to update it.",
-  applied: "The workspace now holds the optimised contract. Run MonGuard on it before you deploy.",
   reviewNote:
-    "Read every change before you use it. A rewrite can change behaviour even when it looks like a pure gas fix.",
+    "Read every change before you copy the rewrite, then run MonGuard on it before you deploy. A rewrite can change behaviour even when it looks like a pure gas fix.",
+  check: {
+    label: "Behaviour check",
+    clearTitle: "No behaviour change found",
+    clearBody:
+      "A second AI pass compared the rewrite with your contract and found no function that behaves differently. It is not a proof, so still read the diff.",
+    flaggedBody:
+      "A second AI pass compared the rewrite with your contract. These parts may behave differently, so do not use the rewrite as it is. The flagged lines are marked in the diff.",
+    unavailableTitle: "The behaviour check did not run",
+    unavailableBody:
+      "The AI service did not answer the second pass, so no change in this rewrite has been checked. Review again or read every change yourself.",
+  },
   findingsLabel: "Optimisations",
   estimateNote:
     "Savings are the model's estimates for one call, one deployment or one loop iteration, not measured gas.",
@@ -34,7 +45,6 @@ export const gaslensCopy = {
   noFindingsBody: "GasLens found no clear gas waste, so the contract is unchanged.",
   copyOptimised: "Copy optimised contract",
   copied: "Copied",
-  useOptimised: "Use in workspace",
   impact: { high: "High", medium: "Medium", low: "Low" } satisfies Record<Impact, string>,
   per: {
     call: "per call",
@@ -49,4 +59,13 @@ export function savingLabel(gas: number, per: SavingScope) {
 
 export function changeSummary(added: number, removed: number) {
   return `${added} added, ${removed} removed`;
+}
+
+export function flaggedTitle(count: number) {
+  return count === 1 ? "1 change may alter behaviour" : `${count} changes may alter behaviour`;
+}
+
+export function rewriteLinesLabel(lines: readonly number[]) {
+  const label = linesLabel(lines);
+  return label ? `${label} of the rewrite` : "";
 }

@@ -41,7 +41,8 @@ export function GaslensTool() {
             optimizedSource={gaslens.report?.optimizedSource}
             mode={gaslens.mode}
             hasChanges={gaslens.hasChanges}
-            highlightedLines={gaslens.highlightedLines}
+            highlightedKeys={gaslens.highlightedKeys}
+            flaggedKeys={gaslens.flaggedKeys}
             onModeChange={gaslens.setMode}
           />
           <ResultPanel
@@ -50,12 +51,9 @@ export function GaslensTool() {
             error={gaslens.error}
             isTooLarge={gaslens.isTooLarge}
             isStale={gaslens.isStale}
-            isApplied={gaslens.isApplied}
-            hasChanges={gaslens.hasChanges}
             activeId={gaslens.activeId}
             onToggle={gaslens.toggle}
             onRun={gaslens.run}
-            onApply={gaslens.apply}
           />
         </div>
       )}

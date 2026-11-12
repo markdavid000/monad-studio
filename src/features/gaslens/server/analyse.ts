@@ -1,7 +1,10 @@
 import "server-only";
 import { numberLines } from "@/lib/code-text";
 import { completeStructured } from "@/lib/server/groq";
+import { diffLines } from "../lib/diff";
 import { gasReplySchema, toGasReport } from "../lib/schema";
+import type { GasReport } from "../types";
+import { checkRewrite } from "./check";
 
 const SYSTEM_PROMPT = `You are GasLens, a Solidity gas reviewer for contracts deployed to Monad, an EVM compatible chain with Ethereum gas costs per opcode.
 
@@ -34,7 +37,11 @@ Rules:
 - optimizedSource: the complete rewritten contract as plain Solidity, without Markdown fences and without comments explaining the edits. Keep the original formatting where nothing changed.
 - contractName: the main contract's name. summary: two or three sentences naming the biggest wins.`;
 
-export async function analyseGas({ source }: { source: string }) {
+function hasChanges(source: string, rewritten: string) {
+  return diffLines(source, rewritten).some((line) => line.kind !== "same");
+}
+
+export async function analyseGas({ source }: { source: string }): Promise<GasReport> {
   const reply = await completeStructured({
     name: "gaslens_analysis",
     system: SYSTEM_PROMPT,
@@ -42,5 +49,9 @@ export async function analyseGas({ source }: { source: string }) {
     schema: gasReplySchema,
     maxOutputTokens: 40_000,
   });
-  return toGasReport(reply, source);
+  const report = toGasReport(reply, source);
+  const check = hasChanges(source, report.optimizedSource)
+    ? await checkRewrite(source, report.optimizedSource)
+    : { status: "clear" as const, risks: [] };
+  return { ...report, check };
 }

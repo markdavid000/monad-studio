@@ -4,7 +4,7 @@ import { CodeView, type CodeLine } from "@/components/ui/code-view";
 import { useCopy } from "@/hooks/use-copy";
 import { cn } from "@/lib/utils";
 import { changeSummary, gaslensCopy } from "../copy";
-import type { DiffLine } from "../lib/diff";
+import { diffLineKey, type DiffLine } from "../lib/diff";
 
 interface CodePanelProps {
   fileName: string;
@@ -13,39 +13,48 @@ interface CodePanelProps {
   optimizedSource: string | undefined;
   mode: "source" | "changes";
   hasChanges: boolean;
-  highlightedLines: readonly number[];
+  highlightedKeys: readonly string[];
+  flaggedKeys: readonly string[];
   onModeChange: (mode: "source" | "changes") => void;
 }
 
-function sourceLines(source: string, highlighted: ReadonlySet<number>): CodeLine[] {
+function sourceLines(source: string, highlighted: ReadonlySet<string>): CodeLine[] {
   return source.split("\n").map((text, index) => ({
     key: `o${index + 1}`,
     number: index + 1,
     text,
-    highlighted: highlighted.has(index + 1),
+    highlighted: highlighted.has(`o${index + 1}`),
   }));
 }
 
-function changeLines(diff: readonly DiffLine[], highlighted: ReadonlySet<number>): CodeLine[] {
-  return diff.map((line, index) => ({
-    key: line.oldNumber === undefined ? `n${index}` : `o${line.oldNumber}`,
-    number: line.newNumber,
-    text: line.text,
-    kind: line.kind === "same" ? undefined : line.kind,
-    highlighted: line.oldNumber !== undefined && highlighted.has(line.oldNumber),
-  }));
+function changeLines(
+  diff: readonly DiffLine[],
+  highlighted: ReadonlySet<string>,
+  flagged: ReadonlySet<string>
+): CodeLine[] {
+  return diff.map((line) => {
+    const key = diffLineKey(line);
+    return {
+      key,
+      number: line.newNumber,
+      text: line.text,
+      kind: line.kind === "same" ? undefined : line.kind,
+      highlighted: highlighted.has(key),
+      flagged: flagged.has(key),
+    };
+  });
 }
 
 export function CodePanel(props: CodePanelProps) {
   const { isCopied, copy } = useCopy();
-  const highlighted = new Set(props.highlightedLines);
+  const highlighted = new Set(props.highlightedKeys);
   const isChanges = props.mode === "changes";
   const lines = isChanges
-    ? changeLines(props.diff, highlighted)
+    ? changeLines(props.diff, highlighted, new Set(props.flaggedKeys))
     : sourceLines(props.source, highlighted);
   const added = props.diff.filter((line) => line.kind === "add").length;
   const removed = props.diff.filter((line) => line.kind === "remove").length;
-  const firstLine = props.highlightedLines[0];
+  const firstLine = props.highlightedKeys[0];
 
   return (
     <section className="flex min-w-0 flex-col overflow-hidden rounded-xl border bg-card">
@@ -110,7 +119,7 @@ export function CodePanel(props: CodePanelProps) {
       <CodeView
         label={isChanges ? gaslensCopy.viewChanges : gaslensCopy.viewSource}
         lines={lines}
-        scrollTo={firstLine === undefined ? undefined : `o${firstLine}`}
+        scrollTo={firstLine}
       />
     </section>
   );

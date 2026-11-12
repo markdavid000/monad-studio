@@ -1,4 +1,4 @@
-import { Fuel, LoaderCircle, WandSparkles } from "lucide-react";
+import { Fuel, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { AiErrorState } from "@/components/ui/ai-error-state";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { findingsCount } from "@/lib/copy";
 import { gaslensCopy } from "../copy";
 import type { GasReport } from "../types";
+import { CheckSection } from "./check-section";
 import { OptimizationItem } from "./optimization-item";
 
 interface ResultPanelProps {
@@ -14,12 +15,9 @@ interface ResultPanelProps {
   error: Error | null;
   isTooLarge: boolean;
   isStale: boolean;
-  isApplied: boolean;
-  hasChanges: boolean;
   activeId: string | null;
   onToggle: (id: string) => void;
   onRun: () => void;
-  onApply: () => void;
 }
 
 function Panel({ children }: { children: ReactNode }) {
@@ -47,22 +45,13 @@ function Report(props: ResultPanelProps & { report: GasReport }) {
   const { report } = props;
   return (
     <>
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b pb-5">
-        <div className="flex flex-col gap-1">
-          <p className="font-mono text-sm">{report.contractName}</p>
-          <p className="text-sm text-muted-foreground">
-            {findingsCount(report.optimizations.length)}
-          </p>
-        </div>
-        {props.hasChanges && !props.isApplied ? (
-          <Button size="sm" onClick={props.onApply}>
-            <WandSparkles aria-hidden />
-            {gaslensCopy.useOptimised}
-          </Button>
-        ) : null}
+      <div className="flex flex-col gap-1 border-b pb-5">
+        <p className="font-mono text-sm">{report.contractName}</p>
+        <p className="text-sm text-muted-foreground">
+          {findingsCount(report.optimizations.length)}
+        </p>
       </div>
       <p className="leading-relaxed">{report.summary}</p>
-      {props.isApplied ? <Notice>{gaslensCopy.applied}</Notice> : null}
       {props.isStale ? (
         <Notice
           action={
@@ -73,6 +62,9 @@ function Report(props: ResultPanelProps & { report: GasReport }) {
         >
           {gaslensCopy.stale}
         </Notice>
+      ) : null}
+      {report.optimizations.length > 0 ? (
+        <CheckSection check={report.check} activeId={props.activeId} onToggle={props.onToggle} />
       ) : null}
       {report.optimizations.length === 0 ? (
         <div className="flex items-start gap-3 rounded-lg border p-4">

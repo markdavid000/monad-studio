@@ -91,3 +91,7 @@ export function diffLines(before: string, after: string): DiffLine[] {
 
   return result;
 }
+
+export function diffLineKey(line: DiffLine) {
+  return line.oldNumber === undefined ? `n${line.newNumber}` : `o${line.oldNumber}`;
+}

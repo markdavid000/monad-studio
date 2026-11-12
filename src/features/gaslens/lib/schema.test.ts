@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { analyseInputSchema, gasReplySchema, toGasReport } from "./schema";
+import {
+  analyseInputSchema,
+  checkReplySchema,
+  gasReplySchema,
+  toGasReport,
+  toRewriteCheck,
+} from "./schema";
 
 const source = Array.from({ length: 20 }, (_, index) => `line ${index + 1}`).join("\n");
 
@@ -80,5 +86,35 @@ describe("analyseInputSchema", () => {
     expect(analyseInputSchema.safeParse({ source: " " }).success).toBe(false);
     expect(analyseInputSchema.safeParse({ source: "a".repeat(60 * 1024 + 1) }).success).toBe(false);
     expect(analyseInputSchema.safeParse({ source: "contract A {}" }).success).toBe(true);
+  });
+});
+
+describe("toRewriteCheck", () => {
+  it("numbers the risks, clamps lines to the rewrite and drops empty ones", () => {
+    const reply = checkReplySchema.parse({
+      risks: [
+        {
+          functionName: " batchTransfer ",
+          description: " Self `transfer` loses funds. ",
+          lines: [5, 5, 40],
+        },
+        { functionName: "x", description: "  ", lines: [1] },
+      ],
+    });
+    expect(toRewriteCheck(reply, source)).toEqual({
+      status: "flagged",
+      risks: [
+        {
+          id: "CK-01",
+          functionName: "batchTransfer",
+          description: "Self transfer loses funds.",
+          lines: [5],
+        },
+      ],
+    });
+  });
+
+  it("is clear when no risk is reported", () => {
+    expect(toRewriteCheck({ risks: [] }, source)).toEqual({ status: "clear", risks: [] });
   });
 });
