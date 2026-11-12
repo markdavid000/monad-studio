@@ -19,9 +19,10 @@ export const gaslensCopy = {
   tooLarge: "This contract is over the 60 KB limit. Trim it in the workspace before reviewing it.",
   analyse: "Review gas",
   rerun: "Review again",
-  idleTitle: "Ready to review gas",
-  idleBody:
-    "GasLens looks for storage reads in loops, memory where calldata will do, string reverts, missing immutables and loop counters, rewrites the contract, then checks the rewrite for behaviour changes.",
+  analysing: "Reviewing",
+  about: "About GasLens",
+  checks:
+    "It looks for storage reads in loops, memory where calldata will do, string reverts, missing immutables and loop counters, rewrites the contract, then checks the rewrite for behaviour changes.",
   pendingTitle: "Rewriting the contract",
   pendingBody: "This usually takes 15 to 60 seconds, longer for big contracts.",
   stale: "The contract changed since this review. Review again to update it.",

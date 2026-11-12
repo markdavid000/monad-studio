@@ -1,8 +1,6 @@
 import { Fuel, LoaderCircle } from "lucide-react";
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { AiErrorState } from "@/components/ui/ai-error-state";
-import { Button } from "@/components/ui/button";
 import { findingsCount } from "@/lib/copy";
 import { gaslensCopy } from "../copy";
 import type { GasReport } from "../types";
@@ -13,7 +11,6 @@ interface ResultPanelProps {
   status: "idle" | "pending" | "success" | "error";
   report: GasReport | undefined;
   error: Error | null;
-  isTooLarge: boolean;
   isStale: boolean;
   activeId: string | null;
   onToggle: (id: string) => void;
@@ -25,19 +22,10 @@ function Panel({ children }: { children: ReactNode }) {
     <section
       aria-label={gaslensCopy.findingsLabel}
       aria-live="polite"
-      className="flex min-h-[24rem] min-w-0 flex-col gap-5 rounded-xl border bg-card p-5"
+      className="flex min-w-0 flex-col gap-5 rounded-xl border bg-card p-5"
     >
       {children}
     </section>
-  );
-}
-
-function Notice({ children, action }: { children: ReactNode; action?: ReactNode }) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-severity-medium/40 bg-severity-medium/10 px-3 py-2 text-sm">
-      <span>{children}</span>
-      {action}
-    </div>
   );
 }
 
@@ -53,15 +41,9 @@ function Report(props: ResultPanelProps & { report: GasReport }) {
       </div>
       <p className="leading-relaxed">{report.summary}</p>
       {props.isStale ? (
-        <Notice
-          action={
-            <Button size="sm" variant="outline" onClick={props.onRun}>
-              {gaslensCopy.rerun}
-            </Button>
-          }
-        >
+        <p className="rounded-lg border border-severity-medium/40 bg-severity-medium/10 px-3 py-2 text-sm">
           {gaslensCopy.stale}
-        </Notice>
+        </p>
       ) : null}
       {report.optimizations.length > 0 ? (
         <CheckSection check={report.check} activeId={props.activeId} onToggle={props.onToggle} />
@@ -97,18 +79,6 @@ function Report(props: ResultPanelProps & { report: GasReport }) {
 }
 
 export function ResultPanel(props: ResultPanelProps) {
-  if (props.isTooLarge) {
-    return (
-      <Panel>
-        <div className="flex flex-1 flex-col items-start justify-center gap-4">
-          <p role="alert">{gaslensCopy.tooLarge}</p>
-          <Button asChild variant="outline">
-            <Link href="/studio">{gaslensCopy.editInWorkspace}</Link>
-          </Button>
-        </div>
-      </Panel>
-    );
-  }
   if (props.status === "pending") {
     return (
       <Panel>
@@ -141,18 +111,5 @@ export function ResultPanel(props: ResultPanelProps) {
       </Panel>
     );
   }
-  return (
-    <Panel>
-      <div className="flex flex-1 flex-col items-start justify-center gap-4">
-        <div className="flex flex-col gap-1.5">
-          <p className="text-lg font-medium">{gaslensCopy.idleTitle}</p>
-          <p className="max-w-md text-muted-foreground">{gaslensCopy.idleBody}</p>
-        </div>
-        <Button size="lg" onClick={props.onRun}>
-          <Fuel aria-hidden />
-          {gaslensCopy.analyse}
-        </Button>
-      </div>
-    </Panel>
-  );
+  return null;
 }

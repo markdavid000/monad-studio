@@ -99,6 +99,26 @@ describe("MonguardTool", () => {
     expect(scanButton()).toBeEnabled();
   });
 
+  it("explains the tool in a popover by the title and shows no result card before a scan", async () => {
+    saveDraft(SOURCE);
+    renderTool();
+    expect(screen.queryByText(monguardCopy.lead)).toBeNull();
+    expect(screen.queryByRole("region", { name: monguardCopy.findingsLabel })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: monguardCopy.about }));
+    expect(await screen.findByText(monguardCopy.lead)).toBeInTheDocument();
+  });
+
+  it("disables the scan button while scanning and offers a rescan after", async () => {
+    saveDraft(SOURCE);
+    let resolve: (response: Response) => void = () => undefined;
+    fetchMock.mockReturnValue(new Promise((done) => (resolve = done)));
+    renderTool();
+    fireEvent.click(scanButton());
+    expect(await screen.findByRole("button", { name: monguardCopy.scanning })).toBeDisabled();
+    await act(async () => resolve(json({ data: report })));
+    expect(await screen.findByRole("button", { name: monguardCopy.rescan })).toBeEnabled();
+  });
+
   it("scans, shows a loading state, then the score and findings", async () => {
     saveDraft(SOURCE);
     let resolve: (response: Response) => void = () => undefined;

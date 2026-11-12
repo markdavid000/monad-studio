@@ -1,8 +1,6 @@
 import { LoaderCircle, ShieldCheck } from "lucide-react";
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { AiErrorState } from "@/components/ui/ai-error-state";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { findingsCount } from "@/lib/copy";
 import { monguardCopy } from "../copy";
@@ -13,7 +11,6 @@ interface ReportPanelProps {
   status: "idle" | "pending" | "success" | "error";
   report: ScanReport | undefined;
   error: Error | null;
-  isTooLarge: boolean;
   isStale: boolean;
   activeId: string | null;
   onToggle: (id: string) => void;
@@ -25,7 +22,7 @@ function Panel({ children }: { children: ReactNode }) {
     <section
       aria-label={monguardCopy.findingsLabel}
       aria-live="polite"
-      className="flex min-h-[24rem] min-w-0 flex-col gap-5 rounded-xl border bg-card p-5"
+      className="flex min-w-0 flex-col gap-5 rounded-xl border bg-card p-5"
     >
       {children}
     </section>
@@ -62,8 +59,7 @@ function Report({
   isStale,
   activeId,
   onToggle,
-  onScan,
-}: Required<Pick<ReportPanelProps, "isStale" | "activeId" | "onToggle" | "onScan">> & {
+}: Required<Pick<ReportPanelProps, "isStale" | "activeId" | "onToggle">> & {
   report: ScanReport;
 }) {
   return (
@@ -86,12 +82,9 @@ function Report({
       <p className="text-xs text-muted-foreground">{monguardCopy.scoreNote}</p>
       <p className="leading-relaxed">{report.summary}</p>
       {isStale ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-severity-medium/40 bg-severity-medium/10 px-3 py-2 text-sm">
-          <span>{monguardCopy.stale}</span>
-          <Button size="sm" variant="outline" onClick={onScan}>
-            {monguardCopy.rescan}
-          </Button>
-        </div>
+        <p className="rounded-lg border border-severity-medium/40 bg-severity-medium/10 px-3 py-2 text-sm">
+          {monguardCopy.stale}
+        </p>
       ) : null}
       {report.findings.length === 0 ? (
         <div className="flex items-start gap-3 rounded-lg border p-4">
@@ -118,20 +111,8 @@ function Report({
 }
 
 export function ReportPanel(props: ReportPanelProps) {
-  const { status, report, error, isTooLarge, onScan } = props;
+  const { status, report, error, onScan } = props;
 
-  if (isTooLarge) {
-    return (
-      <Panel>
-        <div className="flex flex-1 flex-col items-start justify-center gap-4">
-          <p role="alert">{monguardCopy.tooLarge}</p>
-          <Button asChild variant="outline">
-            <Link href="/studio">{monguardCopy.editInWorkspace}</Link>
-          </Button>
-        </div>
-      </Panel>
-    );
-  }
   if (status === "pending") {
     return (
       <Panel>
@@ -154,23 +135,9 @@ export function ReportPanel(props: ReportPanelProps) {
           isStale={props.isStale}
           activeId={props.activeId}
           onToggle={props.onToggle}
-          onScan={onScan}
         />
       </Panel>
     );
   }
-  return (
-    <Panel>
-      <div className="flex flex-1 flex-col items-start justify-center gap-4">
-        <div className="flex flex-col gap-1.5">
-          <p className="text-lg font-medium">{monguardCopy.idleTitle}</p>
-          <p className="max-w-md text-muted-foreground">{monguardCopy.idleBody}</p>
-        </div>
-        <Button size="lg" onClick={onScan}>
-          <ShieldCheck aria-hidden />
-          {monguardCopy.scan}
-        </Button>
-      </div>
-    </Panel>
-  );
+  return null;
 }

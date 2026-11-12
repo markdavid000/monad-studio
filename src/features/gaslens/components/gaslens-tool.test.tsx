@@ -145,6 +145,22 @@ describe("GaslensTool", () => {
     expect(screen.getByText(gaslensCopy.reviewNote)).toBeInTheDocument();
   });
 
+  it("explains the tool in a popover by the title and shows no result card before a review", async () => {
+    saveDraft(SOURCE);
+    renderTool();
+    expect(screen.queryByText(gaslensCopy.lead)).toBeNull();
+    expect(screen.queryByRole("region", { name: gaslensCopy.findingsLabel })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: gaslensCopy.about }));
+    expect(await screen.findByText(gaslensCopy.lead)).toBeInTheDocument();
+  });
+
+  it("offers a new review under the code once a review is done", async () => {
+    saveDraft(SOURCE);
+    await analyse();
+    expect(screen.getByRole("button", { name: gaslensCopy.rerun })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: gaslensCopy.analyse })).toBeNull();
+  });
+
   it("switches between the changes and the original source", async () => {
     saveDraft(SOURCE);
     await analyse();
