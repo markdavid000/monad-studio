@@ -21,7 +21,7 @@ export function ClosingCta() {
             size="cta"
             className="group bg-foreground text-background hover:bg-foreground/90"
           >
-            <Link href="/studio">
+            <Link href="/studio" data-studio-entry>
               {ctaCopy.primary}
               <ArrowRight aria-hidden className="transition-transform group-hover:translate-x-1" />
             </Link>

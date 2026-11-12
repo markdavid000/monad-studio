@@ -89,6 +89,7 @@ beforeEach(async () => {
   await clearRuns();
   for (const item of toast.items()) toast.dismiss(item.id);
   window.localStorage.clear();
+  window.localStorage.setItem("monad-studio:seen:monguard", "seen");
   fetchMock.mockReset();
   vi.stubGlobal("fetch", fetchMock);
 });
@@ -99,6 +100,18 @@ afterEach(() => {
 });
 
 describe("MonguardTool", () => {
+  it("explains the screen once on the first visit", async () => {
+    window.localStorage.removeItem("monad-studio:seen:monguard");
+    const view = renderTool();
+    const intro = await screen.findByRole("dialog", { name: monguardCopy.intro.title });
+    expect(intro).toHaveTextContent(monguardCopy.intro.points[0].title);
+    fireEvent.click(screen.getByRole("button", { name: monguardCopy.intro.done }));
+    await vi.waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    view.unmount();
+    renderTool();
+    expect(screen.queryByRole("dialog", { name: monguardCopy.intro.title })).toBeNull();
+  });
+
   it("saves each finished run to the activity", async () => {
     saveDraft(SOURCE);
     fetchMock.mockImplementation(async () => json({ data: report }));

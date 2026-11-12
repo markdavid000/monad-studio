@@ -38,6 +38,25 @@ export const studioCopy = {
     disconnected: "Not connected",
     note: "Only needed when you deploy. Use the button at the top right.",
   },
+  intro: {
+    title: "Welcome to the workspace",
+    body: "This is where your contract lives. Every tool in the studio reads the contract you put here.",
+    points: [
+      {
+        title: "Paste a contract or pick an example",
+        body: "Paste Solidity into the editor or load one of the examples. It is saved in this browser as you type.",
+      },
+      {
+        title: "Run a tool on it",
+        body: "The actions under the editor open MonGuard for security and GasLens for gas, already loaded with this contract.",
+      },
+      {
+        title: "Find your runs later",
+        body: "Every scan and review is kept on the Activity page, and can follow your wallet to other devices.",
+      },
+    ],
+    done: "Start",
+  },
 } as const;
 
 export function actionStatus(tool: string) {

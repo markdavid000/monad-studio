@@ -114,7 +114,7 @@ export function TryScan() {
             </ul>
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <Button asChild size="cta" className="group">
-                <Link href="/studio">
+                <Link href="/studio" data-studio-entry>
                   {ctaCopy.openReport}
                   <ArrowRight
                     aria-hidden

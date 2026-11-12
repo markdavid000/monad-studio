@@ -15,9 +15,22 @@ function editor() {
 
 beforeEach(() => {
   window.localStorage.clear();
+  window.localStorage.setItem("monad-studio:seen:workspace", "seen");
 });
 
 describe("StudioWorkspace", () => {
+  it("explains the screen once on the first visit", async () => {
+    window.localStorage.removeItem("monad-studio:seen:workspace");
+    const view = render(<StudioWorkspace />);
+    const intro = await screen.findByRole("dialog", { name: studioCopy.intro.title });
+    expect(intro).toHaveTextContent(studioCopy.intro.points[0].title);
+    fireEvent.click(screen.getByRole("button", { name: studioCopy.intro.done }));
+    await vi.waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    view.unmount();
+    render(<StudioWorkspace />);
+    expect(screen.queryByRole("dialog", { name: studioCopy.intro.title })).toBeNull();
+  });
+
   it("loads an example into the editor and keeps it in this browser", () => {
     render(<StudioWorkspace />);
     const example = exampleContracts[1];

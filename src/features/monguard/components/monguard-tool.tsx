@@ -3,6 +3,8 @@
 import { LoaderCircle, PanelRightOpen, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { IntroDialog } from "@/components/ui/intro-dialog";
 import { PageTitle } from "@/components/ui/page-title";
 import { ResultsSheet } from "@/components/ui/results-sheet";
 import { ToolActions } from "@/components/ui/tool-actions";
@@ -27,20 +29,21 @@ export function MonguardTool({ runId }: MonguardToolProps) {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
+      <IntroDialog screen="monguard" content={monguardCopy.intro} />
       <PageTitle title={monguardCopy.title} aboutLabel={monguardCopy.about}>
         <p>{monguardCopy.lead}</p>
         <p className="text-muted-foreground">{monguardCopy.checks}</p>
       </PageTitle>
       {monguard.isEmpty ? (
-        <div className="flex flex-col items-start gap-4 rounded-xl border bg-card p-6">
-          <div className="flex flex-col gap-1.5">
-            <h2 className="text-lg font-medium">{monguardCopy.emptyTitle}</h2>
-            <p className="text-muted-foreground">{monguardCopy.emptyBody}</p>
-          </div>
-          <Button asChild>
-            <Link href="/studio">{monguardCopy.openWorkspace}</Link>
-          </Button>
-        </div>
+        <EmptyState
+          title={monguardCopy.emptyTitle}
+          body={monguardCopy.emptyBody}
+          action={
+            <Button asChild>
+              <Link href="/studio">{monguardCopy.openWorkspace}</Link>
+            </Button>
+          }
+        />
       ) : (
         <>
           <SourceView fileName={monguard.fileName} source={monguard.source} highlightedLines={[]} />

@@ -13,7 +13,7 @@ export function HeroAside() {
           size="cta"
           className="group bg-foreground text-background hover:bg-foreground/90"
         >
-          <Link href="/studio">
+          <Link href="/studio" data-studio-entry>
             {landingCopy.cta}
             <ArrowRight aria-hidden className="transition-transform group-hover:translate-x-0.5" />
           </Link>

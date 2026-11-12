@@ -7,6 +7,7 @@ import { ActionBar } from "./action-bar";
 import { ExamplePicker } from "./example-picker";
 import { SourceEditor } from "./source-editor";
 import { StatusRail } from "./status-rail";
+import { IntroDialog } from "@/components/ui/intro-dialog";
 import { PageTitle } from "@/components/ui/page-title";
 
 export function StudioWorkspace() {
@@ -14,6 +15,7 @@ export function StudioWorkspace() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
+      <IntroDialog screen="workspace" content={studioCopy.intro} />
       <PageTitle title={studioCopy.title} aboutLabel={studioCopy.about}>
         <p>{studioCopy.lead}</p>
       </PageTitle>

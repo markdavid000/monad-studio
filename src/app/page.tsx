@@ -1,5 +1,6 @@
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { StudioEntryGate } from "@/components/layout/studio-entry-gate";
 import { LandingPage } from "@/features/landing";
 
 export default function HomePage() {
@@ -10,6 +11,7 @@ export default function HomePage() {
         <LandingPage />
       </main>
       <SiteFooter />
+      <StudioEntryGate />
     </>
   );
 }
