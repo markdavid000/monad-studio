@@ -1,6 +1,8 @@
 import { StudioHeader } from "@/components/layout/studio-header";
 import { StudioSidebar } from "@/components/layout/studio-sidebar";
+import { Toaster } from "@/components/ui/toaster";
 import { WalletProviders } from "@/features/wallet";
+import { aiCopy } from "@/lib/copy";
 
 export default function StudioLayout({ children }: LayoutProps<"/studio">) {
   return (
@@ -12,6 +14,7 @@ export default function StudioLayout({ children }: LayoutProps<"/studio">) {
           {children}
         </main>
       </div>
+      <Toaster closeLabel={aiCopy.closeNotification} regionLabel={aiCopy.notifications} />
     </WalletProviders>
   );
 }

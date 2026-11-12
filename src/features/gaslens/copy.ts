@@ -23,7 +23,11 @@ export const gaslensCopy = {
   about: "About GasLens",
   checks:
     "It looks for storage reads in loops, memory where calldata will do, string reverts, missing immutables and loop counters, rewrites the contract, then checks the rewrite for behaviour changes.",
-  pendingTitle: "Rewriting the contract",
+  pendingTitle: "Reviewing gas",
+  doneTitle: "Review finished",
+  failedTitle: "Review failed",
+  resultsTitle: "GasLens results",
+  showResults: "Show results",
   pendingBody: "This usually takes 15 to 60 seconds, longer for big contracts.",
   stale: "The contract changed since this review. Review again to update it.",
   reviewNote:

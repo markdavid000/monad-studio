@@ -1,7 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { Toaster } from "@/components/ui/toaster";
 import { aiCopy, retryIn } from "@/lib/copy";
+import { toast } from "@/lib/toast";
 import { gaslensCopy } from "../copy";
 import type { GasReport } from "../types";
 import { GaslensTool } from "./gaslens-tool";
@@ -82,6 +84,7 @@ function renderTool() {
   return render(
     <QueryClientProvider client={client}>
       <GaslensTool />
+      <Toaster closeLabel={aiCopy.closeNotification} regionLabel={aiCopy.notifications} />
     </QueryClientProvider>
   );
 }
@@ -90,7 +93,20 @@ async function analyse(body: GasReport = report) {
   fetchMock.mockImplementation(async () => json({ data: body }));
   renderTool();
   fireEvent.click(screen.getByRole("button", { name: gaslensCopy.analyse }));
-  await screen.findByText(body.summary);
+  await results();
+}
+
+async function findText(text: string) {
+  return (await screen.findAllByText(text))[0];
+}
+
+function results() {
+  return screen.findByRole("dialog", { name: gaslensCopy.resultsTitle });
+}
+
+async function closeResults() {
+  fireEvent.click(screen.getByRole("button", { name: aiCopy.closeResults }));
+  await vi.waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
 }
 
 function linesOfKind(kind: "add" | "remove") {
@@ -100,6 +116,7 @@ function linesOfKind(kind: "add" | "remove") {
 }
 
 beforeEach(() => {
+  for (const item of toast.items()) toast.dismiss(item.id);
   window.localStorage.clear();
   fetchMock.mockReset();
   vi.stubGlobal("fetch", fetchMock);
@@ -128,11 +145,14 @@ describe("GaslensTool", () => {
     expect(screen.getByText(aiCopy.note)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: gaslensCopy.analyse }));
-    expect(await screen.findByText(gaslensCopy.pendingTitle)).toBeInTheDocument();
+    expect(await findText(gaslensCopy.pendingTitle)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: gaslensCopy.analysing })).toBeDisabled();
     expect(fetchMock.mock.calls[0][0]).toBe("/api/gaslens/analyze");
 
     await act(async () => resolve(json({ data: report })));
-    expect(await screen.findByText("2 findings")).toBeInTheDocument();
+    await results();
+    expect(await findText(gaslensCopy.doneTitle)).toBeInTheDocument();
+    expect(screen.getAllByText("2 findings").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: gaslensCopy.viewChanges })).toHaveAttribute(
       "aria-pressed",
       "true"
@@ -154,11 +174,20 @@ describe("GaslensTool", () => {
     expect(await screen.findByText(gaslensCopy.lead)).toBeInTheDocument();
   });
 
-  it("offers a new review under the code once a review is done", async () => {
+  it("offers a new review and the results again once the layer is closed", async () => {
     saveDraft(SOURCE);
     await analyse();
+    await closeResults();
     expect(screen.getByRole("button", { name: gaslensCopy.rerun })).toBeEnabled();
     expect(screen.queryByRole("button", { name: gaslensCopy.analyse })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: gaslensCopy.showResults }));
+    expect(within(await results()).getByText(report.summary)).toBeInTheDocument();
+  });
+
+  it("warns in the toast when the check flagged a change", async () => {
+    saveDraft(SOURCE);
+    await analyse(flagged);
+    expect(await findText("2 findings. 1 change may alter behaviour.")).toBeInTheDocument();
   });
 
   it("switches between the changes and the original source", async () => {
@@ -221,7 +250,9 @@ describe("GaslensTool", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Make owner immutable/ }));
     expect(risk).toHaveAttribute("aria-pressed", "false");
-    expect(document.querySelector('[data-line="o2"]')).toHaveAttribute("data-highlighted");
+    expect(document.querySelector('[role="dialog"] [data-line="o2"]')).toHaveAttribute(
+      "data-highlighted"
+    );
     expect(document.querySelectorAll("[data-flagged]")).toHaveLength(1);
   });
 
@@ -246,7 +277,7 @@ describe("GaslensTool", () => {
     saveDraft(SOURCE);
     await analyse();
     act(() => saveDraft(`${SOURCE}\nuint256 edited;`));
-    expect(screen.getByText(gaslensCopy.stale)).toBeInTheDocument();
+    expect(within(await results()).getByText(gaslensCopy.stale)).toBeInTheDocument();
   });
 
   it("says when there is nothing to optimise and hides the diff", async () => {
@@ -265,9 +296,10 @@ describe("GaslensTool", () => {
     fetchMock.mockResolvedValueOnce(json({ data: report }));
     renderTool();
     fireEvent.click(screen.getByRole("button", { name: gaslensCopy.analyse }));
-    expect(await screen.findByRole("alert")).toHaveTextContent(aiCopy.errors.upstream_unavailable);
+    expect(await findText(gaslensCopy.failedTitle)).toBeInTheDocument();
+    expect(await findText(aiCopy.errors.upstream_unavailable)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: aiCopy.retry }));
-    expect(await screen.findByText(report.summary)).toBeInTheDocument();
+    expect(within(await results()).getByText(report.summary)).toBeInTheDocument();
   });
 
   it("shares the AI limit message with the other tools", async () => {
@@ -280,9 +312,8 @@ describe("GaslensTool", () => {
     );
     renderTool();
     fireEvent.click(screen.getByRole("button", { name: gaslensCopy.analyse }));
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent(aiCopy.errors.rate_limited);
-    expect(alert).toHaveTextContent(retryIn(90));
+    expect(await findText(`${aiCopy.errors.rate_limited} ${retryIn(90)}`)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: aiCopy.retry })).toBeNull();
   });
 
   it("refuses a contract over 60 KB", () => {

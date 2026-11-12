@@ -1,6 +1,4 @@
-import { Fuel, LoaderCircle } from "lucide-react";
-import type { ReactNode } from "react";
-import { AiErrorState } from "@/components/ui/ai-error-state";
+import { Fuel } from "lucide-react";
 import { findingsCount } from "@/lib/copy";
 import { gaslensCopy } from "../copy";
 import type { GasReport } from "../types";
@@ -8,28 +6,13 @@ import { CheckSection } from "./check-section";
 import { OptimizationItem } from "./optimization-item";
 
 interface ResultPanelProps {
-  status: "idle" | "pending" | "success" | "error";
-  report: GasReport | undefined;
-  error: Error | null;
+  report: GasReport;
   isStale: boolean;
   activeId: string | null;
   onToggle: (id: string) => void;
-  onRun: () => void;
 }
 
-function Panel({ children }: { children: ReactNode }) {
-  return (
-    <section
-      aria-label={gaslensCopy.findingsLabel}
-      aria-live="polite"
-      className="flex min-w-0 flex-col gap-5 rounded-xl border bg-card p-5"
-    >
-      {children}
-    </section>
-  );
-}
-
-function Report(props: ResultPanelProps & { report: GasReport }) {
+function Report(props: ResultPanelProps) {
   const { report } = props;
   return (
     <>
@@ -79,37 +62,9 @@ function Report(props: ResultPanelProps & { report: GasReport }) {
 }
 
 export function ResultPanel(props: ResultPanelProps) {
-  if (props.status === "pending") {
-    return (
-      <Panel>
-        <div className="flex items-center gap-3">
-          <LoaderCircle aria-hidden className="size-5 animate-spin text-eyebrow" />
-          <div>
-            <p className="font-medium">{gaslensCopy.pendingTitle}</p>
-            <p className="text-sm text-muted-foreground">{gaslensCopy.pendingBody}</p>
-          </div>
-        </div>
-        <div aria-hidden className="flex flex-col gap-2">
-          {[0, 1, 2, 3].map((row) => (
-            <div key={row} className="h-11 animate-pulse rounded-lg bg-muted/50" />
-          ))}
-        </div>
-      </Panel>
-    );
-  }
-  if (props.status === "error") {
-    return (
-      <Panel>
-        <AiErrorState error={props.error} onRetry={props.onRun} />
-      </Panel>
-    );
-  }
-  if (props.status === "success" && props.report) {
-    return (
-      <Panel>
-        <Report {...props} report={props.report} />
-      </Panel>
-    );
-  }
-  return null;
+  return (
+    <section aria-label={gaslensCopy.findingsLabel} className="flex min-w-0 flex-col gap-5">
+      <Report {...props} />
+    </section>
+  );
 }

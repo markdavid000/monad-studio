@@ -1,9 +1,10 @@
 "use client";
 
-import { Fuel, LoaderCircle } from "lucide-react";
+import { Fuel, LoaderCircle, PanelRightOpen } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/ui/page-title";
+import { ResultsSheet } from "@/components/ui/results-sheet";
 import { ToolActions } from "@/components/ui/tool-actions";
 import { aiCopy } from "@/lib/copy";
 import { gaslensCopy } from "../copy";
@@ -11,14 +12,14 @@ import { useGaslens } from "../hooks/use-gaslens";
 import { CodePanel } from "./code-panel";
 import { ResultPanel } from "./result-panel";
 
-function runLabel(status: string, hasReport: boolean) {
-  if (status === "pending") return gaslensCopy.analysing;
+function runLabel(isPending: boolean, hasReport: boolean) {
+  if (isPending) return gaslensCopy.analysing;
   return hasReport ? gaslensCopy.rerun : gaslensCopy.analyse;
 }
 
 export function GaslensTool() {
   const gaslens = useGaslens();
-  const isPending = gaslens.status === "pending";
+  const { report } = gaslens;
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
@@ -40,13 +41,13 @@ export function GaslensTool() {
         <>
           <CodePanel
             fileName={gaslens.fileName}
-            source={gaslens.source}
-            diff={gaslens.diff}
-            optimizedSource={gaslens.report?.optimizedSource}
-            mode={gaslens.mode}
-            hasChanges={gaslens.hasChanges}
-            highlightedKeys={gaslens.highlightedKeys}
-            flaggedKeys={gaslens.flaggedKeys}
+            source={gaslens.draftSource}
+            diff={[]}
+            optimizedSource={undefined}
+            mode="source"
+            hasChanges={false}
+            highlightedKeys={[]}
+            flaggedKeys={[]}
             onModeChange={gaslens.setMode}
           />
           <ToolActions
@@ -57,26 +58,54 @@ export function GaslensTool() {
                 : undefined
             }
           >
-            <Button size="lg" onClick={gaslens.run} disabled={isPending}>
-              {isPending ? (
+            <Button size="lg" onClick={gaslens.run} disabled={gaslens.isPending}>
+              {gaslens.isPending ? (
                 <LoaderCircle aria-hidden className="animate-spin" />
               ) : (
                 <Fuel aria-hidden />
               )}
-              {runLabel(gaslens.status, gaslens.report !== undefined)}
+              {runLabel(gaslens.isPending, report !== undefined)}
             </Button>
+            {report && !gaslens.isResultsOpen ? (
+              <Button size="lg" variant="outline" onClick={() => gaslens.setResultsOpen(true)}>
+                <PanelRightOpen aria-hidden />
+                {gaslensCopy.showResults}
+              </Button>
+            ) : null}
           </ToolActions>
-          <ResultPanel
-            status={gaslens.status}
-            report={gaslens.report}
-            error={gaslens.error}
-            isStale={gaslens.isStale}
-            activeId={gaslens.activeId}
-            onToggle={gaslens.toggle}
-            onRun={gaslens.run}
-          />
         </>
       )}
+      {report ? (
+        <ResultsSheet
+          open={gaslens.isResultsOpen}
+          onOpenChange={gaslens.setResultsOpen}
+          title={gaslensCopy.resultsTitle}
+          description={report.contractName}
+          closeLabel={aiCopy.closeResults}
+        >
+          <div className="grid items-start gap-6 lg:grid-cols-2">
+            <div className="min-w-0 lg:sticky lg:top-0">
+              <CodePanel
+                fileName={gaslens.fileName}
+                source={gaslens.source}
+                diff={gaslens.diff}
+                optimizedSource={report.optimizedSource}
+                mode={gaslens.mode}
+                hasChanges={gaslens.hasChanges}
+                highlightedKeys={gaslens.highlightedKeys}
+                flaggedKeys={gaslens.flaggedKeys}
+                onModeChange={gaslens.setMode}
+              />
+            </div>
+            <ResultPanel
+              report={report}
+              isStale={gaslens.isStale}
+              activeId={gaslens.activeId}
+              onToggle={gaslens.toggle}
+            />
+          </div>
+        </ResultsSheet>
+      ) : null}
     </div>
   );
 }

@@ -1,9 +1,10 @@
 "use client";
 
-import { LoaderCircle, ShieldCheck } from "lucide-react";
+import { LoaderCircle, PanelRightOpen, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/ui/page-title";
+import { ResultsSheet } from "@/components/ui/results-sheet";
 import { ToolActions } from "@/components/ui/tool-actions";
 import { aiCopy } from "@/lib/copy";
 import { monguardCopy } from "../copy";
@@ -11,14 +12,14 @@ import { useMonguard } from "../hooks/use-monguard";
 import { ReportPanel } from "./report-panel";
 import { SourceView } from "./source-view";
 
-function scanLabel(status: string, hasReport: boolean) {
-  if (status === "pending") return monguardCopy.scanning;
+function scanLabel(isPending: boolean, hasReport: boolean) {
+  if (isPending) return monguardCopy.scanning;
   return hasReport ? monguardCopy.rescan : monguardCopy.scan;
 }
 
 export function MonguardTool() {
   const monguard = useMonguard();
-  const isPending = monguard.status === "pending";
+  const { report } = monguard;
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
@@ -38,11 +39,7 @@ export function MonguardTool() {
         </div>
       ) : (
         <>
-          <SourceView
-            fileName={monguard.fileName}
-            source={monguard.source}
-            highlightedLines={monguard.highlightedLines}
-          />
+          <SourceView fileName={monguard.fileName} source={monguard.source} highlightedLines={[]} />
           <ToolActions
             note={aiCopy.note}
             tooLarge={
@@ -51,26 +48,48 @@ export function MonguardTool() {
                 : undefined
             }
           >
-            <Button size="lg" onClick={monguard.run} disabled={isPending}>
-              {isPending ? (
+            <Button size="lg" onClick={monguard.run} disabled={monguard.isPending}>
+              {monguard.isPending ? (
                 <LoaderCircle aria-hidden className="animate-spin" />
               ) : (
                 <ShieldCheck aria-hidden />
               )}
-              {scanLabel(monguard.status, monguard.report !== undefined)}
+              {scanLabel(monguard.isPending, report !== undefined)}
             </Button>
+            {report && !monguard.isResultsOpen ? (
+              <Button size="lg" variant="outline" onClick={() => monguard.setResultsOpen(true)}>
+                <PanelRightOpen aria-hidden />
+                {monguardCopy.showResults}
+              </Button>
+            ) : null}
           </ToolActions>
-          <ReportPanel
-            status={monguard.status}
-            report={monguard.report}
-            error={monguard.error}
-            isStale={monguard.isStale}
-            activeId={monguard.activeId}
-            onToggle={monguard.toggle}
-            onScan={monguard.run}
-          />
         </>
       )}
+      {report ? (
+        <ResultsSheet
+          open={monguard.isResultsOpen}
+          onOpenChange={monguard.setResultsOpen}
+          title={monguardCopy.resultsTitle}
+          description={report.contractName}
+          closeLabel={aiCopy.closeResults}
+        >
+          <div className="grid items-start gap-6 lg:grid-cols-2">
+            <div className="min-w-0 lg:sticky lg:top-0">
+              <SourceView
+                fileName={monguard.fileName}
+                source={monguard.scannedSource}
+                highlightedLines={monguard.highlightedLines}
+              />
+            </div>
+            <ReportPanel
+              report={report}
+              isStale={monguard.isStale}
+              activeId={monguard.activeId}
+              onToggle={monguard.toggle}
+            />
+          </div>
+        </ResultsSheet>
+      ) : null}
     </div>
   );
 }

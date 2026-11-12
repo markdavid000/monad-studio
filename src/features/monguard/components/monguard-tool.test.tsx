@@ -1,7 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { Toaster } from "@/components/ui/toaster";
 import { aiCopy, retryIn } from "@/lib/copy";
+import { toast } from "@/lib/toast";
 import { monguardCopy } from "../copy";
 import type { ScanReport } from "../types";
 import { MonguardTool } from "./monguard-tool";
@@ -55,12 +57,25 @@ function renderTool() {
   return render(
     <QueryClientProvider client={client}>
       <MonguardTool />
+      <Toaster closeLabel={aiCopy.closeNotification} regionLabel={aiCopy.notifications} />
     </QueryClientProvider>
   );
 }
 
 function scanButton() {
   return screen.getByRole("button", { name: monguardCopy.scan });
+}
+
+async function findText(text: string) {
+  return (await screen.findAllByText(text))[0];
+}
+
+function results() {
+  return screen.findByRole("dialog", { name: monguardCopy.resultsTitle });
+}
+
+function closeResults() {
+  fireEvent.click(screen.getByRole("button", { name: aiCopy.closeResults }));
 }
 
 function highlightedLines() {
@@ -70,6 +85,7 @@ function highlightedLines() {
 }
 
 beforeEach(() => {
+  for (const item of toast.items()) toast.dismiss(item.id);
   window.localStorage.clear();
   fetchMock.mockReset();
   vi.stubGlobal("fetch", fetchMock);
@@ -108,39 +124,44 @@ describe("MonguardTool", () => {
     expect(await screen.findByText(monguardCopy.lead)).toBeInTheDocument();
   });
 
-  it("disables the scan button while scanning and offers a rescan after", async () => {
+  it("disables the scan button while scanning, then opens the results over the page", async () => {
     saveDraft(SOURCE);
     let resolve: (response: Response) => void = () => undefined;
     fetchMock.mockReturnValue(new Promise((done) => (resolve = done)));
     renderTool();
     fireEvent.click(scanButton());
     expect(await screen.findByRole("button", { name: monguardCopy.scanning })).toBeDisabled();
-    await act(async () => resolve(json({ data: report })));
-    expect(await screen.findByRole("button", { name: monguardCopy.rescan })).toBeEnabled();
-  });
-
-  it("scans, shows a loading state, then the score and findings", async () => {
-    saveDraft(SOURCE);
-    let resolve: (response: Response) => void = () => undefined;
-    fetchMock.mockReturnValue(new Promise((done) => (resolve = done)));
-    renderTool();
-
-    fireEvent.click(scanButton());
-    expect(await screen.findByText(monguardCopy.pendingTitle)).toBeInTheDocument();
+    expect(await findText(monguardCopy.pendingTitle)).toBeInTheDocument();
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe("/api/monguard/scan");
     expect(JSON.parse(String(init?.body))).toEqual({ source: SOURCE });
 
     await act(async () => resolve(json({ data: report })));
-    expect(await screen.findByText("75")).toBeInTheDocument();
-    expect(screen.getByText(report.summary)).toBeInTheDocument();
-    expect(screen.getByText("2 findings")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Reentrancy in withdraw/ })).toHaveAttribute(
+    const dialog = await results();
+    expect(await findText(monguardCopy.doneTitle)).toBeInTheDocument();
+    expect(within(dialog).getByText("75")).toBeInTheDocument();
+    expect(within(dialog).getByText(report.summary)).toBeInTheDocument();
+    expect(within(dialog).getByText("2 findings")).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: /Reentrancy in withdraw/ })).toHaveAttribute(
       "aria-expanded",
       "true"
     );
-    expect(screen.getByText(report.findings[0].impact)).toBeInTheDocument();
+    expect(within(dialog).getByText(report.findings[0].impact)).toBeInTheDocument();
     expect(highlightedLines()).toEqual(["2"]);
+  });
+
+  it("brings the results back with a button after they are closed", async () => {
+    saveDraft(SOURCE);
+    fetchMock.mockImplementation(async () => json({ data: report }));
+    renderTool();
+    expect(screen.queryByRole("button", { name: monguardCopy.showResults })).toBeNull();
+    fireEvent.click(scanButton());
+    await results();
+    closeResults();
+    await vi.waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(screen.getByRole("button", { name: monguardCopy.rescan })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: monguardCopy.showResults }));
+    expect(within(await results()).getByText(report.summary)).toBeInTheDocument();
   });
 
   it("opens another finding and highlights its lines", async () => {
@@ -169,8 +190,9 @@ describe("MonguardTool", () => {
     fetchMock.mockResolvedValue(json({ data: { ...report, score: 100, findings: [] } }));
     renderTool();
     fireEvent.click(scanButton());
-    expect(await screen.findByText(monguardCopy.noFindingsTitle)).toBeInTheDocument();
-    expect(screen.getByText("0 findings")).toBeInTheDocument();
+    const dialog = await results();
+    expect(within(dialog).getByText(monguardCopy.noFindingsTitle)).toBeInTheDocument();
+    expect(within(dialog).getByText("0 findings")).toBeInTheDocument();
   });
 
   it("flags a result as out of date when the contract changes", async () => {
@@ -178,10 +200,15 @@ describe("MonguardTool", () => {
     fetchMock.mockImplementation(async () => json({ data: report }));
     renderTool();
     fireEvent.click(scanButton());
-    await screen.findByText(report.summary);
+    await results();
+    closeResults();
+    await vi.waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
 
     act(() => saveDraft(`${SOURCE}\nuint256 edited;`));
-    expect(screen.getByText(monguardCopy.stale)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: monguardCopy.showResults }));
+    expect(within(await results()).getByText(monguardCopy.stale)).toBeInTheDocument();
+    closeResults();
+    await vi.waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     fireEvent.click(screen.getByRole("button", { name: monguardCopy.rescan }));
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
     expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body)).source).toContain(
@@ -189,7 +216,7 @@ describe("MonguardTool", () => {
     );
   });
 
-  it("explains an invalid AI reply and lets the user retry", async () => {
+  it("explains an invalid AI reply in a toast and lets the user retry", async () => {
     saveDraft(SOURCE);
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     fetchMock.mockResolvedValueOnce(
@@ -199,9 +226,11 @@ describe("MonguardTool", () => {
     renderTool();
     fireEvent.click(scanButton());
 
-    expect(await screen.findByRole("alert")).toHaveTextContent(aiCopy.errors.invalid_reply);
+    expect(await findText(monguardCopy.failedTitle)).toBeInTheDocument();
+    expect(await findText(aiCopy.errors.invalid_reply)).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: aiCopy.retry }));
-    expect(await screen.findByText(report.summary)).toBeInTheDocument();
+    expect(within(await results()).getByText(report.summary)).toBeInTheDocument();
   });
 
   it("says when the scan limit is reached and when to come back", async () => {
@@ -216,9 +245,7 @@ describe("MonguardTool", () => {
     renderTool();
     fireEvent.click(scanButton());
 
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent(aiCopy.errors.rate_limited);
-    expect(within(alert).getByText(retryIn(300))).toBeInTheDocument();
+    expect(await findText(`${aiCopy.errors.rate_limited} ${retryIn(300)}`)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: aiCopy.retry })).toBeNull();
   });
 
@@ -227,7 +254,7 @@ describe("MonguardTool", () => {
     fetchMock.mockResolvedValue(json({ data: { score: "high" } }));
     renderTool();
     fireEvent.click(scanButton());
-    expect(await screen.findByRole("alert")).toHaveTextContent(aiCopy.errors.invalid_reply);
+    expect(await findText(aiCopy.errors.invalid_reply)).toBeInTheDocument();
   });
 
   it("refuses to scan a contract over 60 KB", () => {
