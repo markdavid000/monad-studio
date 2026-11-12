@@ -95,6 +95,12 @@ export async function saveRun(run: NewHistoryRun): Promise<HistoryRun> {
   return saved;
 }
 
+export function putRuns(runs: readonly HistoryRun[]): Promise<void> {
+  return withStore("readwrite", async (store) => {
+    await Promise.all(runs.map((run) => request(store.put(run))));
+  });
+}
+
 export function deleteRun(id: string): Promise<void> {
   return withStore("readwrite", (store) => request(store.delete(id)));
 }

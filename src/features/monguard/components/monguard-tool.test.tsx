@@ -114,6 +114,28 @@ describe("MonguardTool", () => {
     });
   });
 
+  it("also sends a finished run to the synced history when sync is on", async () => {
+    saveDraft(SOURCE);
+    window.localStorage.setItem(
+      "monad-studio:synced-wallet",
+      "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+    );
+    fetchMock.mockImplementation(async (url) =>
+      url === "/api/history" ? json({ data: { saved: 1 } }) : json({ data: report })
+    );
+    renderTool();
+    fireEvent.click(scanButton());
+    await results();
+    await vi.waitFor(() =>
+      expect(fetchMock.mock.calls.some(([url]) => url === "/api/history")).toBe(true)
+    );
+    const pushed = fetchMock.mock.calls.find(([url]) => url === "/api/history");
+    expect(JSON.parse(String(pushed?.[1]?.body)).runs[0]).toMatchObject({
+      tool: "monguard",
+      source: SOURCE,
+    });
+  });
+
   it("reopens a saved run without calling the AI", async () => {
     saveDraft(SOURCE);
     const saved = await saveRun({
