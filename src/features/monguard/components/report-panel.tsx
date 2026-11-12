@@ -1,10 +1,11 @@
-import { LoaderCircle, RotateCcw, ShieldCheck } from "lucide-react";
+import { LoaderCircle, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { AiErrorState } from "@/components/ui/ai-error-state";
 import { Button } from "@/components/ui/button";
-import { ApiError } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
-import { findingsCount, monguardCopy, retryIn } from "../copy";
+import { findingsCount } from "@/lib/copy";
+import { monguardCopy } from "../copy";
 import type { ScanReport } from "../types";
 import { FindingItem } from "./finding-item";
 
@@ -35,27 +36,6 @@ function scoreTone(score: number) {
   if (score >= 80) return "text-success";
   if (score >= 50) return "text-severity-medium";
   return "text-severity-critical";
-}
-
-function ErrorState({ error, onScan }: { error: Error | null; onScan: () => void }) {
-  const code = error instanceof ApiError ? error.code : "internal";
-  const retryAfter = error instanceof ApiError ? error.retryAfterSeconds : undefined;
-  return (
-    <div className="flex flex-1 flex-col items-start justify-center gap-4">
-      <div role="alert" className="flex flex-col gap-1">
-        <p className="font-medium">{monguardCopy.errors[code]}</p>
-        {code === "rate_limited" && retryAfter ? (
-          <p className="text-sm text-muted-foreground">{retryIn(retryAfter)}</p>
-        ) : null}
-      </div>
-      {code === "rate_limited" ? null : (
-        <Button variant="outline" onClick={onScan}>
-          <RotateCcw aria-hidden />
-          {monguardCopy.retry}
-        </Button>
-      )}
-    </div>
-  );
 }
 
 function PendingState() {
@@ -162,7 +142,7 @@ export function ReportPanel(props: ReportPanelProps) {
   if (status === "error") {
     return (
       <Panel>
-        <ErrorState error={error} onScan={onScan} />
+        <AiErrorState error={error} onRetry={onScan} />
       </Panel>
     );
   }

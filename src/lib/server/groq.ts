@@ -9,7 +9,10 @@ interface StructuredRequest<T extends z.ZodType> {
   system: string;
   user: string;
   schema: T;
+  maxOutputTokens?: number;
 }
+
+const DEFAULT_MAX_OUTPUT_TOKENS = 16_384;
 
 let client: Groq | undefined;
 
@@ -29,6 +32,7 @@ async function requestCompletion(request: StructuredRequest<z.ZodType>) {
     const completion = await groq().chat.completions.create({
       model: serverEnv().GROQ_MODEL,
       temperature: 0.1,
+      max_completion_tokens: request.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
       messages: [
         { role: "system", content: request.system },
         { role: "user", content: request.user },
