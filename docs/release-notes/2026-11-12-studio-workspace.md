@@ -16,11 +16,14 @@ scenario-impact: needs_automation
 - `useContractDraft`: the draft lives in `localStorage` through `useSyncExternalStore`, shared across tabs.
 - `useNetworkStatus`: the latest block from Monad testnet through wagmi's `useBlockNumber` (watching), with loading and error states, and the account state.
 
+- Network guard: when a connected wallet is on any network other than Monad testnet, a dialog covers the studio until the wallet switches (the request is confirmed in the wallet) or disconnects. It cannot be dismissed, shows a waiting state while the wallet is open, and explains a declined or failed switch.
+- RainbowKit modals use a neutral accent (near white in dark mode, near black in light) so the purple Monad icon no longer sits on a purple row.
+
 ## Removed
 
 - The studio tool list page, `ToolList`, its test, and the `isLinked` helper and `LinkedTool` type it used.
 
 ## Verification
 
-- Tests: example loads and persists, a saved draft is restored, clear, the 60 KB warning, actions are disabled and labelled, sidebar links only existing tools, status rail live, loading, error, connected.
+- Tests: example loads and persists, a saved draft is restored, clear, the 60 KB warning, actions are disabled and labelled, sidebar links only existing tools, status rail live, loading, error, connected; network guard closed when disconnected or on Monad testnet, open and switching on another network, not dismissable with Escape, pending, declined, failed, disconnect.
 - Headless Chrome at 1440px and 600px against the dev server; the block number read live from testnet.

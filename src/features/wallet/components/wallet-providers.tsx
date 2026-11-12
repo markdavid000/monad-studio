@@ -7,6 +7,7 @@ import { useState, type ReactNode } from "react";
 import { WagmiProvider } from "wagmi";
 import { useRainbowTheme } from "../hooks/use-rainbow-theme";
 import { createWagmiConfig } from "../wagmi-config";
+import { NetworkGuard } from "./network-guard";
 
 interface WalletProvidersProps {
   children: ReactNode;
@@ -22,6 +23,7 @@ export function WalletProviders({ children }: WalletProvidersProps) {
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider theme={theme} modalSize="compact">
           {children}
+          <NetworkGuard />
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
