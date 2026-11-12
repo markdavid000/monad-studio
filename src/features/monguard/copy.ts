@@ -3,6 +3,9 @@ import type { Severity } from "@/lib/severity";
 export const monguardCopy = {
   title: "MonGuard",
   lead: "A security review of the contract in your workspace. Each finding names the lines involved and suggests a fix.",
+  about: "About MonGuard",
+  checks:
+    "It checks external calls, access control, arithmetic and value flow, then lists what it finds by severity.",
   sourceLabel: "Contract source",
   untitled: "Untitled.sol",
   editInWorkspace: "Edit in workspace",
@@ -14,10 +17,11 @@ export const monguardCopy = {
   scan: "Scan contract",
   rescan: "Scan again",
   scanning: "Scanning",
-  idleTitle: "Ready to scan",
-  idleBody:
-    "MonGuard checks external calls, access control, arithmetic and value flow, then lists what it finds by severity.",
-  pendingTitle: "Reading the contract",
+  pendingTitle: "Scanning the contract",
+  doneTitle: "Scan finished",
+  failedTitle: "Scan failed",
+  resultsTitle: "MonGuard results",
+  showResults: "Show results",
   pendingBody: "This usually takes 10 to 40 seconds.",
   stale: "The contract changed since this scan. Scan again to update the findings.",
   scoreLabel: "Security score",

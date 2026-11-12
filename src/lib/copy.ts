@@ -3,6 +3,9 @@ import type { ApiErrorCode } from "./api-error";
 export const aiCopy = {
   note: "AI analysis, not an audit. Check each finding before you rely on it.",
   retry: "Try again",
+  notifications: "Notifications",
+  closeNotification: "Close notification",
+  closeResults: "Close results",
   errors: {
     invalid_input: "The contract could not be sent. Check that it is not empty and under 60 KB.",
     rate_limited: "You have used 20 AI requests in 10 minutes across the studio tools.",

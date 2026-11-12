@@ -1,11 +1,34 @@
 import { useState } from "react";
 import { useContractDraft } from "@/hooks/use-contract-draft";
 import { SOURCE_LIMIT_BYTES, byteSize } from "@/lib/byte-size";
+import { showAiErrorToast } from "@/lib/ai-toast";
+import { findingsCount } from "@/lib/copy";
+import { toast } from "@/lib/toast";
+import { flaggedTitle, gaslensCopy } from "../copy";
 import { diffLines, diffLineKey, type DiffLine } from "../lib/diff";
 import type { GasReport } from "../types";
 import { useGasAnalysis } from "./use-gas-analysis";
 
 type CodeMode = "source" | "changes";
+
+const TOAST_ID = "gaslens-review";
+
+function showDoneToast(report: GasReport) {
+  const description = findingsCount(report.optimizations.length);
+  if (report.check.status === "flagged") {
+    toast.warning(gaslensCopy.doneTitle, {
+      id: TOAST_ID,
+      description: `${description}. ${flaggedTitle(report.check.risks.length)}.`,
+    });
+  } else if (report.check.status === "unavailable") {
+    toast.warning(gaslensCopy.doneTitle, {
+      id: TOAST_ID,
+      description: `${description}. ${gaslensCopy.check.unavailableTitle}.`,
+    });
+  } else {
+    toast.success(gaslensCopy.doneTitle, { id: TOAST_ID, description });
+  }
+}
 
 function rewriteKeys(diff: readonly DiffLine[], lines: readonly number[]) {
   const wanted = new Set(lines);
@@ -23,6 +46,7 @@ export function useGaslens() {
   const analysis = useGasAnalysis();
   const [openId, setOpenId] = useState<string | null | undefined>(undefined);
   const [chosenMode, setChosenMode] = useState<CodeMode | undefined>(undefined);
+  const [isResultsOpen, setResultsOpen] = useState(false);
 
   const report = analysis.status === "success" ? analysis.report : undefined;
   const reviewedSource = report ? (analysis.analysedSource ?? draft.source) : draft.source;
@@ -32,17 +56,33 @@ export function useGaslens() {
   const activeRisk = risks.find((risk) => risk.id === activeId);
   const diff = report ? diffLines(reviewedSource, report.optimizedSource) : [];
   const hasChanges = diff.some((line) => line.kind !== "same");
+  function run() {
+    setOpenId(undefined);
+    setChosenMode(undefined);
+    setResultsOpen(false);
+    toast.loading(gaslensCopy.pendingTitle, { id: TOAST_ID, description: gaslensCopy.pendingBody });
+    analysis.analyse(draft.source, {
+      onSuccess: (next) => {
+        showDoneToast(next);
+        setResultsOpen(true);
+      },
+      onError: (error) => {
+        showAiErrorToast(error, { id: TOAST_ID, title: gaslensCopy.failedTitle, onRetry: run });
+      },
+    });
+  }
+
   const mode: CodeMode =
     report && hasChanges ? (activeRisk ? "changes" : (chosenMode ?? "changes")) : "source";
 
   return {
     fileName: draft.name,
+    draftSource: draft.source,
     source: reviewedSource,
     isEmpty: draft.source.trim().length === 0,
     isTooLarge: byteSize(draft.source) > SOURCE_LIMIT_BYTES,
-    status: analysis.status,
+    isPending: analysis.status === "pending",
     report: analysis.report,
-    error: analysis.error,
     diff,
     hasChanges,
     mode,
@@ -60,10 +100,8 @@ export function useGaslens() {
       setChosenMode(next);
     },
     toggle: (id: string) => setOpenId(activeId === id ? null : id),
-    run: () => {
-      setOpenId(undefined);
-      setChosenMode(undefined);
-      analysis.analyse(draft.source);
-    },
+    isResultsOpen,
+    setResultsOpen,
+    run,
   };
 }
