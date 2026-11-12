@@ -51,7 +51,7 @@ export function TryScan() {
           </span>
         ))}
       </pre>
-      <div className="min-h-[19rem] p-5">
+      <div className="p-5">
         {phase === "idle" ? (
           <button
             type="button"
