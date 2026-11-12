@@ -7,11 +7,11 @@ scenario-impact: needs_automation
 
 # The studio opens on a workspace
 
-"Open the studio" now lands on a workspace instead of a list of links. Paste a contract or load one of three examples into an editor with line numbers and a 60 KB meter; the draft stays in this browser and will follow you into each tool. A sidebar lists the tools (marked Soon until each one ships), and a side panel shows the live Monad testnet block number and your wallet status.
+"Open the studio" now lands on a workspace instead of a list of links. Paste a contract or load one of three examples into an editor with line numbers and a 60 KB meter; the draft stays in this browser and will follow you into each tool. A wider sidebar lists the tools (marked Soon until each one ships) and, at its foot, shows the live Monad testnet block number and your wallet status, so the workspace takes the rest of the screen.
 
 ## Changes
 
-- Studio shell: slim top bar (brand, Studio, wallet button, theme), a left sidebar on large screens that becomes a scrolling strip on small ones.
+- Studio shell: slim top bar (brand, Studio, wallet button, theme), a sticky 20rem left sidebar on large screens holding the tool list and the network and wallet cards; on small screens the tools become a scrolling strip and the cards move below the workspace.
 - `features/studio`: workspace, source editor, example picker, next-step actions (Scan, Optimise gas, Deploy, each marked Coming next), and a status rail.
 - `useContractDraft`: the draft lives in `localStorage` through `useSyncExternalStore`, shared across tabs.
 - `useNetworkStatus`: the latest block from Monad testnet through wagmi's `useBlockNumber` (watching), with loading and error states, and the account state.

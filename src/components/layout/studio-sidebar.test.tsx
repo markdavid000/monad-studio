@@ -5,6 +5,10 @@ import { layoutCopy } from "./copy";
 import { StudioSidebar } from "./studio-sidebar";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/studio" }));
+vi.mock("wagmi", () => ({
+  useAccount: () => ({ address: undefined, isConnected: false }),
+  useBlockNumber: () => ({ data: undefined, isError: false }),
+}));
 
 describe("StudioSidebar", () => {
   it("marks the workspace as the current page", () => {
