@@ -1,4 +1,4 @@
-import { ArrowRight, Fuel, Rocket, ShieldCheck } from "lucide-react";
+import { ArrowRight, Fuel, Hammer, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { toolBySlug } from "@/config/tools";
 import { cn } from "@/lib/utils";
@@ -7,7 +7,7 @@ import { actionStatus, studioCopy } from "../copy";
 const ACTIONS = [
   { key: "scan", icon: ShieldCheck, href: toolBySlug.monguard.href },
   { key: "optimise", icon: Fuel, href: toolBySlug.gaslens.href },
-  { key: "deploy", icon: Rocket, href: toolBySlug.forge.href },
+  { key: "compile", icon: Hammer, href: toolBySlug.forge.href },
 ] as const;
 
 const cardClass = "flex items-start gap-3 rounded-lg border bg-card px-4 py-3 text-left";

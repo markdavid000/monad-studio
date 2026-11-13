@@ -1,11 +1,14 @@
-import { Cloud, Fuel, LoaderCircle, ShieldCheck, Trash2 } from "lucide-react";
+import { Cloud, Fuel, Hammer, LoaderCircle, ShieldCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toolBySlug } from "@/config/tools";
 import type { ActivityItem } from "@/hooks/use-history";
 import type { HistoryTool } from "@/lib/history";
 import { activityCopy } from "../copy";
 
-const ICONS = { monguard: ShieldCheck, gaslens: Fuel } satisfies Record<HistoryTool, unknown>;
+const ICONS = { monguard: ShieldCheck, gaslens: Fuel, forge: Hammer } satisfies Record<
+  HistoryTool,
+  unknown
+>;
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",

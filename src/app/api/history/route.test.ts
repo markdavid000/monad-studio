@@ -105,7 +105,9 @@ describe("/api/history", () => {
     expect((await call("POST", ALICE, { runs: many })).status).toBe(400);
     const big = { ...run(1), source: "a".repeat(61 * 1024) };
     expect((await call("POST", ALICE, { runs: [big] })).status).toBe(400);
-    expect((await call("POST", ALICE, { runs: [{ ...run(1), tool: "forge" }] })).status).toBe(400);
+    expect((await call("POST", ALICE, { runs: [{ ...run(1), tool: "sentinel" }] })).status).toBe(
+      400
+    );
   });
 
   it(`keeps only the newest ${HISTORY_LIMIT} runs`, async () => {

@@ -84,8 +84,11 @@ function readDraft() {
   return JSON.parse(window.localStorage.getItem("monad-studio:draft") ?? "{}");
 }
 
-function renderTool(runId?: string) {
-  const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+function newClient() {
+  return new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+}
+
+function renderTool(runId?: string, client = newClient()) {
   return render(
     <QueryClientProvider client={client}>
       <GaslensTool runId={runId} />
@@ -124,6 +127,7 @@ beforeEach(async () => {
   await clearRuns();
   for (const item of toast.items()) toast.dismiss(item.id);
   window.localStorage.clear();
+  window.sessionStorage.clear();
   window.localStorage.setItem("monad-studio:seen:gaslens", "seen");
   fetchMock.mockReset();
   vi.stubGlobal("fetch", fetchMock);
@@ -139,6 +143,22 @@ afterEach(() => {
 });
 
 describe("GaslensTool", () => {
+  it("keeps the last review and its button after leaving the page and coming back", async () => {
+    saveDraft(SOURCE);
+    fetchMock.mockImplementation(async () => json({ data: report }));
+    const client = newClient();
+    const first = renderTool(undefined, client);
+    fireEvent.click(screen.getByRole("button", { name: gaslensCopy.analyse }));
+    await results();
+    await vi.waitFor(async () => expect(await listRuns()).toHaveLength(1));
+    first.unmount();
+
+    renderTool(undefined, client);
+    fireEvent.click(await screen.findByRole("button", { name: gaslensCopy.showResults }));
+    expect(within(await results()).getByText(report.summary)).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("explains the screen once on the first visit", async () => {
     window.localStorage.removeItem("monad-studio:seen:gaslens");
     const view = renderTool();

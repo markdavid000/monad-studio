@@ -103,16 +103,18 @@ When two features keep needing each other, they are one feature. Merge them; do 
 | `wallet`    | studio header                        | wagmi and RainbowKit config, providers, connect button             |
 | `monguard`  | `/studio/monguard`, `/demo/monguard` | Security review: schema, prompt, score, findings UI, recorded demo |
 | `gaslens`   | `/studio/gaslens`, `/demo/gaslens`   | Gas review: schema, prompt, diff, findings UI, recorded demo       |
-| `forge`     | `/studio/forge`                      | Generate, compile, deploy, verify                                  |
+| `forge`     | `/studio/forge`                      | Generate and compile (solc on the server); deploy and verify next  |
 | `sentinel`  | `/studio/sentinel`                   | Watch list, activity polling, flagged patterns                     |
 | `paradebug` | `/studio/paradebug`                  | Same-function contention report                                    |
 | `activity`  | `/studio/activity`                   | List, filter, reopen and delete saved runs                         |
 
 Source code handed from one tool to another goes through `hooks/use-contract-draft.ts`, never a feature import.
 
+MonadForge compiles on the server with the pinned `solc` package (listed in `serverExternalPackages`), never rewriting the source, and returns the exact standard JSON input and compiler version so a deploy can be verified byte for byte. `/api/forge/compile` has its own rate limit; `/api/forge/generate` counts against the AI limit.
+
 The three example contracts live in `config/examples.ts`. `/demo` is public and needs no wallet: each tool exports a demo component that shows a report recorded from a real run of each example (`features/<tool>/demo/recorded-reports.json`, parsed with the tool's report schema at load). The demo makes no API call and saves nothing. Re-record those files when a prompt or report schema changes.
 
-Finished runs are saved in the browser's IndexedDB through `lib/history.ts` and `hooks/use-history.ts`. A tool records its own run and validates a saved report with its own schema; the activity feature only sees the shared `HistoryRun` shape, and reopens a run by loading its source into the draft and linking to `/studio/<tool>?run=<id>`.
+Finished runs are saved in the browser's IndexedDB through `lib/history.ts` and `hooks/use-history.ts`. A tool records its own run from its request hook (so a run finishes and is saved even after the user leaves the page), remembers its last run id for the tab in `sessionStorage` (`hooks/use-last-run.ts`) to show it again on return, and validates a saved report with its own schema; the activity feature only sees the shared `HistoryRun` shape, and reopens a run by loading its source into the draft and linking to `/studio/<tool>?run=<id>`.
 
 The studio needs a signed wallet session. `/api/auth/nonce` and `/api/auth/session` run Sign-In with Ethereum (`viem/siwe`, Monad testnet only), shown by RainbowKit as "Verify your account", and set an HTTP-only session cookie signed with `SESSION_SECRET` (`lib/server/session.ts`). `src/proxy.ts` checks it before every studio page and studio API, the studio layout checks it again (`lib/server/require-session.ts`), the route handlers check it inside, and `SessionGuard` signs out when the wallet disconnects or changes. Wallet sync is a switch on top of that session. `/api/history` and `/api/history/[id]` store runs in Upstash under the signed-in address (`lib/server/history-store.ts`): a metadata hash for the list and one key per full run, newest 200, expiring 180 days after the last write. The browser remembers which wallet it synced with (`hooks/use-synced-address.ts`) and pushes each new run.
 
