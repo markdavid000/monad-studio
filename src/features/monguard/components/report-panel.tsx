@@ -5,11 +5,17 @@ import { monguardCopy } from "../copy";
 import type { ScanReport } from "../types";
 import { FindingItem } from "./finding-item";
 
+interface FixChoices {
+  isChosen: (id: string) => boolean;
+  onToggle: (id: string) => void;
+}
+
 interface ReportPanelProps {
   report: ScanReport;
   isStale: boolean;
   activeId: string | null;
   onToggle: (id: string) => void;
+  choices?: FixChoices;
 }
 
 function scoreTone(score: number) {
@@ -18,7 +24,7 @@ function scoreTone(score: number) {
   return "text-severity-critical";
 }
 
-function Report({ report, isStale, activeId, onToggle }: ReportPanelProps) {
+function Report({ report, isStale, activeId, onToggle, choices }: ReportPanelProps) {
   return (
     <>
       <div className="flex flex-wrap items-end justify-between gap-4 border-b pb-5">
@@ -52,16 +58,29 @@ function Report({ report, isStale, activeId, onToggle }: ReportPanelProps) {
           </div>
         </div>
       ) : (
-        <ul className="flex flex-col gap-1">
-          {report.findings.map((finding) => (
-            <FindingItem
-              key={finding.id}
-              finding={finding}
-              isOpen={finding.id === activeId}
-              onToggle={() => onToggle(finding.id)}
-            />
-          ))}
-        </ul>
+        <>
+          {choices ? (
+            <p className="text-xs text-muted-foreground">{monguardCopy.fixes.pickNote}</p>
+          ) : null}
+          <ul className="flex flex-col gap-1">
+            {report.findings.map((finding) => (
+              <FindingItem
+                key={finding.id}
+                finding={finding}
+                isOpen={finding.id === activeId}
+                onToggle={() => onToggle(finding.id)}
+                choice={
+                  choices && (finding.fix || finding.fixCode)
+                    ? {
+                        isChosen: choices.isChosen(finding.id),
+                        onToggle: () => choices.onToggle(finding.id),
+                      }
+                    : undefined
+                }
+              />
+            ))}
+          </ul>
+        </>
       )}
     </>
   );

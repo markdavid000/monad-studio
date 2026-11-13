@@ -1,4 +1,5 @@
 import "server-only";
 
-export { scanInputSchema } from "./lib/schema";
+export { fixInputSchema, scanInputSchema } from "./lib/schema";
+export { fixContract } from "./server/fix";
 export { scanContract } from "./server/scan";

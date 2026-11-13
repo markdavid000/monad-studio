@@ -81,7 +81,7 @@ export function Toaster({ closeLabel, regionLabel }: ToasterProps) {
       })}
       <Toast.Viewport
         data-toast-viewport
-        className="pointer-events-auto fixed right-0 bottom-0 z-[100] flex w-full max-w-sm flex-col gap-2 p-4 outline-none"
+        className="pointer-events-none fixed right-0 bottom-0 z-[100] flex w-full max-w-sm flex-col gap-2 p-4 outline-none [body:has([data-next-step])_&]:bottom-44 lg:[body:has([data-next-step])_&]:bottom-20"
       />
     </Toast.Provider>
   );

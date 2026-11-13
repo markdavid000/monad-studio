@@ -37,6 +37,29 @@ export const monguardCopy = {
   impact: "Why it matters",
   fix: "Suggested fix",
   copyFix: "Copy fix",
+  fixes: {
+    applying: "Applying fixes",
+    pendingTitle: "Applying the chosen fixes",
+    pendingBody: "This usually takes 15 to 60 seconds.",
+    doneTitle: "Fixes ready to review",
+    failedTitle: "Could not apply the fixes",
+    accept: "Accept fixes",
+    acceptedTitle: "Fixes accepted into the workspace",
+    statusScanned: "Scanned contract",
+    statusReady: "Fixed contract, not accepted yet",
+    statusAccepted: "Fixes accepted into the workspace",
+    readyNote: "Check every change on the left before you accept.",
+    pickNote: "Untick a finding to leave its fix out.",
+    label: "Suggested fixes",
+    applied: "Applied",
+    skipped: "Left out",
+    noReason: "No reason given.",
+    noChange:
+      "None of the chosen fixes could be applied, so the contract is unchanged. Edit it in the workspace instead.",
+    back: "Back to findings",
+    showFixes: "Show fixes",
+    diffLabel: "Changes made by the fixes",
+  },
   copied: "Copied",
   severity: {
     critical: "Critical",
@@ -76,3 +99,16 @@ export const monguardDemoCopy = {
   run: "See the scan",
   note: "Recorded from a real MonGuard scan of this example. Nothing is sent when you press it.",
 } as const;
+
+export function reviewFixesLabel(count: number) {
+  return count === 1 ? "Review 1 fix" : `Review ${count} fixes`;
+}
+
+export function includeFixLabel(title: string) {
+  return `Include the fix for ${title}`;
+}
+
+export function fixSummary(applied: number, skipped: number) {
+  const fixes = applied === 1 ? "1 fix applied" : `${applied} fixes applied`;
+  return skipped > 0 ? `${fixes}, ${skipped} left out` : fixes;
+}

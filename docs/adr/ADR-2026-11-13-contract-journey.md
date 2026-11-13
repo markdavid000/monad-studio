@@ -1,7 +1,7 @@
 # ADR-2026-11-13: Contract journey between tools
 
-- **Status:** Proposed
-- **Approved by:** (name, date; filled in by the maintainer)
+- **Status:** Accepted
+- **Approved by:** (MarkDavid, 13th Nov 2026)
 - **Companion:** [ADR-2026-11-13-contract-journey-for-dummies.md](ADR-2026-11-13-contract-journey-for-dummies.md)
 
 ## Context
@@ -52,6 +52,10 @@ A bar fixed to the bottom of the results layer, full width, in every tool: on th
 ### Accepting
 
 Accepting replaces the workspace contract. The previous draft is kept for one step: a toast offers Undo for ten seconds. The accepted contract keeps the file name.
+
+### Amendment: fixes for compiler errors (requested by MarkDavid, 13 Nov 2026)
+
+When a MonadForge compile fails, the compile results bar offers **Suggest fixes**. `POST /api/forge/fix` takes `{ fileName, source }` (the compile input), compiles it on the server to get the real errors (so a client cannot send made up ones), and only then asks Groq for the whole file with those errors fixed (`{ fixedSource, changes: [{ line, note }] }`, strict schema, AI limit, `maxDuration` 60). The suggestion is compiled again and returned with its compile result. The layer shows a diff, each change with its line, and whether it now compiles or which errors remain. **Accept and compile** puts it in the workspace (with Undo) and compiles it. If the contract already compiles, no AI call is made. Suggestions are not saved to Activity; the compile that follows is.
 
 ## Diagram
 

@@ -1,7 +1,7 @@
 import "server-only";
 import { numberLines } from "@/lib/code-text";
 import { completeStructured } from "@/lib/server/groq";
-import { diffLines } from "../lib/diff";
+import { diffLines } from "@/lib/diff";
 import { gasReplySchema, toGasReport } from "../lib/schema";
 import type { GasReport } from "../types";
 import { checkRewrite } from "./check";

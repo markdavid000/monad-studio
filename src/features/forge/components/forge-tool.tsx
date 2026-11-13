@@ -9,13 +9,15 @@ import { CompilePanel } from "./compile-panel";
 import { CompileResults } from "./compile-results";
 import { GeneratePanel } from "./generate-panel";
 import { GeneratedResults } from "./generated-results";
+import { CompiledNextStep, WrittenNextStep } from "./next-step";
 
 interface ForgeToolProps {
   runId?: string;
+  autoRun?: boolean;
 }
 
-export function ForgeTool({ runId }: ForgeToolProps) {
-  const forge = useForge(runId);
+export function ForgeTool({ runId, autoRun }: ForgeToolProps) {
+  const forge = useForge(runId, autoRun);
   const { compiled, generated } = forge;
 
   return (
@@ -60,7 +62,14 @@ export function ForgeTool({ runId }: ForgeToolProps) {
           onOpenChange={(open) => forge.showResults(open ? "generated" : undefined)}
           focusedLine={forge.focusedLine}
           onFocusLine={forge.setFocusedLine}
-          onUse={forge.loadGenerated}
+          footer={
+            <WrittenNextStep
+              isInWorkspace={forge.isGeneratedInWorkspace}
+              onUse={() => forge.loadGenerated(generated)}
+              onCompile={() => forge.compileGenerated(generated)}
+              onSend={(tool) => forge.sendGenerated(tool, generated)}
+            />
+          }
         />
       ) : null}
       {compiled ? (
@@ -73,6 +82,20 @@ export function ForgeTool({ runId }: ForgeToolProps) {
           isStale={forge.isStale}
           focusedLine={forge.focusedLine}
           onFocusLine={forge.setFocusedLine}
+          suggestedFix={forge.compileView === "fixes" ? forge.suggestedFix : undefined}
+          onBackToResult={forge.showCompileResult}
+          footer={
+            <CompiledNextStep
+              isCompiled={compiled.result.status === "compiled"}
+              view={forge.compileView}
+              hasFix={forge.suggestedFix !== undefined && forge.suggestedFix.changes.length > 0}
+              isSuggesting={forge.isSuggestingFixes}
+              onSuggest={forge.suggestFixes}
+              onShowFix={forge.showSuggestedFix}
+              onAcceptFix={forge.acceptSuggestedFix}
+              onSend={forge.sendCompiled}
+            />
+          }
         />
       ) : null}
     </div>

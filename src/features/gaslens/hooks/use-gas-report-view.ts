@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { diffLineKey, diffLines, type DiffLine } from "../lib/diff";
+import { diffLineKey, diffLines, type DiffLine } from "@/lib/diff";
 import type { GasReport } from "../types";
 
 export type CodeMode = "source" | "changes";

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { ResultsSheet } from "@/components/ui/results-sheet";
 import { aiCopy } from "@/lib/copy";
 import { gaslensCopy } from "../copy";
@@ -15,6 +16,7 @@ interface GasResultsProps {
   isStale: boolean;
   canEdit: boolean;
   view: ReturnType<typeof useGasReportView>;
+  footer?: ReactNode;
 }
 
 export function GasResults({ report, view, ...props }: GasResultsProps) {
@@ -25,6 +27,7 @@ export function GasResults({ report, view, ...props }: GasResultsProps) {
       title={gaslensCopy.resultsTitle}
       description={report.contractName}
       closeLabel={aiCopy.closeResults}
+      footer={props.footer}
     >
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <div className="min-w-0 lg:sticky lg:top-0">

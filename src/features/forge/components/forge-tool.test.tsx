@@ -2,12 +2,19 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Toaster } from "@/components/ui/toaster";
-import { aiCopy, historyCopy } from "@/lib/copy";
+import { aiCopy, historyCopy, journeyCopy } from "@/lib/copy";
 import { clearRuns, listRuns, saveRun } from "@/lib/history";
 import { toast } from "@/lib/toast";
 import { compiledTitle, errorsTitle, forgeCopy, lineLabel } from "../copy";
 import type { CompileResult, GeneratedContract } from "../types";
 import { ForgeTool } from "./forge-tool";
+
+const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn() }));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => router,
+  usePathname: () => "/studio/forge",
+}));
 
 vi.mock("wagmi", () => ({
   useAccount: () => ({ address: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" }),
@@ -241,6 +248,39 @@ describe("ForgeTool: write a contract", () => {
     expect(screen.getByText(errorsTitle(1))).toBeInTheDocument();
   });
 
+  it("compiles the written contract from its next step bar", async () => {
+    saveDraft("contract Mine {}", "Mine.sol");
+    fetchMock
+      .mockResolvedValueOnce(json({ data: generated }))
+      .mockResolvedValueOnce(json({ data: compiled }));
+    renderTool();
+    writeContract();
+    const bar = within(await writtenSheet()).getByRole("group", { name: journeyCopy.label });
+    expect(within(bar).getByText(forgeCopy.generate.statusWritten)).toBeInTheDocument();
+    fireEvent.click(within(bar).getByRole("button", { name: forgeCopy.generate.compileNow }));
+
+    expect(readDraft()).toEqual({ name: "Vault.sol", source: SOURCE });
+    const sheet = await compileSheet();
+    expect(screen.queryByRole("dialog", { name: forgeCopy.generate.resultsTitle })).toBeNull();
+    expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body))).toEqual({
+      fileName: "Vault.sol",
+      source: SOURCE,
+    });
+    const compiledBar = within(sheet).getByRole("group", { name: journeyCopy.label });
+    fireEvent.click(within(compiledBar).getByRole("button", { name: journeyCopy.gas }));
+    expect(router.push).toHaveBeenLastCalledWith("/studio/gaslens?run=new");
+  });
+
+  it("sends the written contract to MonGuard through the workspace", async () => {
+    fetchMock.mockResolvedValueOnce(json({ data: generated }));
+    renderTool();
+    writeContract();
+    const bar = within(await writtenSheet()).getByRole("group", { name: journeyCopy.label });
+    fireEvent.click(within(bar).getByRole("button", { name: journeyCopy.scan }));
+    expect(readDraft()).toEqual({ name: "Vault.sol", source: SOURCE });
+    expect(router.push).toHaveBeenLastCalledWith("/studio/monguard?run=new");
+  });
+
   it("shows the error with a retry when the AI call fails", async () => {
     fetchMock.mockResolvedValue(
       json({ error: { code: "upstream_busy", message: "busy" } }, { status: 502 })
@@ -377,12 +417,103 @@ describe("ForgeTool: compile", () => {
     expect(code.querySelector('[data-line="l4"]')).toHaveAttribute("data-highlighted", "true");
   });
 
+  it("suggests fixes for compiler errors, shows them, then accepts and compiles", async () => {
+    const fixedSource = SOURCE.replace("{}", "{ }");
+    saveDraft(SOURCE);
+    fetchMock
+      .mockResolvedValueOnce(json({ data: failed }))
+      .mockResolvedValueOnce(
+        json({
+          data: {
+            fixedSource,
+            changes: [{ line: 4, note: "Adds the missing semicolon." }],
+            compile: compiled,
+          },
+        })
+      )
+      .mockResolvedValueOnce(json({ data: compiled }));
+    renderTool();
+    fireEvent.click(screen.getByRole("button", { name: forgeCopy.compile.run }));
+    const sheet = await compileSheet();
+    const bar = within(sheet).getByRole("group", { name: journeyCopy.label });
+    fireEvent.click(within(bar).getByRole("button", { name: forgeCopy.compile.fixes.suggest }));
+
+    expect(await within(sheet).findByText("Adds the missing semicolon.")).toBeInTheDocument();
+    expect(fetchMock.mock.calls[1][0]).toBe("/api/forge/fix");
+    expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body))).toEqual({
+      fileName: "Vault.sol",
+      source: SOURCE,
+    });
+    expect(within(sheet).getByText(forgeCopy.compile.fixes.compiles)).toBeInTheDocument();
+    const diff = within(sheet).getByRole("region", { name: forgeCopy.compile.fixes.diffLabel });
+    expect(diff.querySelector('[data-kind="add"]')).toBeInTheDocument();
+    expect(readDraft().source).toBe(SOURCE);
+
+    fireEvent.click(
+      within(within(sheet).getByRole("group", { name: journeyCopy.label })).getByRole("button", {
+        name: forgeCopy.compile.fixes.accept,
+      })
+    );
+    expect(readDraft().source).toBe(fixedSource);
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+    expect(JSON.parse(String(fetchMock.mock.calls[2][1]?.body)).source).toBe(fixedSource);
+    const after = await compileSheet();
+    expect(await within(after).findByText("deposit()")).toBeInTheDocument();
+  });
+
+  it("goes back to the errors and offers the fixes again", async () => {
+    saveDraft(SOURCE);
+    fetchMock.mockResolvedValueOnce(json({ data: failed })).mockResolvedValueOnce(
+      json({
+        data: {
+          fixedSource: `${SOURCE}\n`,
+          changes: [{ line: 4, note: "Adds the missing semicolon." }],
+          compile: compiled,
+        },
+      })
+    );
+    renderTool();
+    fireEvent.click(screen.getByRole("button", { name: forgeCopy.compile.run }));
+    const sheet = await compileSheet();
+    fireEvent.click(within(sheet).getByRole("button", { name: forgeCopy.compile.fixes.suggest }));
+    fireEvent.click(
+      await within(sheet).findByRole("button", { name: forgeCopy.compile.fixes.back })
+    );
+    expect(within(sheet).getByText(failed.errors[0].message)).toBeInTheDocument();
+    fireEvent.click(within(sheet).getByRole("button", { name: forgeCopy.compile.fixes.show }));
+    expect(within(sheet).getByText("Adds the missing semicolon.")).toBeInTheDocument();
+  });
+
+  it("does not offer suggested fixes once the contract compiles", async () => {
+    saveDraft(SOURCE);
+    fetchMock.mockResolvedValueOnce(json({ data: compiled }));
+    renderTool();
+    fireEvent.click(screen.getByRole("button", { name: forgeCopy.compile.run }));
+    const sheet = await compileSheet();
+    expect(
+      within(sheet).queryByRole("button", { name: forgeCopy.compile.fixes.suggest })
+    ).toBeNull();
+  });
+
   it("says when nothing in the file can be deployed", async () => {
     saveDraft("interface IVault {}");
     fetchMock.mockResolvedValueOnce(json({ data: { ...compiled, contracts: [] } }));
     renderTool();
     fireEvent.click(screen.getByRole("button", { name: forgeCopy.compile.run }));
     expect(await screen.findByText(forgeCopy.compile.nothingToDeploy)).toBeInTheDocument();
+  });
+
+  it("compiles by itself when a contract is sent here", async () => {
+    saveDraft(SOURCE);
+    fetchMock.mockResolvedValueOnce(json({ data: compiled }));
+    render(
+      <QueryClientProvider client={newClient()}>
+        <ForgeTool autoRun />
+      </QueryClientProvider>
+    );
+    await compileSheet();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledWith("/studio/forge");
   });
 
   it("blocks a contract over the size limit", () => {

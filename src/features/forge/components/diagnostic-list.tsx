@@ -9,7 +9,7 @@ export function DiagnosticList({
 }: {
   label: string;
   items: readonly Diagnostic[];
-  onFocusLine: (line: number) => void;
+  onFocusLine?: (line: number) => void;
 }) {
   return (
     <div className="flex flex-col gap-2">
@@ -25,7 +25,7 @@ export function DiagnosticList({
           >
             <span className="flex flex-wrap items-center gap-3 font-mono text-xs text-muted-foreground">
               <span>{item.kind}</span>
-              {item.line ? (
+              {item.line && onFocusLine ? (
                 <button
                   type="button"
                   onClick={() => onFocusLine(item.line ?? 1)}
@@ -33,6 +33,8 @@ export function DiagnosticList({
                 >
                   {lineLabel(item.line)}
                 </button>
+              ) : item.line ? (
+                <span>{lineLabel(item.line)}</span>
               ) : null}
             </span>
             <span>{item.message}</span>

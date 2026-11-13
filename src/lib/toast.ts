@@ -18,6 +18,7 @@ interface ToastOptions {
   id?: string;
   description?: string;
   action?: ToastAction;
+  duration?: number;
 }
 
 const DURATIONS: Record<ToastKind, number> = {
@@ -37,14 +38,14 @@ function emit() {
   for (const listener of listeners) listener();
 }
 
-function show(kind: ToastKind, title: string, { id, ...options }: ToastOptions = {}) {
+function show(kind: ToastKind, title: string, { id, duration, ...options }: ToastOptions = {}) {
   counter += 1;
   const item: ToastItem = {
     id: id ?? `toast-${counter}`,
     kind,
     title,
     ...options,
-    duration: DURATIONS[kind],
+    duration: duration ?? DURATIONS[kind],
   };
   items = items.some((existing) => existing.id === item.id)
     ? items.map((existing) => (existing.id === item.id ? item : existing))
