@@ -92,3 +92,8 @@ export function toGenerated(reply: z.infer<typeof generateReplySchema>) {
     notes: reply.notes.map((note) => note.replaceAll("`", "").trim()).filter(Boolean),
   };
 }
+
+export const forgeRunSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("generate"), contract: generatedContractSchema }),
+  z.object({ kind: z.literal("compile"), fileName: z.string(), result: compileResultSchema }),
+]);

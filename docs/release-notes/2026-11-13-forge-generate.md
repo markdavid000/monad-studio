@@ -7,7 +7,15 @@ scenario-impact: needs_automation
 
 # MonadForge writes and compiles contracts
 
-Results follow the studio's layout: the written contract and the compile results each open in the wide results layer over the page, code on the left and results on the right, with Show contract and Show results to reopen them. Progress and errors are toasts.
+The page fits on one screen: two cards side by side, Write a contract and Compile. The Compile card summarises the workspace contract (file, length, pragma, declared contracts) instead of printing the whole source; the code is in the workspace and in the results. Each result opens in the results layer over the page, code on the left and results on the right, with Show contract and Show results to reopen it, and the card shows the last result's status (and whether the workspace changed since the last compile). Progress and errors are toasts.
+
+Every written contract and every compile is saved to Activity as a MonadForge run, with its own filter, and reopens from there without another request.
+
+Across the studio (MonGuard, GasLens and MonadForge):
+
+- A tool keeps its last result for the browser tab. Leave for another page and come back: the Show results button and the result are still there.
+- A run started before leaving the page still finishes, is saved to Activity and announces itself in a toast; the tool shows it as running when you come back. Recording now happens in the request itself, not in the page that started it.
+- The results layer is wider: the window width less 3 rem on large screens, with no maximum.
 
 `/studio/forge` is open in the studio sidebar and from the workspace's Compile action.
 

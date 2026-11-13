@@ -57,8 +57,11 @@ function saveDraft(source: string, name = "Bank.sol") {
   window.dispatchEvent(new Event("monad-studio:draft-change"));
 }
 
-function renderTool(runId?: string) {
-  const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+function newClient() {
+  return new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+}
+
+function renderTool(runId?: string, client = newClient()) {
   return render(
     <QueryClientProvider client={client}>
       <MonguardTool runId={runId} />
@@ -93,6 +96,7 @@ beforeEach(async () => {
   await clearRuns();
   for (const item of toast.items()) toast.dismiss(item.id);
   window.localStorage.clear();
+  window.sessionStorage.clear();
   window.localStorage.setItem("monad-studio:seen:monguard", "seen");
   fetchMock.mockReset();
   vi.stubGlobal("fetch", fetchMock);
@@ -240,6 +244,41 @@ describe("MonguardTool", () => {
     await vi.waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(screen.getByRole("button", { name: monguardCopy.rescan })).toBeEnabled();
     fireEvent.click(screen.getByRole("button", { name: monguardCopy.showResults }));
+    expect(within(await results()).getByText(report.summary)).toBeInTheDocument();
+  });
+
+  it("keeps the last result and its button after leaving the page and coming back", async () => {
+    saveDraft(SOURCE);
+    fetchMock.mockImplementation(async () => json({ data: report }));
+    const client = newClient();
+    const first = renderTool(undefined, client);
+    fireEvent.click(scanButton());
+    await results();
+    await vi.waitFor(async () => expect(await listRuns()).toHaveLength(1));
+    first.unmount();
+
+    renderTool(undefined, client);
+    fireEvent.click(await screen.findByRole("button", { name: monguardCopy.showResults }));
+    expect(within(await results()).getByText(report.summary)).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("finishes and saves a scan started before leaving the page", async () => {
+    saveDraft(SOURCE);
+    let resolve: (response: Response) => void = () => undefined;
+    fetchMock.mockReturnValue(new Promise((done) => (resolve = done)));
+    const client = newClient();
+    const first = renderTool(undefined, client);
+    fireEvent.click(scanButton());
+    await screen.findByRole("button", { name: monguardCopy.scanning });
+    first.unmount();
+
+    renderTool(undefined, client);
+    expect(screen.getByRole("button", { name: monguardCopy.scanning })).toBeDisabled();
+    await act(async () => resolve(json({ data: report })));
+    await vi.waitFor(async () => expect(await listRuns()).toHaveLength(1));
+    expect(await findText(monguardCopy.doneTitle)).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("button", { name: monguardCopy.showResults }));
     expect(within(await results()).getByText(report.summary)).toBeInTheDocument();
   });
 

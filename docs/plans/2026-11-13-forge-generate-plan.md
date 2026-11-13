@@ -19,7 +19,11 @@ One Groq call with a strict JSON schema (`contractName`, `summary`, `source`, `n
 
 ## Not in this step
 
-Deploy, verification, and saving forge runs to Activity (deploys are recorded in step 6). Multi file sources and imports.
+Deploy and verification. Multi file sources and imports.
+
+## Activity and last result
+
+Each written contract and each compile is saved as a `forge` run (`report` is `{ kind: "generate", contract }` or `{ kind: "compile", fileName, result }`) and reopens through `?run=`. Every tool records from its mutation's own callbacks and remembers its last run id per tab, so results survive navigating within the studio.
 
 ## Tests
 

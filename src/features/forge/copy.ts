@@ -7,6 +7,8 @@ export const forgeCopy = {
   untitled: "Untitled.sol",
   generate: {
     heading: "Write a contract",
+    lead: "Describe what it should do. The result opens beside its code, and you choose whether it goes into the workspace.",
+    lastLabel: "Last written",
     label: "Describe the contract",
     placeholder:
       "A token called Monad Gold with symbol MGLD, a fixed supply of one million minted to the deployer, and a burn function.",
@@ -38,6 +40,14 @@ export const forgeCopy = {
   },
   compile: {
     heading: "Compile",
+    lead: "Compiles the contract in your workspace exactly as written. Edit it in the workspace, compile it here.",
+    lengthLabel: "Length",
+    pragmaLabel: "Solidity",
+    noPragma: "Not declared",
+    declaresLabel: "Declares",
+    noDeclarations: "No contract found yet",
+    lastLabel: "Last compile",
+    changedSince: "The workspace changed since then.",
     codeLabel: "Workspace contract",
     compiledCodeLabel: "Compiled contract",
     resultsTitle: "Compile results",
@@ -96,6 +106,10 @@ export function errorsTitle(count: number) {
   return count === 1 ? "1 compiler error" : `${count} compiler errors`;
 }
 
+export function linesAndSize(lines: number, size: string) {
+  return `${lines === 1 ? "1 line" : `${lines} lines`} · ${size}`;
+}
+
 export function lineLabel(line: number) {
   return `Line ${line}`;
 }
@@ -106,4 +120,12 @@ export function sizeLabel(kilobytes: string) {
 
 export function compilerLabel(version: string) {
   return `solc ${version}`;
+}
+
+export function writtenSummary(compiles: boolean, errorCount: number) {
+  return compiles ? "Written, compiles" : `Written, ${errorsTitle(errorCount)}`;
+}
+
+export function compileSummary(compiled: boolean, count: number) {
+  return compiled ? compiledTitle(count) : errorsTitle(count);
 }
