@@ -20,6 +20,7 @@ export const config = {
     "/studio/:path*",
     "/api/monguard/:path*",
     "/api/gaslens/:path*",
+    "/api/forge/:path*",
     "/api/history",
     "/api/history/:path*",
   ],

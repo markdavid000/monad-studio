@@ -1,0 +1,8 @@
+import type { z } from "zod";
+import type { compileResultSchema, generatedContractSchema } from "./lib/schema";
+
+export type CompileResult = z.infer<typeof compileResultSchema>;
+export type CompiledContract = Extract<CompileResult, { status: "compiled" }>["contracts"][number];
+export type Diagnostic = CompileResult["warnings"][number];
+export type AbiItem = CompiledContract["abi"][number];
+export type GeneratedContract = z.infer<typeof generatedContractSchema>;

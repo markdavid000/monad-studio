@@ -4,6 +4,7 @@ const OPTIONAL_PEER_STUB = "./stubs/optional-peer.mjs";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  serverExternalPackages: ["solc"],
   experimental: {
     inlineCss: true,
   },

@@ -6,6 +6,7 @@ import { serverEnv } from "./env";
 const LIMITS = {
   ai: { requests: 20, prefix: "monad-studio:ai" },
   sync: { requests: 120, prefix: "monad-studio:sync" },
+  compile: { requests: 60, prefix: "monad-studio:compile" },
 } as const;
 
 type LimitKind = keyof typeof LIMITS;
@@ -53,4 +54,8 @@ export function limitAiCall(request: Request) {
 
 export function limitSyncCall(request: Request) {
   return limitCall("sync", request);
+}
+
+export function limitCompileCall(request: Request) {
+  return limitCall("compile", request);
 }

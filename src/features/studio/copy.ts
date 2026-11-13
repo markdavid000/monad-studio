@@ -15,12 +15,11 @@ export const studioCopy = {
   empty: "Nothing saved yet",
   actionsLabel: "Next step",
   comingNext: "Coming next",
-  actionNote:
-    "Each action opens the matching tool with this contract. MonadForge arrives in a later update.",
+  actionNote: "Each action opens the matching tool with this contract.",
   actions: {
     scan: { label: "Scan for bugs", tool: "MonGuard" },
     optimise: { label: "Optimise gas", tool: "GasLens" },
-    deploy: { label: "Deploy", tool: "MonadForge" },
+    compile: { label: "Compile", tool: "MonadForge" },
   },
   network: {
     title: "Network",
@@ -48,7 +47,7 @@ export const studioCopy = {
       },
       {
         title: "Run a tool on it",
-        body: "The actions under the editor open MonGuard for security and GasLens for gas, already loaded with this contract.",
+        body: "The actions under the editor open MonGuard for security, GasLens for gas and MonadForge to compile, already loaded with this contract.",
       },
       {
         title: "Find your runs later",

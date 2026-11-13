@@ -103,12 +103,14 @@ When two features keep needing each other, they are one feature. Merge them; do 
 | `wallet`    | studio header                        | wagmi and RainbowKit config, providers, connect button             |
 | `monguard`  | `/studio/monguard`, `/demo/monguard` | Security review: schema, prompt, score, findings UI, recorded demo |
 | `gaslens`   | `/studio/gaslens`, `/demo/gaslens`   | Gas review: schema, prompt, diff, findings UI, recorded demo       |
-| `forge`     | `/studio/forge`                      | Generate, compile, deploy, verify                                  |
+| `forge`     | `/studio/forge`                      | Generate and compile (solc on the server); deploy and verify next  |
 | `sentinel`  | `/studio/sentinel`                   | Watch list, activity polling, flagged patterns                     |
 | `paradebug` | `/studio/paradebug`                  | Same-function contention report                                    |
 | `activity`  | `/studio/activity`                   | List, filter, reopen and delete saved runs                         |
 
 Source code handed from one tool to another goes through `hooks/use-contract-draft.ts`, never a feature import.
+
+MonadForge compiles on the server with the pinned `solc` package (listed in `serverExternalPackages`), never rewriting the source, and returns the exact standard JSON input and compiler version so a deploy can be verified byte for byte. `/api/forge/compile` has its own rate limit; `/api/forge/generate` counts against the AI limit.
 
 The three example contracts live in `config/examples.ts`. `/demo` is public and needs no wallet: each tool exports a demo component that shows a report recorded from a real run of each example (`features/<tool>/demo/recorded-reports.json`, parsed with the tool's report schema at load). The demo makes no API call and saves nothing. Re-record those files when a prompt or report schema changes.
 
