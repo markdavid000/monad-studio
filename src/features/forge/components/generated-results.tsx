@@ -67,7 +67,6 @@ export function GeneratedResults({ contract, ...props }: GeneratedResultsProps) 
             </Button>
             <CopyButton text={contract.source} label={copy.copy} copiedLabel={copy.copied} />
           </div>
-          <p className="text-xs text-muted-foreground">{copy.useNote}</p>
           {compile.status === "failed" ? (
             <DiagnosticList
               label={errorsTitle(compile.errors.length)}

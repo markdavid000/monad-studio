@@ -33,7 +33,6 @@ export const forgeCopy = {
     resultsTitle: "Written contract",
     showResult: "Show contract",
     use: "Use in workspace",
-    useNote: "Replaces the contract in your workspace.",
     usedTitle: "Loaded into the workspace",
     copy: "Copy",
     copied: "Copied",
