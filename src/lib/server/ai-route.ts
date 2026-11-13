@@ -25,7 +25,13 @@ export async function readJson(
   }
 }
 
-export function aiRoute<T extends z.ZodType, R>(input: T, run: (value: z.infer<T>) => Promise<R>) {
+export function aiRoute<T extends z.ZodType, R>(
+  input: T,
+  run: (value: z.infer<T>) => Promise<R>,
+  limitCall: (
+    request: Request
+  ) => Promise<{ allowed: boolean; retryAfterSeconds: number }> = limitAiCall
+) {
   return async function handle(request: Request) {
     const address = readSession(request);
     if (!address) {
@@ -40,7 +46,7 @@ export function aiRoute<T extends z.ZodType, R>(input: T, run: (value: z.infer<T
       return errorResponse(400, "invalid_input", z.prettifyError(parsed.error));
     }
     try {
-      const limit = await limitAiCall(request);
+      const limit = await limitCall(request);
       if (!limit.allowed) {
         return errorResponse(429, "rate_limited", "Too many requests.", {
           "Retry-After": String(limit.retryAfterSeconds),

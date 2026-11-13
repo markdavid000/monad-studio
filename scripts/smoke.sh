@@ -3,7 +3,7 @@ set -euo pipefail
 
 PORT="${SMOKE_PORT:-3099}"
 PUBLIC_ROUTES=("/" "/robots.txt" "/sitemap.xml" "/demo" "/demo/monguard" "/demo/gaslens")
-STUDIO_ROUTES=("/studio" "/studio/monguard" "/studio/gaslens" "/studio/activity")
+STUDIO_ROUTES=("/studio" "/studio/monguard" "/studio/gaslens" "/studio/forge" "/studio/activity")
 API_ROUTES=("/api/history")
 LOG="$(mktemp)"
 

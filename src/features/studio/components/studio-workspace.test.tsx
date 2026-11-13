@@ -66,7 +66,7 @@ describe("StudioWorkspace", () => {
     expect(screen.getByText(studioCopy.tooLarge)).toBeInTheDocument();
   });
 
-  it("opens the built tools and marks the one that is not built yet", () => {
+  it("opens each tool from the next step actions", () => {
     render(<StudioWorkspace />);
     expect(
       screen.getByRole("link", { name: new RegExp(studioCopy.actions.scan.label) })
@@ -75,8 +75,8 @@ describe("StudioWorkspace", () => {
       screen.getByRole("link", { name: new RegExp(studioCopy.actions.optimise.label) })
     ).toHaveAttribute("href", "/studio/gaslens");
     expect(
-      screen.getByRole("button", { name: new RegExp(studioCopy.actions.deploy.label) })
-    ).toBeDisabled();
-    expect(screen.getAllByText(new RegExp(studioCopy.comingNext))).toHaveLength(1);
+      screen.getByRole("link", { name: new RegExp(studioCopy.actions.compile.label) })
+    ).toHaveAttribute("href", "/studio/forge");
+    expect(screen.queryByText(new RegExp(studioCopy.comingNext))).not.toBeInTheDocument();
   });
 });

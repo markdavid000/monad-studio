@@ -23,6 +23,7 @@ import {
   pushRuns,
 } from "@/lib/sync-api";
 import { toast } from "@/lib/toast";
+import { rememberLastRun } from "./use-last-run";
 import { addSyncedAddress, removeSyncedAddress, useSyncedAddress } from "./use-synced-address";
 
 const HISTORY_KEY = ["history"] as const;
@@ -90,16 +91,22 @@ function useHistoryMutation<T, R = unknown>(mutationFn: (input: T) => Promise<R>
   });
 }
 
+interface RecordInput {
+  run: NewHistoryRun;
+  slot: string;
+}
+
 export function useRecordRun(tool: HistoryTool) {
   const synced = useSyncedAddress();
-  const save = useHistoryMutation(async (run: NewHistoryRun) => {
+  const save = useHistoryMutation(async ({ run, slot }: RecordInput) => {
     const saved = await saveRun(run);
+    rememberLastRun(slot, saved.id);
     if (synced) await pushRuns([saved]).catch(handleSyncError);
     return saved;
   });
-  return (run: Omit<NewHistoryRun, "tool">) =>
+  return (run: Omit<NewHistoryRun, "tool">, slot: string = tool) =>
     save.mutate(
-      { ...run, tool },
+      { run: { ...run, tool }, slot },
       {
         onError: (error) => {
           console.error(error);

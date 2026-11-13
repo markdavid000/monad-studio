@@ -1,4 +1,4 @@
-export const HISTORY_TOOLS = ["monguard", "gaslens"] as const;
+export const HISTORY_TOOLS = ["monguard", "gaslens", "forge"] as const;
 export const HISTORY_LIMIT = 200;
 
 export type HistoryTool = (typeof HISTORY_TOOLS)[number];

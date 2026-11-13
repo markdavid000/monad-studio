@@ -27,7 +27,7 @@ export function ResultsSheet(props: ResultsSheetProps) {
           onPointerDownOutside={(event) => {
             if (isInToasts(event.target)) event.preventDefault();
           }}
-          className="sheet fixed inset-y-0 right-0 z-50 flex w-full max-w-[min(100vw,88rem)] flex-col border-l bg-background shadow-2xl outline-none lg:w-[92vw]"
+          className="sheet fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l bg-background shadow-2xl outline-none lg:w-[calc(100vw-3rem)]"
         >
           <div className="flex items-center justify-between gap-4 border-b px-5 py-3 sm:px-8">
             <div className="flex min-w-0 flex-col">
