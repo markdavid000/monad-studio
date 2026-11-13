@@ -14,6 +14,7 @@ import { COMPILE_SLOT, useCompile } from "./use-compile";
 import { DEPLOY_SLOT, useDeploy } from "./use-deploy";
 import { useDeployForm } from "./use-deploy-form";
 import { useSubmitVerification, useVerification } from "./use-verification";
+import { VERIFY_SLOT, useVerifySource } from "./use-verify-source";
 import { useFixErrors } from "./use-fix-errors";
 import { GENERATE_SLOT, useGenerate } from "./use-generate";
 
@@ -33,7 +34,9 @@ function asCompiled(
   run: ForgeRun | undefined,
   source: string | undefined
 ): SavedCompile | undefined {
-  if (!run || run.kind === "generate" || source === undefined) return undefined;
+  if (!run || (run.kind !== "compile" && run.kind !== "deploy") || source === undefined) {
+    return undefined;
+  }
   return { result: run.result, fileName: run.fileName, source };
 }
 
@@ -69,6 +72,19 @@ export function useForge(runId?: string, autoRun = false) {
   const lastWritten = useSavedRun("forge", useLastRunId(GENERATE_SLOT), forgeRunSchema);
   const lastCompiled = useSavedRun("forge", useLastRunId(COMPILE_SLOT), forgeRunSchema);
   const lastDeployed = useSavedRun("forge", useLastRunId(DEPLOY_SLOT), forgeRunSchema);
+  const lastVerified = useSavedRun("forge", useLastRunId(VERIFY_SLOT), forgeRunSchema);
+  const [chosenTab, setTab] = useState<"build" | "verify">();
+  const tab = chosenTab ?? (opened.report?.kind === "verify" ? "verify" : "build");
+  const verifiedRun =
+    opened.report?.kind === "verify"
+      ? opened.report
+      : lastVerified.report?.kind === "verify"
+        ? lastVerified.report
+        : undefined;
+  const verifySource = useVerifySource(
+    { name: draft.name, source: draft.source, outline: outlineOf(draft.source) },
+    verifiedRun?.address
+  );
 
   const generated =
     generation.contract ?? asGenerated(opened.report) ?? asGenerated(lastWritten.report);
@@ -212,6 +228,9 @@ export function useForge(runId?: string, autoRun = false) {
       accept(forgeCopy.compile.fixes.acceptedTitle, compiled.fileName, suggestedFix.fixedSource);
       compileSource(compiled.fileName, suggestedFix.fixedSource);
     },
+    tab,
+    setTab,
+    verifySource,
     deployForm,
     deploy,
     isDeploying: deployer.isRunning,

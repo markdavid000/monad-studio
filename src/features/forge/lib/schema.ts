@@ -97,6 +97,13 @@ export const forgeRunSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("generate"), contract: generatedContractSchema }),
   z.object({ kind: z.literal("compile"), fileName: z.string(), result: compileResultSchema }),
   z.object({
+    kind: z.literal("verify"),
+    fileName: z.string(),
+    contractName: z.string(),
+    address: z.string(),
+    compilerVersion: z.string(),
+  }),
+  z.object({
     kind: z.literal("deploy"),
     fileName: z.string(),
     result: compileResultSchema,
@@ -143,4 +150,30 @@ export const deploymentSchema = z.object({
   contractName: z.string(),
   address: addressSchema,
   txHash: z.string().regex(TX_HASH_PATTERN),
+});
+
+export const EVM_VERSIONS = [
+  "default",
+  "osaka",
+  "prague",
+  "cancun",
+  "shanghai",
+  "paris",
+  "london",
+  "berlin",
+  "istanbul",
+] as const;
+
+export const verifySourceInputSchema = z.object({
+  address: addressSchema,
+  fileName: compileInputSchema.shape.fileName,
+  source: compileInputSchema.shape.source,
+  contractName: z.string().regex(/^[A-Za-z_$][\w$]*$/, "Enter the contract's name."),
+  compilerVersion: z
+    .string()
+    .trim()
+    .regex(/^v?\d+\.\d+\.\d+(\+commit\.[0-9a-f]+)?$/, "Enter a version like 0.8.28."),
+  optimizerEnabled: z.boolean(),
+  optimizerRuns: z.int().min(0).max(4_294_967_295),
+  evmVersion: z.enum(EVM_VERSIONS),
 });

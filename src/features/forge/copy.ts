@@ -145,6 +145,36 @@ export const forgeCopy = {
     check: "Check again",
     submitFailed: "Could not reach Sourcify. Try again in a moment.",
   },
+  tabs: {
+    label: "MonadForge mode",
+    build: "Write, compile, deploy",
+    verify: "Verify a deployed contract",
+  },
+  verifySource: {
+    heading: "Contract on chain",
+    lead: "Publish the source of a contract already deployed on Monad testnet, by you or anyone else, on Sourcify.",
+    sourceHeading: "Source",
+    sourceLead:
+      "The contract in your workspace is the source that gets checked. Paste it there first.",
+    addressLabel: "Contract address",
+    contractLabel: "Contract name",
+    noContracts: "No contract found in the workspace source",
+    versionLabel: "Compiler version",
+    versionHint:
+      "The version it was compiled with, like 0.8.28. A full build like 0.8.28+commit.7893614a works too.",
+    fileLabel: "File name",
+    fileHint: "Use the file name from your project to get an exact match.",
+    optimizerLabel: "Optimizer was on",
+    runsLabel: "Optimizer runs",
+    evmLabel: "EVM version",
+    evmDefault: "Compiler default",
+    run: "Verify on Sourcify",
+    running: "Submitting",
+    statusLabel: "Status",
+    enterAddress: "Enter the address to see its status.",
+    submittedTitle: "Submitted to Sourcify",
+    failedTitle: "Could not submit to Sourcify",
+  },
   intro: {
     title: "MonadForge: write and compile",
     body: "MonadForge writes contracts from a description and compiles the contract in your workspace.",
@@ -204,4 +234,8 @@ export function deployLabel(name: string) {
 
 export function deployedSummary(address: string) {
   return `Deployed at ${address.slice(0, 6)}…${address.slice(-4)}`;
+}
+
+export function verifySummary(address: string) {
+  return `Verification of ${address.slice(0, 6)}…${address.slice(-4)}`;
 }

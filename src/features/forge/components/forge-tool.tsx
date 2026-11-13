@@ -3,6 +3,7 @@
 import { IntroDialog } from "@/components/ui/intro-dialog";
 import { PageTitle } from "@/components/ui/page-title";
 import { historyCopy } from "@/lib/copy";
+import { cn } from "@/lib/utils";
 import { forgeCopy } from "../copy";
 import { useForge } from "../hooks/use-forge";
 import { CompilePanel } from "./compile-panel";
@@ -12,6 +13,7 @@ import { DeploymentCard } from "./deployment-card";
 import { GeneratePanel } from "./generate-panel";
 import { GeneratedResults } from "./generated-results";
 import { CompiledNextStep, WrittenNextStep } from "./next-step";
+import { VerifyPanel } from "./verify-panel";
 
 interface ForgeToolProps {
   runId?: string;
@@ -34,29 +36,68 @@ export function ForgeTool({ runId, autoRun }: ForgeToolProps) {
           {historyCopy.missing}
         </p>
       ) : null}
-      <div className="grid items-stretch gap-6 lg:grid-cols-2">
-        <GeneratePanel
-          prompt={forge.prompt}
-          onPromptChange={forge.setPrompt}
-          canGenerate={forge.canGenerate}
-          isGenerating={forge.isGenerating}
-          generated={generated}
-          onGenerate={forge.generate}
-          onShowResult={() => forge.showResults("generated")}
-        />
-        <CompilePanel
-          fileName={forge.fileName}
-          source={forge.source}
-          outline={forge.outline}
-          isEmpty={forge.isEmpty}
-          isTooLarge={forge.isTooLarge}
-          isCompiling={forge.isCompiling}
-          lastResult={compiled?.result}
-          isStale={forge.isStale}
-          onCompile={forge.compile}
-          onShowResult={() => forge.showResults("compiled")}
-        />
+      <div
+        role="tablist"
+        aria-label={forgeCopy.tabs.label}
+        className="flex w-fit rounded-lg border p-1"
+      >
+        {(["build", "verify"] as const).map((tab) => (
+          <button
+            key={tab}
+            type="button"
+            role="tab"
+            id={`forge-tab-${tab}`}
+            aria-selected={forge.tab === tab}
+            aria-controls={`forge-panel-${tab}`}
+            onClick={() => forge.setTab(tab)}
+            className={cn(
+              "rounded-md px-3 py-1.5 text-sm transition-colors",
+              forge.tab === tab
+                ? "bg-muted text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {forgeCopy.tabs[tab]}
+          </button>
+        ))}
       </div>
+      {forge.tab === "build" ? (
+        <div role="tabpanel" id="forge-panel-build" aria-labelledby="forge-tab-build">
+          <div className="grid items-stretch gap-6 lg:grid-cols-2">
+            <GeneratePanel
+              prompt={forge.prompt}
+              onPromptChange={forge.setPrompt}
+              canGenerate={forge.canGenerate}
+              isGenerating={forge.isGenerating}
+              generated={generated}
+              onGenerate={forge.generate}
+              onShowResult={() => forge.showResults("generated")}
+            />
+            <CompilePanel
+              fileName={forge.fileName}
+              source={forge.source}
+              outline={forge.outline}
+              isEmpty={forge.isEmpty}
+              isTooLarge={forge.isTooLarge}
+              isCompiling={forge.isCompiling}
+              lastResult={compiled?.result}
+              isStale={forge.isStale}
+              onCompile={forge.compile}
+              onShowResult={() => forge.showResults("compiled")}
+            />
+          </div>
+        </div>
+      ) : (
+        <div role="tabpanel" id="forge-panel-verify" aria-labelledby="forge-tab-verify">
+          <VerifyPanel
+            form={forge.verifySource}
+            fileName={forge.fileName}
+            source={forge.source}
+            outline={forge.outline}
+            isTooLarge={forge.isTooLarge}
+          />
+        </div>
+      )}
       {generated ? (
         <GeneratedResults
           contract={generated}
