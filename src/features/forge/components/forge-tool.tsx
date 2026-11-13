@@ -82,9 +82,17 @@ export function ForgeTool({ runId, autoRun }: ForgeToolProps) {
           isStale={forge.isStale}
           focusedLine={forge.focusedLine}
           onFocusLine={forge.setFocusedLine}
+          suggestedFix={forge.compileView === "fixes" ? forge.suggestedFix : undefined}
+          onBackToResult={forge.showCompileResult}
           footer={
             <CompiledNextStep
               isCompiled={compiled.result.status === "compiled"}
+              view={forge.compileView}
+              hasFix={forge.suggestedFix !== undefined && forge.suggestedFix.changes.length > 0}
+              isSuggesting={forge.isSuggestingFixes}
+              onSuggest={forge.suggestFixes}
+              onShowFix={forge.showSuggestedFix}
+              onAcceptFix={forge.acceptSuggestedFix}
               onSend={forge.sendCompiled}
             />
           }

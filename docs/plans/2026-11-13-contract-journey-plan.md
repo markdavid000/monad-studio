@@ -8,6 +8,7 @@ ADR: [ADR-2026-11-13-contract-journey](../adr/ADR-2026-11-13-contract-journey.md
 - MonGuard: `fixInputSchema`, `fixReplySchema`, `toFixResult`, `monguardRunSchema` (a saved run is a scan report or `{ kind: "fix", scan, fix }`); `server/fix.ts`; `app/api/monguard/fix`; `useFix`; checkboxes on findings with a fix; `FixDiff` and `FixPanel` replace the code and findings while reviewing fixes; `NextStep` bar.
 - GasLens: `NextStep` bar with Accept rewrite (only when the check is clear), Scan in MonGuard, Compile in MonadForge.
 - MonadForge: `WrittenNextStep` (Use in workspace, Scan, Review gas, Compile) and `CompiledNextStep` (Scan, Review gas).
+- MonadForge compile errors (amendment): `server/fix-errors.ts`, `app/api/forge/fix`, `useFixErrors`, `ErrorFixPanel`; `DiffCode` in `components/ui` shared with MonGuard's `FixDiff`.
 - Tool pages read `run=new` as `autoRun`.
 
 ## State

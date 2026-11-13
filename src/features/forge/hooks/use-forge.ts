@@ -11,6 +11,7 @@ import { forgeRunSchema, PROMPT_MAX_LENGTH, PROMPT_MIN_LENGTH, toFileName } from
 import { outlineOf } from "../lib/outline";
 import type { ForgeRun, GeneratedContract } from "../types";
 import { COMPILE_SLOT, useCompile } from "./use-compile";
+import { useFixErrors } from "./use-fix-errors";
 import { GENERATE_SLOT, useGenerate } from "./use-generate";
 
 type ResultsKind = "generated" | "compiled";
@@ -52,6 +53,7 @@ export function useForge(runId?: string, autoRun = false) {
   }
 
   const accept = useAcceptContract();
+  const [isShowingCompileResult, setShowingCompileResult] = useState(false);
   const send = useSendContract();
   const generation = useGenerate(() => showResults("generated"));
   const compilation = useCompile(() => showResults("compiled"));
@@ -74,6 +76,17 @@ export function useForge(runId?: string, autoRun = false) {
     freshCompile ??
     asCompiled(opened.report, opened.source) ??
     asCompiled(lastCompiled.report, lastCompiled.source);
+
+  const errorFix = useFixErrors(() => {
+    setShowingCompileResult(false);
+    showResults("compiled");
+  });
+  const suggestedFix =
+    errorFix.fix && compiled && errorFix.request?.source === compiled.source
+      ? errorFix.fix
+      : undefined;
+  const compileView: "result" | "fixes" =
+    suggestedFix && suggestedFix.changes.length > 0 && !isShowingCompileResult ? "fixes" : "result";
 
   const trimmed = prompt.trim();
 
@@ -125,6 +138,21 @@ export function useForge(runId?: string, autoRun = false) {
     compileGenerated,
     sendGenerated,
     isGeneratedInWorkspace: generated !== undefined && draft.source === generated.source,
+    suggestedFix,
+    compileView,
+    isSuggestingFixes: errorFix.isRunning,
+    suggestFixes: () => {
+      if (compiled?.result.status === "failed") {
+        errorFix.suggest({ fileName: compiled.fileName, source: compiled.source });
+      }
+    },
+    showCompileResult: () => setShowingCompileResult(true),
+    showSuggestedFix: () => setShowingCompileResult(false),
+    acceptSuggestedFix: () => {
+      if (!compiled || !suggestedFix) return;
+      accept(forgeCopy.compile.fixes.acceptedTitle, compiled.fileName, suggestedFix.fixedSource);
+      compileSource(compiled.fileName, suggestedFix.fixedSource);
+    },
     sendCompiled: (tool: JourneyTool) => {
       if (compiled) send(tool, compiled.source);
     },

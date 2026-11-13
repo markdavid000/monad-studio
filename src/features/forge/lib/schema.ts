@@ -97,3 +97,14 @@ export const forgeRunSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("generate"), contract: generatedContractSchema }),
   z.object({ kind: z.literal("compile"), fileName: z.string(), result: compileResultSchema }),
 ]);
+
+export const errorFixReplySchema = z.object({
+  fixedSource: z.string(),
+  changes: z.array(z.object({ line: z.number(), note: z.string() })),
+});
+
+export const errorFixSchema = z.object({
+  fixedSource: z.string(),
+  changes: z.array(z.object({ line: z.number(), note: z.string() })),
+  compile: compileResultSchema,
+});

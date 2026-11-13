@@ -1,4 +1,4 @@
-import { FileInput, Fuel, Hammer, ShieldCheck } from "lucide-react";
+import { Check, FileInput, Fuel, Hammer, LoaderCircle, ShieldCheck, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NextStepBar } from "@/components/ui/next-step-bar";
 import type { JourneyTool } from "@/hooks/use-send-contract";
@@ -49,17 +49,48 @@ export function WrittenNextStep(props: WrittenNextStepProps) {
 
 interface CompiledNextStepProps {
   isCompiled: boolean;
+  view: "result" | "fixes";
+  hasFix: boolean;
+  isSuggesting: boolean;
+  onSuggest: () => void;
+  onShowFix: () => void;
+  onAcceptFix: () => void;
   onSend: (tool: JourneyTool) => void;
 }
 
-export function CompiledNextStep({ isCompiled, onSend }: CompiledNextStepProps) {
+export function CompiledNextStep(props: CompiledNextStepProps) {
   const copy = forgeCopy.compile;
+  const isReviewing = props.view === "fixes";
   return (
     <NextStepBar
       label={journeyCopy.label}
-      status={isCompiled ? copy.statusCompiled : copy.statusFailed}
+      status={
+        isReviewing ? copy.fixes.status : props.isCompiled ? copy.statusCompiled : copy.statusFailed
+      }
+      note={isReviewing ? copy.fixes.note : undefined}
     >
-      <SendButtons onSend={onSend} />
+      {isReviewing ? (
+        <Button onClick={props.onAcceptFix}>
+          <Check aria-hidden />
+          {copy.fixes.accept}
+        </Button>
+      ) : null}
+      {!isReviewing && props.hasFix ? (
+        <Button variant="outline" onClick={props.onShowFix}>
+          {copy.fixes.show}
+        </Button>
+      ) : null}
+      {!isReviewing && !props.isCompiled ? (
+        <Button onClick={props.onSuggest} disabled={props.isSuggesting}>
+          {props.isSuggesting ? (
+            <LoaderCircle aria-hidden className="animate-spin" />
+          ) : (
+            <Wrench aria-hidden />
+          )}
+          {props.isSuggesting ? copy.fixes.suggesting : copy.fixes.suggest}
+        </Button>
+      ) : null}
+      <SendButtons onSend={props.onSend} />
     </NextStepBar>
   );
 }

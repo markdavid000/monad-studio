@@ -13,6 +13,7 @@ Each tool gives you advice, but you have to act on it yourself. MonGuard suggest
 - **MonGuard can apply its fixes.** You tick the fixes you want (all are ticked to start), press Review fixes, and the AI writes the corrected contract. You see exactly what changed, line by line, before you press Accept fixes. Nothing changes until you do.
 - **GasLens can apply its rewrite**, after you have seen the changes, but only when its safety check found no change in behaviour. If the check raised a concern or could not run, the button stays off and says why.
 - **MonadForge's written contract** can go straight to MonGuard, to GasLens, or to Compile. Compile closes the panel and starts compiling on the same page.
+- **MonadForge can fix compiler errors.** When a compile fails, Suggest fixes asks the AI for a version that compiles. You see each change and whether it now compiles, then Accept and compile, or go back.
 - **Sending a contract** puts it in your workspace, opens the next tool and starts it for you, so it is one press.
 - **Accepting is undoable** for ten seconds, in case you pressed it by mistake.
 

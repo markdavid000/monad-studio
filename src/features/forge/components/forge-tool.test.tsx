@@ -417,6 +417,84 @@ describe("ForgeTool: compile", () => {
     expect(code.querySelector('[data-line="l4"]')).toHaveAttribute("data-highlighted", "true");
   });
 
+  it("suggests fixes for compiler errors, shows them, then accepts and compiles", async () => {
+    const fixedSource = SOURCE.replace("{}", "{ }");
+    saveDraft(SOURCE);
+    fetchMock
+      .mockResolvedValueOnce(json({ data: failed }))
+      .mockResolvedValueOnce(
+        json({
+          data: {
+            fixedSource,
+            changes: [{ line: 4, note: "Adds the missing semicolon." }],
+            compile: compiled,
+          },
+        })
+      )
+      .mockResolvedValueOnce(json({ data: compiled }));
+    renderTool();
+    fireEvent.click(screen.getByRole("button", { name: forgeCopy.compile.run }));
+    const sheet = await compileSheet();
+    const bar = within(sheet).getByRole("group", { name: journeyCopy.label });
+    fireEvent.click(within(bar).getByRole("button", { name: forgeCopy.compile.fixes.suggest }));
+
+    expect(await within(sheet).findByText("Adds the missing semicolon.")).toBeInTheDocument();
+    expect(fetchMock.mock.calls[1][0]).toBe("/api/forge/fix");
+    expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body))).toEqual({
+      fileName: "Vault.sol",
+      source: SOURCE,
+    });
+    expect(within(sheet).getByText(forgeCopy.compile.fixes.compiles)).toBeInTheDocument();
+    const diff = within(sheet).getByRole("region", { name: forgeCopy.compile.fixes.diffLabel });
+    expect(diff.querySelector('[data-kind="add"]')).toBeInTheDocument();
+    expect(readDraft().source).toBe(SOURCE);
+
+    fireEvent.click(
+      within(within(sheet).getByRole("group", { name: journeyCopy.label })).getByRole("button", {
+        name: forgeCopy.compile.fixes.accept,
+      })
+    );
+    expect(readDraft().source).toBe(fixedSource);
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+    expect(JSON.parse(String(fetchMock.mock.calls[2][1]?.body)).source).toBe(fixedSource);
+    const after = await compileSheet();
+    expect(await within(after).findByText("deposit()")).toBeInTheDocument();
+  });
+
+  it("goes back to the errors and offers the fixes again", async () => {
+    saveDraft(SOURCE);
+    fetchMock.mockResolvedValueOnce(json({ data: failed })).mockResolvedValueOnce(
+      json({
+        data: {
+          fixedSource: `${SOURCE}\n`,
+          changes: [{ line: 4, note: "Adds the missing semicolon." }],
+          compile: compiled,
+        },
+      })
+    );
+    renderTool();
+    fireEvent.click(screen.getByRole("button", { name: forgeCopy.compile.run }));
+    const sheet = await compileSheet();
+    fireEvent.click(within(sheet).getByRole("button", { name: forgeCopy.compile.fixes.suggest }));
+    fireEvent.click(
+      await within(sheet).findByRole("button", { name: forgeCopy.compile.fixes.back })
+    );
+    expect(within(sheet).getByText(failed.errors[0].message)).toBeInTheDocument();
+    fireEvent.click(within(sheet).getByRole("button", { name: forgeCopy.compile.fixes.show }));
+    expect(within(sheet).getByText("Adds the missing semicolon.")).toBeInTheDocument();
+  });
+
+  it("does not offer suggested fixes once the contract compiles", async () => {
+    saveDraft(SOURCE);
+    fetchMock.mockResolvedValueOnce(json({ data: compiled }));
+    renderTool();
+    fireEvent.click(screen.getByRole("button", { name: forgeCopy.compile.run }));
+    const sheet = await compileSheet();
+    expect(
+      within(sheet).queryByRole("button", { name: forgeCopy.compile.fixes.suggest })
+    ).toBeNull();
+  });
+
   it("says when nothing in the file can be deployed", async () => {
     saveDraft("interface IVault {}");
     fetchMock.mockResolvedValueOnce(json({ data: { ...compiled, contracts: [] } }));
