@@ -21,4 +21,4 @@ The standalone Verify tab for contracts deployed elsewhere comes next. Tuple con
 
 ## Verification
 
-Route tests for every Sourcify answer, argument parsing tests, component tests for the deploy and verification states. Live: the Sourcify server answers `/health`, lists chain 10143 as supported, and a probe job for an empty address completed with `contract_not_deployed` in the shape the code reads. The first real deploy and verification from a wallet is the spike the verification ADR asks for; its result is recorded in that ADR.
+Route tests for every Sourcify answer, argument parsing tests, component tests for the deploy and verification states. Live: the Sourcify server answers `/health`, lists chain 10143 as supported, and a probe job for an empty address completed with `contract_not_deployed` in the shape the code reads. The spike passed: a MonadForge contract deployed from MetaMask at `0xe5665A69afA64028837B36632636E97CA8d7C59b` was verified with an exact match five seconds after its block, recorded in the verification ADR.

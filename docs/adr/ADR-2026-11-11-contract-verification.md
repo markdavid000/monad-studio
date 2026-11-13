@@ -1,6 +1,6 @@
 # ADR-2026-11-11: Contract verification
 
-- **Status:** Accepted; the Sourcify spike runs before the forge pull request
+- **Status:** Accepted; Sourcify spike passed on 13 Nov 2026 (see Spike result)
 - **Approved by:** (MarkDavid, 11th Nov 2026)
 - **Companion:** [ADR-2026-11-11-contract-verification-for-dummies.md](ADR-2026-11-11-contract-verification-for-dummies.md)
 
@@ -34,6 +34,16 @@ Monad's explorers read verified sources from Sourcify. Monad documents a Sourcif
 ### Spike (before the forge pull request)
 
 On Monad testnet: compile a contract with the new settings, deploy it from a wallet, submit it to the Sourcify endpoint, and confirm the explorer shows the verified source. Record the endpoint, timings and result in this ADR.
+
+### Spike result (13 Nov 2026)
+
+Run by MarkDavid from MetaMask through MonadForge on `feat/forge-deploy`.
+
+- **Endpoint:** `https://sourcify-api-monad.blockvision.org` (Sourcify API v2, run by BlockVision, the host Monad's Hardhat and Foundry guides use). `/chains` lists Monad testnet 10143 and mainnet 143 as supported.
+- **Contract:** `CappedMintableToken`, written by MonadForge, compiled with `0.8.38+commit.1835d247`, optimizer on at 200 runs, `evmVersion` prague, default metadata. Deployed at `0xe5665A69afA64028837B36632636E97CA8d7C59b`, transaction `0xcad7aa55875be4ad257c37d2295ced032229c607eb3e624bed6966e450129a2c`, block 79403224.
+- **Request:** `POST /v2/verify/10143/{address}` with the exact standard JSON input returned by the compile route, the compiler version, `CappedMintableToken.sol:CappedMintableToken` and the creation transaction hash. 202 with a job id; one poll of `GET /v2/verify/{id}` found it complete.
+- **Timing:** block at 13:59:33 UTC, verified at 13:59:38 UTC. Our submit took 3.4 s and the poll 2.9 s end to end.
+- **Result:** `exact_match` for both creation and runtime bytecode (Sourcify match id 69570). The settings kept in this ADR (no source rewriting, IPFS metadata hash kept) are what made the exact match possible.
 
 ## Diagram
 
