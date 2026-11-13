@@ -11,6 +11,9 @@ import { forgeRunSchema, PROMPT_MAX_LENGTH, PROMPT_MIN_LENGTH, toFileName } from
 import { outlineOf } from "../lib/outline";
 import type { ForgeRun, GeneratedContract } from "../types";
 import { COMPILE_SLOT, useCompile } from "./use-compile";
+import { DEPLOY_SLOT, useDeploy } from "./use-deploy";
+import { useDeployForm } from "./use-deploy-form";
+import { useSubmitVerification, useVerification } from "./use-verification";
 import { useFixErrors } from "./use-fix-errors";
 import { GENERATE_SLOT, useGenerate } from "./use-generate";
 
@@ -30,8 +33,13 @@ function asCompiled(
   run: ForgeRun | undefined,
   source: string | undefined
 ): SavedCompile | undefined {
-  if (run?.kind !== "compile" || source === undefined) return undefined;
+  if (!run || run.kind === "generate" || source === undefined) return undefined;
   return { result: run.result, fileName: run.fileName, source };
+}
+
+function asDeployed(run: ForgeRun | undefined, source: string | undefined) {
+  if (run?.kind !== "deploy" || source === undefined) return undefined;
+  return { deployment: run.deployment, source };
 }
 
 function kindOf(run: ForgeRun | undefined): ResultsKind | undefined {
@@ -60,6 +68,7 @@ export function useForge(runId?: string, autoRun = false) {
   const opened = useSavedRun("forge", runId, forgeRunSchema);
   const lastWritten = useSavedRun("forge", useLastRunId(GENERATE_SLOT), forgeRunSchema);
   const lastCompiled = useSavedRun("forge", useLastRunId(COMPILE_SLOT), forgeRunSchema);
+  const lastDeployed = useSavedRun("forge", useLastRunId(DEPLOY_SLOT), forgeRunSchema);
 
   const generated =
     generation.contract ?? asGenerated(opened.report) ?? asGenerated(lastWritten.report);
@@ -76,6 +85,30 @@ export function useForge(runId?: string, autoRun = false) {
     freshCompile ??
     asCompiled(opened.report, opened.source) ??
     asCompiled(lastCompiled.report, lastCompiled.source);
+
+  const submitVerification = useSubmitVerification();
+  const deployer = useDeploy((deployment, request) => {
+    submitVerification.mutate({
+      address: deployment.address,
+      creationTxHash: deployment.txHash,
+      standardJsonInput: request.result.standardJsonInput,
+      compilerVersion: request.result.compilerVersion,
+      contractIdentifier: `${request.fileName}:${deployment.contractName}`,
+    });
+  });
+  const freshDeploy =
+    deployer.deployment && deployer.request
+      ? { deployment: deployer.deployment, source: deployer.request.source }
+      : undefined;
+  const deployed = [
+    freshDeploy,
+    asDeployed(opened.report, opened.source),
+    asDeployed(lastDeployed.report, lastDeployed.source),
+  ].find((item) => item !== undefined && compiled !== undefined && item.source === compiled.source);
+  const deployment = deployed?.deployment;
+  const verification = useVerification(deployment?.address, submitVerification.isPending);
+  const compiledResult = compiled?.result.status === "compiled" ? compiled.result : undefined;
+  const deployForm = useDeployForm(compiledResult?.contracts ?? []);
 
   const errorFix = useFixErrors(() => {
     setShowingCompileResult(false);
@@ -124,6 +157,32 @@ export function useForge(runId?: string, autoRun = false) {
 
   useAutoRun(autoRun && draft.source.trim().length > 0, compile);
 
+  function deploy() {
+    const ready = deployForm.request();
+    if (!ready || !compiled || !compiledResult) return;
+    deployer.deploy({
+      fileName: compiled.fileName,
+      source: compiled.source,
+      result: compiledResult,
+      contractName: ready.contract.name,
+      bytecode: ready.contract.bytecode,
+      inputs: ready.inputs,
+      args: ready.args,
+      value: ready.value,
+    });
+  }
+
+  function verifyAgain() {
+    if (!deployment || !compiled || !compiledResult) return;
+    submitVerification.mutate({
+      address: deployment.address,
+      creationTxHash: deployment.txHash,
+      standardJsonInput: compiledResult.standardJsonInput,
+      compilerVersion: compiledResult.compilerVersion,
+      contractIdentifier: `${compiled.fileName}:${deployment.contractName}`,
+    });
+  }
+
   return {
     prompt,
     setPrompt,
@@ -153,6 +212,15 @@ export function useForge(runId?: string, autoRun = false) {
       accept(forgeCopy.compile.fixes.acceptedTitle, compiled.fileName, suggestedFix.fixedSource);
       compileSource(compiled.fileName, suggestedFix.fixedSource);
     },
+    deployForm,
+    deploy,
+    isDeploying: deployer.isRunning,
+    deployment,
+    verification: verification.data,
+    isVerifying: submitVerification.isPending || verification.isFetching,
+    verificationFailed: submitVerification.isError || verification.isError,
+    verifyAgain,
+    checkVerification: () => verification.refetch(),
     sendCompiled: (tool: JourneyTool) => {
       if (compiled) send(tool, compiled.source);
     },

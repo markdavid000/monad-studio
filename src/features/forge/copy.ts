@@ -101,6 +101,50 @@ export const forgeCopy = {
     copyBytecode: "Copy bytecode",
     copied: "Copied",
   },
+  deploy: {
+    heading: "Deploy to Monad testnet",
+    lead: "Deploys from your connected wallet. You pay the gas in testnet MON.",
+    contractLabel: "Contract to deploy",
+    argsLabel: "Constructor arguments",
+    noArgs: "This contract takes no constructor arguments.",
+    valueLabel: "MON to send",
+    valueHint: "The constructor is payable. Leave empty to send nothing.",
+    arrayHint: 'A JSON list, for example ["0x…", "0x…"]',
+    run: "Deploy",
+    running: "Deploying",
+    again: "Deploy again",
+    confirmTitle: "Confirm the deploy in your wallet",
+    pendingTitle: "Deploying",
+    pendingBody: "Waiting for Monad testnet to include the transaction.",
+    doneTitle: "Contract deployed",
+    cancelledTitle: "Deploy cancelled",
+    cancelledBody: "Nothing was sent.",
+    failedTitle: "Deploy failed",
+    reverted: "The deploy transaction reverted, so no contract was created.",
+    noWallet: "Connect your wallet to deploy.",
+    deployedLabel: "Deployed",
+    addressLabel: "Address",
+    txLabel: "Transaction",
+    viewOnExplorer: "View on MonadVision",
+    copyAddress: "Copy address",
+    copied: "Copied",
+    status: "Deployed contract",
+  },
+  verify: {
+    label: "Source on Sourcify",
+    submitting: "Submitting to Sourcify",
+    pending: "Verifying on Sourcify",
+    pendingSlow: "Sourcify is still working. Check again in a minute.",
+    exact: "Verified, exact match",
+    partial: "Verified, partial match",
+    partialNote:
+      "The code matches but the metadata differs, usually a different file name or comment.",
+    failed: "Not verified",
+    unverified: "Not verified yet",
+    retry: "Verify again",
+    check: "Check again",
+    submitFailed: "Could not reach Sourcify. Try again in a moment.",
+  },
   intro: {
     title: "MonadForge: write and compile",
     body: "MonadForge writes contracts from a description and compiles the contract in your workspace.",
@@ -152,4 +196,12 @@ export function writtenSummary(compiles: boolean, errorCount: number) {
 
 export function compileSummary(compiled: boolean, count: number) {
   return compiled ? compiledTitle(count) : errorsTitle(count);
+}
+
+export function deployLabel(name: string) {
+  return `Deploy ${name}`;
+}
+
+export function deployedSummary(address: string) {
+  return `Deployed at ${address.slice(0, 6)}…${address.slice(-4)}`;
 }

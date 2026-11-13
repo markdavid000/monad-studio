@@ -7,6 +7,7 @@ import { clearRuns, listRuns, saveRun } from "@/lib/history";
 import { toast } from "@/lib/toast";
 import { compiledTitle, errorsTitle, forgeCopy, lineLabel } from "../copy";
 import type { CompileResult, GeneratedContract } from "../types";
+import { UserRejectedRequestError, decodeAbiParameters } from "viem";
 import { ForgeTool } from "./forge-tool";
 
 const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn() }));
@@ -16,9 +17,17 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/studio/forge",
 }));
 
+const wallet = vi.hoisted(() => ({
+  sendTransaction: vi.fn(),
+  waitForTransactionReceipt: vi.fn(),
+}));
+
 vi.mock("wagmi", () => ({
   useAccount: () => ({ address: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" }),
+  useConfig: () => ({}),
 }));
+
+vi.mock("wagmi/actions", () => wallet);
 
 const SOURCE = [
   "pragma solidity ^0.8.24;",
@@ -124,6 +133,8 @@ beforeEach(async () => {
   window.sessionStorage.clear();
   window.localStorage.setItem("monad-studio:seen:forge", "seen");
   fetchMock.mockReset();
+  wallet.sendTransaction.mockReset();
+  wallet.waitForTransactionReceipt.mockReset();
   vi.stubGlobal("fetch", fetchMock);
   Object.defineProperty(navigator, "clipboard", {
     value: { writeText: vi.fn(async () => undefined) },
@@ -514,6 +525,128 @@ describe("ForgeTool: compile", () => {
     await compileSheet();
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(router.replace).toHaveBeenCalledWith("/studio/forge");
+  });
+
+  it("deploys the compiled contract with checked arguments, then verifies it on Sourcify", async () => {
+    const DEPLOYED = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+    const TX = `0x${"ab".repeat(32)}`;
+    saveDraft(SOURCE);
+    wallet.sendTransaction.mockResolvedValue(TX);
+    wallet.waitForTransactionReceipt.mockResolvedValue({
+      status: "success",
+      contractAddress: DEPLOYED,
+    });
+    fetchMock.mockImplementation(async (url) => {
+      if (url === "/api/forge/compile") return json({ data: compiled });
+      if (url === "/api/forge/verify")
+        return json({ data: { status: "verified", match: "exact_match" } });
+      return json({ data: { status: "unverified" } });
+    });
+    renderTool();
+    fireEvent.click(screen.getByRole("button", { name: forgeCopy.compile.run }));
+    const sheet = await compileSheet();
+    const bar = within(sheet).getByRole("group", { name: journeyCopy.label });
+
+    fireEvent.click(within(bar).getByRole("button", { name: "Deploy Vault" }));
+    expect(within(sheet).getByText("Enter a 0x address.")).toBeInTheDocument();
+    expect(wallet.sendTransaction).not.toHaveBeenCalled();
+
+    fireEvent.change(within(sheet).getByRole("textbox", { name: /owner/ }), {
+      target: { value: "0x70997970c51812dc3a010c7d01b50e0d17dc79c8" },
+    });
+    fireEvent.click(within(bar).getByRole("button", { name: "Deploy Vault" }));
+
+    expect(await within(sheet).findByText(DEPLOYED)).toBeInTheDocument();
+    const sent = wallet.sendTransaction.mock.calls[0][1];
+    expect(sent.chainId).toBe(10143);
+    expect(sent.value).toBe(0n);
+    expect(sent.data.startsWith("0x6080")).toBe(true);
+    expect(decodeAbiParameters([{ type: "address" }], `0x${sent.data.slice(6)}`)).toEqual([
+      "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    ]);
+    const verifyCall = fetchMock.mock.calls.find(([url]) => url === "/api/forge/verify");
+    expect(JSON.parse(String(verifyCall?.[1]?.body))).toEqual({
+      address: DEPLOYED,
+      creationTxHash: TX,
+      standardJsonInput: "{}",
+      compilerVersion: "0.8.38+commit.1835d247",
+      contractIdentifier: "Vault.sol:Vault",
+    });
+    expect(await within(sheet).findByText(forgeCopy.verify.exact)).toBeInTheDocument();
+    await vi.waitFor(async () =>
+      expect((await listRuns()).some((run) => run.summary === "Deployed at 0x5FbD…0aa3")).toBe(true)
+    );
+    expect(
+      within(bar).getByRole("link", { name: forgeCopy.deploy.viewOnExplorer })
+    ).toHaveAttribute("href", "https://testnet.monadvision.com/address/" + DEPLOYED);
+  });
+
+  it("never shows Verified while Sourcify is still working", async () => {
+    saveDraft(SOURCE.replace("address owner", ""));
+    const noArgs = {
+      ...compiled,
+      contracts: [{ ...compiled.contracts[0], abi: compiled.contracts[0].abi.slice(1) }],
+    };
+    wallet.sendTransaction.mockResolvedValue(`0x${"cd".repeat(32)}`);
+    wallet.waitForTransactionReceipt.mockResolvedValue({
+      status: "success",
+      contractAddress: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    });
+    fetchMock.mockImplementation(async (url) => {
+      if (url === "/api/forge/compile") return json({ data: noArgs });
+      if (url === "/api/forge/verify") {
+        return json({
+          data: { status: "pending", verificationId: "550e8400-e29b-41d4-a716-446655440000" },
+        });
+      }
+      return json({
+        data: { status: "pending", verificationId: "550e8400-e29b-41d4-a716-446655440000" },
+      });
+    });
+    renderTool();
+    fireEvent.click(screen.getByRole("button", { name: forgeCopy.compile.run }));
+    const sheet = await compileSheet();
+    fireEvent.click(within(sheet).getByRole("button", { name: "Deploy Vault" }));
+    expect(await within(sheet).findByText(forgeCopy.verify.pending)).toBeInTheDocument();
+    expect(within(sheet).queryByText(forgeCopy.verify.exact)).toBeNull();
+    expect(within(sheet).queryByText(forgeCopy.verify.partial)).toBeNull();
+  });
+
+  it("says when the wallet rejects the deploy and sends nothing to Sourcify", async () => {
+    saveDraft(SOURCE);
+    wallet.sendTransaction.mockRejectedValue(new UserRejectedRequestError(new Error("denied")));
+    fetchMock.mockImplementation(async () => json({ data: compiled }));
+    renderTool();
+    fireEvent.click(screen.getByRole("button", { name: forgeCopy.compile.run }));
+    const sheet = await compileSheet();
+    fireEvent.change(within(sheet).getByRole("textbox", { name: /owner/ }), {
+      target: { value: "0x70997970c51812dc3a010c7d01b50e0d17dc79c8" },
+    });
+    fireEvent.click(within(sheet).getByRole("button", { name: "Deploy Vault" }));
+    expect(
+      await screen.findByText(forgeCopy.deploy.cancelledTitle, undefined, { timeout: 3000 })
+    ).toBeInTheDocument();
+    expect(fetchMock.mock.calls.some(([url]) => url === "/api/forge/verify")).toBe(false);
+    expect(within(sheet).queryByText(forgeCopy.deploy.deployedLabel)).toBeNull();
+  });
+
+  it("reports a reverted deploy as failed", async () => {
+    saveDraft(SOURCE);
+    wallet.sendTransaction.mockResolvedValue(`0x${"ef".repeat(32)}`);
+    wallet.waitForTransactionReceipt.mockResolvedValue({
+      status: "reverted",
+      contractAddress: null,
+    });
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    fetchMock.mockImplementation(async () => json({ data: compiled }));
+    renderTool();
+    fireEvent.click(screen.getByRole("button", { name: forgeCopy.compile.run }));
+    const sheet = await compileSheet();
+    fireEvent.change(within(sheet).getByRole("textbox", { name: /owner/ }), {
+      target: { value: "0x70997970c51812dc3a010c7d01b50e0d17dc79c8" },
+    });
+    fireEvent.click(within(sheet).getByRole("button", { name: "Deploy Vault" }));
+    expect(await screen.findByText(forgeCopy.deploy.reverted)).toBeInTheDocument();
   });
 
   it("blocks a contract over the size limit", () => {

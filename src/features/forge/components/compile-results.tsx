@@ -20,6 +20,7 @@ interface CompileResultsProps {
   footer: ReactNode;
   suggestedFix: ErrorFix | undefined;
   onBackToResult: () => void;
+  deployment: ReactNode;
 }
 
 export function CompileResults({ result, suggestedFix, ...props }: CompileResultsProps) {
@@ -61,7 +62,14 @@ export function CompileResults({ result, suggestedFix, ...props }: CompileResult
         {suggestedFix ? (
           <ErrorFixPanel fix={suggestedFix} onBack={props.onBackToResult} />
         ) : (
-          <CompileOutput result={result} isStale={props.isStale} onFocusLine={props.onFocusLine} />
+          <div className="flex min-w-0 flex-col gap-5">
+            <CompileOutput
+              result={result}
+              isStale={props.isStale}
+              onFocusLine={props.onFocusLine}
+            />
+            {props.deployment}
+          </div>
         )}
       </div>
     </ResultsSheet>
