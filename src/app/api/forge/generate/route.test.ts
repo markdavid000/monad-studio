@@ -105,9 +105,12 @@ describe("POST /api/forge/generate", () => {
     const broken = SOURCE.replace("{}", "{ revert; }");
     fetchMock
       .mockResolvedValueOnce(groqReply(JSON.stringify({ ...reply, source: broken })))
-      .mockResolvedValueOnce(groqReply(JSON.stringify(reply)));
+      .mockResolvedValueOnce(
+        groqReply(JSON.stringify({ ...reply, notes: ["Fixed the revert syntax."] }))
+      );
     const { data } = await (await post({ prompt: PROMPT })).json();
     expect(data.compile.status).toBe("compiled");
+    expect(data.notes).toEqual(["Set owner carefully."]);
     expect(data.source).toBe(SOURCE);
     expect(fetchMock).toHaveBeenCalledTimes(2);
     const repair = JSON.parse(String(fetchMock.mock.calls[1][1]?.body));

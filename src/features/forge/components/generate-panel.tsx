@@ -1,18 +1,16 @@
-import { LoaderCircle, Sparkles } from "lucide-react";
+import { LoaderCircle, PanelRightOpen, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { forgeCopy } from "../copy";
 import { PROMPT_MAX_LENGTH } from "../lib/schema";
-import type { GeneratedContract } from "../types";
-import { GeneratedContractCard } from "./generated-contract-card";
 
 interface GeneratePanelProps {
   prompt: string;
   onPromptChange: (prompt: string) => void;
   canGenerate: boolean;
   isGenerating: boolean;
-  generated: GeneratedContract | undefined;
+  hasResult: boolean;
   onGenerate: () => void;
-  onUse: (contract: GeneratedContract) => void;
+  onShowResult: () => void;
 }
 
 const copy = forgeCopy.generate;
@@ -32,7 +30,7 @@ export function GeneratePanel(props: GeneratePanelProps) {
           value={props.prompt}
           onChange={(event) => props.onPromptChange(event.target.value)}
           maxLength={PROMPT_MAX_LENGTH}
-          rows={4}
+          rows={3}
           placeholder={copy.placeholder}
           className="w-full resize-y rounded-xl border bg-card px-4 py-3 text-sm leading-6 outline-none placeholder:text-muted-foreground/60 focus-visible:ring-2 focus-visible:ring-ring"
         />
@@ -63,11 +61,14 @@ export function GeneratePanel(props: GeneratePanelProps) {
           )}
           {props.isGenerating ? copy.running : copy.run}
         </Button>
+        {props.hasResult ? (
+          <Button size="lg" variant="outline" onClick={props.onShowResult}>
+            <PanelRightOpen aria-hidden />
+            {copy.showResult}
+          </Button>
+        ) : null}
         <p className="text-sm text-muted-foreground">{copy.note}</p>
       </div>
-      {props.generated ? (
-        <GeneratedContractCard contract={props.generated} onUse={props.onUse} />
-      ) : null}
     </section>
   );
 }

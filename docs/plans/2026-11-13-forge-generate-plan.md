@@ -4,7 +4,7 @@ Step 5 of the [rebuild plan](2026-11-11-rebuild-plan.md), under the accepted ADR
 
 ## Files
 
-- `features/forge/`: `lib/schema.ts` (inputs, Groq reply, compile result), `lib/abi.ts`, `server/generate.ts`, `server/compile.ts`, hooks `useGenerate`, `useCompile`, `useForge`, components `ForgeTool`, `GeneratePanel`, `GeneratedContractCard`, `CompilePanel`, `CompileOutput`, `CopyButton`, `copy.ts`, `index.ts`, `server.ts`.
+- `features/forge/`: `lib/schema.ts` (inputs, Groq reply, compile result), `lib/abi.ts`, `server/generate.ts`, `server/compile.ts`, hooks `useGenerate`, `useCompile`, `useForge`, components `ForgeTool`, `GeneratePanel`, `CompilePanel`, `GeneratedResults` and `CompileResults` (both in the shared `ResultsSheet`, code beside results), `CompileOutput`, `DiagnosticList`, `SourceCode`, `CopyButton`, `copy.ts`, `index.ts`, `server.ts`.
 - `app/api/forge/generate` (AI limit, `maxDuration` 60) and `app/api/forge/compile` (own limit of 60 per 10 minutes, `maxDuration` 30), both behind the session proxy.
 - `app/studio/forge/page.tsx`; sidebar and workspace action link to it.
 - `solc` 0.8.38 pinned, listed in `serverExternalPackages` so its Emscripten build is loaded by Node, not bundled.
@@ -15,7 +15,7 @@ Standard JSON input with the source exactly as written, one file named after the
 
 ## Generate
 
-One Groq call with a strict JSON schema (`contractName`, `summary`, `source`, `notes`), one file and no imports, then a compile of the result on the server. If it does not compile, one repair call sends the compiler errors and the numbered source back to the model and the result is compiled again. If it still fails, or the repair call cannot run, the contract is shown marked with its error lines. The prompt states that MON is the native currency (`msg.value`), not an ERC20, after the first live runs wrote escrows around a token interface. The written contract replaces the workspace draft only when the user presses Use in workspace.
+One Groq call with a strict JSON schema (`contractName`, `summary`, `source`, `notes`), one file and no imports, then a compile of the result on the server. If it does not compile, one repair call sends the compiler errors and the numbered source back to the model and the result is compiled again. If it still fails, or the repair call cannot run, the contract is shown marked with its error lines. The prompt states that MON is the native currency (`msg.value`), not an ERC20, after the first live runs wrote escrows around a token interface. The written contract replaces the workspace draft only when the user presses Use in workspace. After a repair the notes of the first draft are kept, so the user never sees the model's notes about its own fix.
 
 ## Not in this step
 

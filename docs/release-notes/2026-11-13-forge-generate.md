@@ -7,10 +7,12 @@ scenario-impact: needs_automation
 
 # MonadForge writes and compiles contracts
 
+Results follow the studio's layout: the written contract and the compile results each open in the wide results layer over the page, code on the left and results on the right, with Show contract and Show results to reopen them. Progress and errors are toasts.
+
 `/studio/forge` is open in the studio sidebar and from the workspace's Compile action.
 
 - **Write a contract.** Describe a contract and MonadForge writes one Solidity file with no imports, then compiles it on the server. When the first draft does not compile, the compiler errors go back to the model once for a fix. The result shows its summary, notes to check before deploying, and whether it compiles, with error lines marked. Use in workspace replaces the workspace contract with it; nothing is replaced until that button is pressed.
-- **Compile.** The workspace contract is compiled with solc 0.8.38, optimizer on at 200 runs, EVM version prague, exactly as written. The old app rewrote `revert;` and license lines before compiling; this one never changes the source. Success lists each deployable contract with its runtime size, constructor, functions, and buttons to copy the ABI and bytecode. Failure lists each compiler error with a button that jumps to its line.
+- **Compile.** The workspace contract is compiled with solc 0.8.38, optimizer on at 200 runs, EVM version prague, exactly as written. The old app rewrote `revert;` and license lines before compiling; this one never changes the source. Success lists each deployable contract with its runtime size, constructor, functions, and buttons to copy the ABI and bytecode. Failure lists each compiler error with a button that highlights its line in the code beside it.
 - The compile route returns the exact standard JSON input and full compiler version, ready for deployment and Sourcify verification in the next step.
 - Compiling has its own limit (60 per 10 minutes) and does not count against the 20 AI requests.
 

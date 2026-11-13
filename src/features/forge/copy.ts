@@ -28,6 +28,8 @@ export const forgeCopy = {
     doesNotCompile: "Does not compile yet",
     notesLabel: "Before you deploy",
     codeLabel: "Written contract",
+    resultsTitle: "Written contract",
+    showResult: "Show contract",
     use: "Use in workspace",
     useNote: "Replaces the contract in your workspace.",
     usedTitle: "Loaded into the workspace",
@@ -37,6 +39,9 @@ export const forgeCopy = {
   compile: {
     heading: "Compile",
     codeLabel: "Workspace contract",
+    compiledCodeLabel: "Compiled contract",
+    resultsTitle: "Compile results",
+    showResults: "Show results",
     editInWorkspace: "Edit in workspace",
     emptyTitle: "No contract in the workspace yet",
     emptyBody: "Write one above, or paste a contract in the workspace, then compile it here.",
@@ -61,7 +66,6 @@ export const forgeCopy = {
     copyAbi: "Copy ABI",
     copyBytecode: "Copy bytecode",
     copied: "Copied",
-    goToLine: "Show line",
   },
   intro: {
     title: "MonadForge: write and compile",

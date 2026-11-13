@@ -67,6 +67,7 @@ async function repairContract(prompt: string, draft: GeneratedContract) {
     const repaired = toGenerated(reply);
     return {
       ...repaired,
+      notes: draft.notes,
       compile: compileSolidity({ fileName: repaired.fileName, source: repaired.source }),
     };
   } catch (error) {

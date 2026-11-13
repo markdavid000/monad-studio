@@ -9,6 +9,8 @@ import type { CompileResult, GeneratedContract } from "../types";
 import { useCompile } from "./use-compile";
 import { useGenerate } from "./use-generate";
 
+type ResultsKind = "generated" | "compiled";
+
 const GENERATE_TOAST = "forge-generate";
 const COMPILE_TOAST = "forge-compile";
 
@@ -29,10 +31,17 @@ export function useForge() {
   const compilation = useCompile();
   const [prompt, setPrompt] = useState("");
   const [focusedLine, setFocusedLine] = useState<number>();
+  const [openResults, setOpenResults] = useState<ResultsKind>();
+
+  function showResults(kind: ResultsKind | undefined) {
+    setFocusedLine(undefined);
+    setOpenResults(kind);
+  }
 
   const trimmed = prompt.trim();
 
   function generate() {
+    showResults(undefined);
     toast.loading(forgeCopy.generate.pendingTitle, {
       id: GENERATE_TOAST,
       description: forgeCopy.generate.pendingBody,
@@ -43,6 +52,7 @@ export function useForge() {
           id: GENERATE_TOAST,
           description: contract.contractName,
         });
+        showResults("generated");
       },
       onError: (error) => {
         showAiErrorToast(error, {
@@ -57,16 +67,19 @@ export function useForge() {
   function loadGenerated(contract: GeneratedContract) {
     draft.load(contract.fileName, contract.source);
     compilation.reset();
-    setFocusedLine(undefined);
+    showResults(undefined);
     toast.success(forgeCopy.generate.usedTitle, { description: contract.fileName });
   }
 
   function compile() {
-    setFocusedLine(undefined);
+    showResults(undefined);
     compilation.compile(
       { fileName: toFileName(draft.name.replace(/\.sol$/i, "")), source: draft.source },
       {
-        onSuccess: showCompiledToast,
+        onSuccess: (result) => {
+          showCompiledToast(result);
+          showResults("compiled");
+        },
         onError: (error) => {
           showAiErrorToast(error, {
             id: COMPILE_TOAST,
@@ -95,9 +108,13 @@ export function useForge() {
     isTooLarge: byteSize(draft.source) > SOURCE_LIMIT_BYTES,
     isCompiling: compilation.status === "pending",
     result: compilation.result,
+    compiledSource: compilation.compiledSource ?? draft.source,
+    compiledFileName: compilation.compiledFileName ?? draft.name,
     isStale: compilation.result !== undefined && compilation.compiledSource !== draft.source,
     compile,
     focusedLine,
     setFocusedLine,
+    openResults,
+    showResults,
   };
 }

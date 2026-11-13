@@ -17,6 +17,7 @@ export function useCompile() {
     status: mutation.status,
     result: mutation.data,
     compiledSource: mutation.variables?.source,
+    compiledFileName: mutation.variables?.fileName,
     compile: mutation.mutate,
     reset: mutation.reset,
   };
