@@ -71,6 +71,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
@@ -138,5 +139,39 @@ describe("POST /api/monguard/scan", () => {
     const response = await post({ source: "contract A {}" });
     expect(response.status).toBe(502);
     expect((await response.json()).error.code).toBe("upstream_unavailable");
+  });
+
+  it("waits out Groq's per-minute token limit before giving up", async () => {
+    const tokenLimit = () =>
+      new Response(JSON.stringify({ error: { message: "Rate limit reached (TPM)" } }), {
+        status: 429,
+        headers: { "content-type": "application/json", "retry-after": "3" },
+      });
+    fetchMock
+      .mockResolvedValueOnce(tokenLimit())
+      .mockResolvedValueOnce(tokenLimit())
+      .mockResolvedValueOnce(groqReply(JSON.stringify(validReply)));
+    vi.useFakeTimers();
+    const pending = post({ source: "contract A {}" });
+    await vi.runAllTimersAsync();
+    const response = await pending;
+    expect(response.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("returns 502 when the token limit outlasts the wait", async () => {
+    fetchMock.mockImplementation(
+      async () =>
+        new Response(JSON.stringify({ error: { message: "Rate limit reached (TPM)" } }), {
+          status: 429,
+          headers: { "content-type": "application/json", "retry-after": "3" },
+        })
+    );
+    vi.useFakeTimers();
+    const pending = post({ source: "contract A {}" });
+    await vi.runAllTimersAsync();
+    const response = await pending;
+    expect(response.status).toBe(502);
+    expect((await response.json()).error.code).toBe("upstream_busy");
   });
 });

@@ -121,6 +121,7 @@ The studio needs a signed wallet session. `/api/auth/nonce` and `/api/auth/sessi
 - The landing page and the demo pages have no request-time data and are prerendered at build time. Studio pages read the session cookie, so they render per request.
 - Tool pages are server-rendered shells with one client leaf per interactive panel.
 - `fetch` is uncached by default. Upstream calls (Groq, the Monad RPC, Sourcify) are per request and never cached in a shared entry.
+- `lib/server/groq.ts` owns every Groq retry (the SDK's own retry is off). A token-limit reply (429) is retried after the wait Groq asks for, within a budget per call (15 s by default, 40 s for the GasLens behaviour check, sized to the routes' `maxDuration`). A 5xx or connection error is retried once. When the budget runs out the route answers `upstream_busy`.
 - Cache Components (`cacheComponents`, `"use cache"`) are not used. Turning them on is an ADR.
 
 ## Deployment

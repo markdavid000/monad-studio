@@ -33,6 +33,7 @@ export async function checkRewrite(original: string, rewritten: string): Promise
       user: `Original contract:\n\n${numberLines(original)}\n\nRewrite to check (report these line numbers):\n\n${numberLines(rewritten)}`,
       schema: checkReplySchema,
       maxOutputTokens: 8_192,
+      retryBudgetMs: 40_000,
     });
     return toRewriteCheck(reply, rewritten);
   } catch (error) {

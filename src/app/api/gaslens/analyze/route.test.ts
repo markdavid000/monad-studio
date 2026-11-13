@@ -51,6 +51,28 @@ function scanRequest(body: unknown, signedIn = true) {
   });
 }
 
+function tokenLimit(retryAfterSeconds = 3) {
+  return new Response(
+    JSON.stringify({
+      error: {
+        message: "Rate limit reached on tokens per minute (TPM)",
+        code: "rate_limit_exceeded",
+      },
+    }),
+    {
+      status: 429,
+      headers: { "content-type": "application/json", "retry-after": String(retryAfterSeconds) },
+    }
+  );
+}
+
+async function postWithTimers(body: unknown) {
+  vi.useFakeTimers();
+  const pending = post(body);
+  await vi.runAllTimersAsync();
+  return pending;
+}
+
 async function post(body: unknown, signedIn = true) {
   const { POST } = await import("./route");
   return POST(scanRequest(body, signedIn));
@@ -71,6 +93,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
@@ -181,5 +204,42 @@ describe("POST /api/gaslens/analyze", () => {
     const { data } = await response.json();
     expect(data.check).toEqual({ status: "unavailable", risks: [] });
     expect(data.optimizations).toHaveLength(1);
+  });
+
+  it("waits out Groq's per-minute token limit and still checks the rewrite", async () => {
+    fetchMock
+      .mockResolvedValueOnce(groqReply(JSON.stringify(validReply)))
+      .mockResolvedValueOnce(tokenLimit())
+      .mockResolvedValueOnce(tokenLimit())
+      .mockResolvedValueOnce(tokenLimit())
+      .mockResolvedValueOnce(groqReply(JSON.stringify({ risks: [] })));
+    const response = await postWithTimers({ source: "contract A {\n  function withdraw() {}\n}" });
+    expect(response.status).toBe(200);
+    const { data } = await response.json();
+    expect(data.check).toEqual({ status: "clear", risks: [] });
+    expect(fetchMock).toHaveBeenCalledTimes(5);
+  });
+
+  it("waits as long as Groq asks when the token window is busy", async () => {
+    fetchMock
+      .mockResolvedValueOnce(groqReply(JSON.stringify(validReply)))
+      .mockResolvedValueOnce(tokenLimit(17))
+      .mockResolvedValueOnce(tokenLimit(10))
+      .mockResolvedValueOnce(groqReply(JSON.stringify({ risks: [] })));
+    const response = await postWithTimers({ source: "contract A {\n  function withdraw() {}\n}" });
+    const { data } = await response.json();
+    expect(data.check).toEqual({ status: "clear", risks: [] });
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+  });
+
+  it("marks the check unchecked once the token limit outlasts the wait", async () => {
+    fetchMock
+      .mockResolvedValueOnce(groqReply(JSON.stringify(validReply)))
+      .mockImplementation(async () => tokenLimit());
+    const response = await postWithTimers({ source: "contract A {\n  function withdraw() {}\n}" });
+    expect(response.status).toBe(200);
+    const { data } = await response.json();
+    expect(data.check).toEqual({ status: "unavailable", risks: [] });
+    expect(fetchMock.mock.calls.length).toBeLessThan(12);
   });
 });
