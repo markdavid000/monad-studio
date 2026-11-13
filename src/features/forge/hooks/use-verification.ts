@@ -6,7 +6,7 @@ import type { Verification, VerifyInput } from "../types";
 const POLL_MS = 3000;
 const MAX_POLLS = 60;
 
-function verificationKey(address: string | undefined) {
+export function verificationKey(address: string | undefined) {
   return ["forge", "verification", address?.toLowerCase()];
 }
 

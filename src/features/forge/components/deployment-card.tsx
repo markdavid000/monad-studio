@@ -1,9 +1,9 @@
-import { CircleAlert, CircleCheck, ExternalLink, LoaderCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 import { addressUrl, shortHex, transactionUrl } from "@/lib/explorer";
 import { forgeCopy } from "../copy";
 import type { Deployment, Verification } from "../types";
 import { CopyButton } from "./copy-button";
+import { VerificationStatus } from "./verification-status";
 
 interface DeploymentCardProps {
   deployment: Deployment;
@@ -16,61 +16,6 @@ interface DeploymentCardProps {
 
 const copy = forgeCopy.deploy;
 const verifyCopy = forgeCopy.verify;
-
-function VerificationLine(props: DeploymentCardProps) {
-  const { verification } = props;
-  if (verification?.status === "verified") {
-    return (
-      <div className="flex flex-col gap-1">
-        <p className="flex items-center gap-1.5 text-sm text-success">
-          <CircleCheck aria-hidden className="size-4" />
-          {verification.match === "exact_match" ? verifyCopy.exact : verifyCopy.partial}
-        </p>
-        {verification.match === "match" ? (
-          <p className="text-xs text-muted-foreground">{verifyCopy.partialNote}</p>
-        ) : null}
-      </div>
-    );
-  }
-  if (verification?.status === "pending" || (props.isVerifying && !verification)) {
-    return (
-      <div className="flex flex-wrap items-center gap-3">
-        <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <LoaderCircle aria-hidden className="size-4 animate-spin" />
-          {verification ? verifyCopy.pending : verifyCopy.submitting}
-        </p>
-        {verification && !props.isVerifying ? (
-          <>
-            <span className="text-xs text-muted-foreground">{verifyCopy.pendingSlow}</span>
-            <Button size="sm" variant="outline" onClick={props.onCheck}>
-              {verifyCopy.check}
-            </Button>
-          </>
-        ) : null}
-      </div>
-    );
-  }
-  const message =
-    verification?.status === "failed"
-      ? verification.message
-      : props.verificationFailed
-        ? verifyCopy.submitFailed
-        : undefined;
-  return (
-    <div className="flex flex-col gap-2">
-      <p className="flex items-center gap-1.5 text-sm text-severity-critical">
-        <CircleAlert aria-hidden className="size-4" />
-        {verification?.status === "unverified" && !message
-          ? verifyCopy.unverified
-          : verifyCopy.failed}
-      </p>
-      {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
-      <Button size="sm" variant="outline" className="self-start" onClick={props.onVerifyAgain}>
-        {verifyCopy.retry}
-      </Button>
-    </div>
-  );
-}
 
 export function DeploymentCard(props: DeploymentCardProps) {
   const { deployment } = props;
@@ -116,7 +61,13 @@ export function DeploymentCard(props: DeploymentCardProps) {
         </dd>
         <dt className="text-muted-foreground">{verifyCopy.label}</dt>
         <dd className="min-w-0">
-          <VerificationLine {...props} />
+          <VerificationStatus
+            verification={props.verification}
+            isVerifying={props.isVerifying}
+            verificationFailed={props.verificationFailed}
+            onVerifyAgain={props.onVerifyAgain}
+            onCheck={props.onCheck}
+          />
         </dd>
       </dl>
     </section>

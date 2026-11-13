@@ -649,6 +649,96 @@ describe("ForgeTool: compile", () => {
     expect(await screen.findByText(forgeCopy.deploy.reverted)).toBeInTheDocument();
   });
 
+  it("verifies a contract deployed elsewhere from the workspace source", async () => {
+    const ADDRESS = "0xe5665A69afA64028837B36632636E97CA8d7C59b";
+    saveDraft(SOURCE.replace("pragma solidity ^0.8.24;", "pragma solidity ^0.8.28;"));
+    fetchMock.mockImplementation(async (url) => {
+      if (url === "/api/forge/verify-source") {
+        return json({ data: { status: "verified", match: "exact_match" } });
+      }
+      return json({ data: { status: "unverified" } });
+    });
+    renderTool();
+    fireEvent.click(screen.getByRole("tab", { name: forgeCopy.tabs.verify }));
+    const panel = screen.getByRole("tabpanel");
+    const submit = within(panel).getByRole("button", { name: forgeCopy.verifySource.run });
+    expect(submit).toBeDisabled();
+    expect(within(panel).getByText(forgeCopy.verifySource.enterAddress)).toBeInTheDocument();
+    expect(
+      within(panel).getByRole("textbox", { name: forgeCopy.verifySource.versionLabel })
+    ).toHaveValue("0.8.28");
+    expect(
+      within(panel).getByRole("combobox", { name: forgeCopy.verifySource.contractLabel })
+    ).toHaveValue("Vault");
+
+    fireEvent.change(
+      within(panel).getByRole("textbox", { name: forgeCopy.verifySource.addressLabel }),
+      {
+        target: { value: ADDRESS },
+      }
+    );
+    expect(await within(panel).findByText(forgeCopy.verify.unverified)).toBeInTheDocument();
+    fireEvent.click(
+      within(panel).getByRole("checkbox", { name: forgeCopy.verifySource.optimizerLabel })
+    );
+    fireEvent.click(submit);
+
+    expect(await within(panel).findByText(forgeCopy.verify.exact)).toBeInTheDocument();
+    const call = fetchMock.mock.calls.find(([url]) => url === "/api/forge/verify-source");
+    expect(JSON.parse(String(call?.[1]?.body))).toEqual({
+      address: ADDRESS,
+      fileName: "Vault.sol",
+      source: SOURCE.replace("pragma solidity ^0.8.24;", "pragma solidity ^0.8.28;"),
+      contractName: "Vault",
+      compilerVersion: "0.8.28",
+      optimizerEnabled: true,
+      optimizerRuns: 200,
+      evmVersion: "default",
+    });
+    await vi.waitFor(async () =>
+      expect(
+        (await listRuns()).some(
+          (run) =>
+            run.report !== null &&
+            typeof run.report === "object" &&
+            "kind" in run.report &&
+            run.report.kind === "verify"
+        )
+      ).toBe(true)
+    );
+  });
+
+  it("opens the Verify tab with the address when a verification is reopened", async () => {
+    const ADDRESS = "0xe5665A69afA64028837B36632636E97CA8d7C59b";
+    const run = await saveRun({
+      tool: "forge",
+      fileName: "Vault.sol",
+      contractName: "Vault",
+      summary: "Verification",
+      source: SOURCE,
+      report: {
+        kind: "verify",
+        fileName: "Vault.sol",
+        contractName: "Vault",
+        address: ADDRESS,
+        compilerVersion: "0.8.28",
+      },
+    });
+    fetchMock.mockImplementation(async () =>
+      json({ data: { status: "verified", match: "match" } })
+    );
+    renderTool(run.id);
+    await vi.waitFor(() =>
+      expect(screen.getByRole("tab", { name: forgeCopy.tabs.verify })).toHaveAttribute(
+        "aria-selected",
+        "true"
+      )
+    );
+    const panel = screen.getByRole("tabpanel");
+    expect(await within(panel).findByDisplayValue(ADDRESS)).toBeInTheDocument();
+    expect(await within(panel).findByText(forgeCopy.verify.partial)).toBeInTheDocument();
+  });
+
   it("blocks a contract over the size limit", () => {
     saveDraft("a".repeat(61 * 1024));
     renderTool();

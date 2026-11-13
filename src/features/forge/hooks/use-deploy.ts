@@ -4,6 +4,7 @@ import { monadTestnet } from "viem/chains";
 import { useConfig } from "wagmi";
 import { sendTransaction, waitForTransactionReceipt } from "wagmi/actions";
 import { useRecordRun } from "@/hooks/use-history";
+import { shortHex } from "@/lib/explorer";
 import { toast } from "@/lib/toast";
 import { deployedSummary, forgeCopy } from "../copy";
 import type { AbiInput } from "../lib/args";
@@ -76,7 +77,7 @@ export function useDeploy(onDeployed: (deployment: Deployment, request: DeployRe
         },
         DEPLOY_SLOT
       );
-      toast.success(copy.doneTitle, { id: TOAST_ID, description: deployment.address });
+      toast.success(copy.doneTitle, { id: TOAST_ID, description: shortHex(deployment.address) });
       onDeployed(deployment, request);
     },
     onError: (error) => {
