@@ -100,3 +100,10 @@ export function runSummary(report: GasReport) {
   const flagged = report.check.risks.length;
   return flagged > 0 ? `${findings}, ${flagged} flagged` : findings;
 }
+
+export const gaslensDemoCopy = {
+  lead: "A gas review of a Solidity contract. It lists savings line by line and shows a rewritten contract as a diff.",
+  pick: "Pick an example contract",
+  run: "See the review",
+  note: "Recorded from a real GasLens review of this example. Nothing is sent when you press it.",
+} as const;

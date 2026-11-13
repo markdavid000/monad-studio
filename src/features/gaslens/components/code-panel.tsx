@@ -16,6 +16,7 @@ interface CodePanelProps {
   highlightedKeys: readonly string[];
   flaggedKeys: readonly string[];
   onModeChange: (mode: "source" | "changes") => void;
+  canEdit: boolean;
 }
 
 function sourceLines(source: string, highlighted: ReadonlySet<string>): CodeLine[] {
@@ -105,7 +106,7 @@ export function CodePanel(props: CodePanelProps) {
               )}
               {isCopied ? gaslensCopy.copied : gaslensCopy.copyOptimised}
             </button>
-          ) : (
+          ) : props.canEdit ? (
             <Link
               href="/studio"
               className="flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
@@ -113,7 +114,7 @@ export function CodePanel(props: CodePanelProps) {
               <Pencil aria-hidden className="size-3.5" />
               {gaslensCopy.editInWorkspace}
             </Link>
-          )}
+          ) : null}
         </div>
       </div>
       <CodeView

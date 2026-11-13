@@ -11,6 +11,9 @@ export function SiteHeader() {
         <BrandLink />
         <nav aria-label={layoutCopy.studio} className="flex items-center gap-2">
           <ThemeToggle />
+          <Button asChild size="sm" variant="ghost" className="hidden sm:inline-flex">
+            <Link href="/demo">{layoutCopy.tryDemo}</Link>
+          </Button>
           <Button
             asChild
             size="cta"

@@ -7,6 +7,7 @@ import { findingsCount } from "@/lib/copy";
 import { toast } from "@/lib/toast";
 import { monguardCopy, runSummary } from "../copy";
 import { scanReportSchema } from "../lib/schema";
+import { useFindingFocus } from "./use-finding-focus";
 import { useScan } from "./use-scan";
 
 const TOAST_ID = "monguard-scan";
@@ -16,18 +17,15 @@ export function useMonguard(runId?: string) {
   const scan = useScan();
   const saved = useSavedRun("monguard", runId, scanReportSchema);
   const recordRun = useRecordRun("monguard");
-  const [openId, setOpenId] = useState<string | null | undefined>(undefined);
   const [isResultsOpen, setResultsOpen] = useState(runId !== undefined);
 
   const isFresh = scan.status !== "idle";
   const report = isFresh ? scan.report : saved.report;
   const reportSource = (isFresh ? scan.scannedSource : saved.source) ?? draft.source;
-  const findings = report?.findings ?? [];
-  const activeId = openId === undefined ? (findings[0]?.id ?? null) : openId;
-  const active = findings.find((finding) => finding.id === activeId) ?? null;
+  const focus = useFindingFocus(report);
 
   function run() {
-    setOpenId(undefined);
+    focus.reset();
     setResultsOpen(false);
     toast.loading(monguardCopy.pendingTitle, {
       id: TOAST_ID,
@@ -65,11 +63,11 @@ export function useMonguard(runId?: string) {
     scannedSource: reportSource,
     isMissing: saved.isMissing && !isFresh,
     isStale: report !== undefined && reportSource !== draft.source,
-    activeId,
-    highlightedLines: active?.lines ?? [],
+    activeId: focus.activeId,
+    highlightedLines: focus.highlightedLines,
     isResultsOpen,
     setResultsOpen,
-    toggle: (id: string) => setOpenId(activeId === id ? null : id),
+    toggle: focus.toggle,
     run,
   };
 }

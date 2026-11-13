@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PORT="${SMOKE_PORT:-3099}"
-PUBLIC_ROUTES=("/" "/robots.txt" "/sitemap.xml")
+PUBLIC_ROUTES=("/" "/robots.txt" "/sitemap.xml" "/demo" "/demo/monguard" "/demo/gaslens")
 STUDIO_ROUTES=("/studio" "/studio/monguard" "/studio/gaslens" "/studio/activity")
 API_ROUTES=("/api/history")
 LOG="$(mktemp)"
@@ -50,4 +50,4 @@ if [ "$FAILED" -ne 0 ]; then
   cat "$LOG"
   exit 1
 fi
-echo "Public routes load, studio routes need a wallet session and load with one."
+echo "Public and demo routes load, studio routes need a wallet session and load with one."

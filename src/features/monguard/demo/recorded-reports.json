@@ -1,0 +1,143 @@
+{
+  "vulnerable-bank": {
+    "contractName": "VulnerableBank",
+    "summary": "The contract suffers from critical reentrancy in withdraw and a privileged adminTransfer that uses insecure tx.origin authentication, allowing arbitrary balance inflation. Additionally, emergencyDrain lacks proper access control, letting anyone trigger a full drain to the owner. These issues enable fund theft and unauthorized state changes.",
+    "score": 35,
+    "findings": [
+      {
+        "id": "MG-01",
+        "severity": "critical",
+        "title": "Reentrancy in withdraw()",
+        "description": "withdraw() updates the user's balance after making an external call to msg.sender via call. A malicious contract can re-enter withdraw before the balance is decreased and drain more funds than it owns.",
+        "impact": "An attacker can repeatedly re-enter withdraw to extract the contract's ether, potentially emptying all balances.",
+        "fix": "Update the user's balance before the external call or use a reentrancy guard.",
+        "fixCode": "function withdraw(uint256 amount) external {\n    require(balances[msg.sender] >= amount, \"Insufficient balance\");\n    balances[msg.sender] -= amount; // effect before interaction\n    (bool ok, ) = msg.sender.call{value: amount}(\"\");\n    require(ok, \"Transfer failed\");\n}",
+        "lines": [16, 17, 18, 19, 20]
+      },
+      {
+        "id": "MG-02",
+        "severity": "critical",
+        "title": "Insecure auth and unlimited mint in adminTransfer()",
+        "description": "adminTransfer() uses tx.origin for authorization, which can be spoofed via a malicious contract, and it allows the caller to increase any address's balance by an arbitrary amount without any supply checks.",
+        "impact": "An attacker can call adminTransfer through a phishing contract to mint unlimited balances and later withdraw them, stealing all funds.",
+        "fix": "Replace tx.origin with msg.sender and enforce proper owner-only access, and consider limiting the amount to the contract's actual ether balance or removing the function entirely.",
+        "fixCode": "function adminTransfer(address to, uint256 amount) external {\n    require(msg.sender == owner, \"Not authorized\");\n    require(amount <= address(this).balance, \"Amount exceeds contract balance\");\n    balances[to] += amount;\n}",
+        "lines": [27, 28, 29, 30]
+      },
+      {
+        "id": "MG-03",
+        "severity": "high",
+        "title": "Missing access control on emergencyDrain()",
+        "description": "emergencyDrain() can be called by any address and transfers the entire contract balance to the owner without restriction.",
+        "impact": "Anyone can trigger a full drain of the contract's ether to the owner at any time, causing denial of service for users expecting to withdraw later.",
+        "fix": "Restrict the function to the contract owner with a proper require check or onlyOwner modifier.",
+        "fixCode": "function emergencyDrain() external {\n    require(msg.sender == owner, \"Not authorized\");\n    payable(owner).transfer(address(this).balance);\n}",
+        "lines": [23, 24, 25]
+      }
+    ]
+  },
+  "staking-pool": {
+    "contractName": "StakingPool",
+    "summary": "The StakingPool contract lets users stake ETH and withdraw it with a configurable fee. The most serious issue is the lack of validation on the fee value, allowing the owner to set a fee that exceeds the withdrawal amount and effectively lock all user funds. Additional concerns include the use of transfer which can block withdrawals, missing events, a floating pragma, and an unnecessary unchecked block.",
+    "score": 72,
+    "findings": [
+      {
+        "id": "MG-01",
+        "severity": "high",
+        "title": "setFee allows feeBps > 10000 leading to withdraw lock",
+        "description": "The setFee function (line 35) does not validate that newFeeBps is bounded to 0‑10000 basis points. If feeBps exceeds 10 000, the calculated fee can be greater than the withdrawal amount, causing amount‑fee underflow and a revert, effectively locking users’ staked funds.",
+        "impact": "Owner (or an attacker who gains ownership) can set an excessive fee and prevent all users from withdrawing, resulting in a denial of service and loss of access to their funds.",
+        "fix": "Add a require that newFeeBps is <= 10_000 before assigning it.",
+        "fixCode": "require(newFeeBps <= 10_000, \"Fee too high\");\nfeeBps = newFeeBps;",
+        "lines": [35]
+      },
+      {
+        "id": "MG-02",
+        "severity": "medium",
+        "title": "withdraw uses transfer which can revert and block withdrawals",
+        "description": "The withdraw function (lines 29 and 31) uses .transfer to send Ether to msg.sender and treasury. .transfer forwards only 2300 gas; if either recipient is a contract with a fallback that needs more gas, the call reverts and the whole withdrawal fails.",
+        "impact": "Users or the treasury could be unable to receive funds, causing a denial‑of‑service for withdrawals and potentially locking user balances.",
+        "fix": "Replace .transfer with a low‑level call and handle the success flag.",
+        "fixCode": "(bool successUser, ) = payable(msg.sender).call{value: amount - fee}(\"\");\nrequire(successUser, \"User transfer failed\");\n(bool successTreasury, ) = payable(treasury).call{value: fee}(\"\");\nrequire(successTreasury, \"Treasury transfer failed\");",
+        "lines": [29, 31]
+      },
+      {
+        "id": "MG-03",
+        "severity": "low",
+        "title": "Missing events for stake, withdraw and configuration changes",
+        "description": "The contract does not emit any events when users stake, withdraw, or when the owner changes fee or treasury (lines 20, 24‑32, 34‑40). This hampers off‑chain monitoring and auditability.",
+        "impact": "Users and auditors cannot reliably track state changes, increasing the risk that misbehaviour goes unnoticed.",
+        "fix": "Define and emit appropriate events in each function.",
+        "fixCode": "event Staked(address indexed user, uint256 amount);\nevent Withdrawn(address indexed user, uint256 amount, uint256 fee);\nevent FeeChanged(uint256 newFeeBps);\nevent TreasuryChanged(address newTreasury);\n// In stake(): emit Staked(msg.sender, msg.value);\n// In withdraw(): emit Withdrawn(msg.sender, amount, fee);\n// In setFee(): emit FeeChanged(newFeeBps);\n// In setTreasury(): emit TreasuryChanged(newTreasury);",
+        "lines": [20, 24, 34, 38]
+      },
+      {
+        "id": "MG-04",
+        "severity": "info",
+        "title": "Floating pragma version",
+        "description": "The pragma statement (line 2) uses ^0.8.28, allowing any newer compiler version which may introduce breaking changes.",
+        "impact": "Future compiler upgrades could change semantics and introduce bugs without the contract being re‑audited.",
+        "fix": "Pin the pragma to a specific version, e.g., pragma solidity 0.8.28;",
+        "fixCode": "pragma solidity 0.8.28;",
+        "lines": [2]
+      },
+      {
+        "id": "MG-05",
+        "severity": "info",
+        "title": "Unnecessary unchecked block around transfer",
+        "description": "The unchecked block (lines 28‑30) wraps a .transfer call, which does not perform arithmetic that could overflow. The block adds no benefit and may mislead reviewers.",
+        "impact": "Minor readability issue, no direct security risk.",
+        "fix": "Remove the unchecked block and keep the transfer call.",
+        "fixCode": "",
+        "lines": [28, 29, 30]
+      }
+    ]
+  },
+  "gas-heavy": {
+    "contractName": "GasHeavy",
+    "summary": "GasHeavy is a basic token contract with owner‑only minting and a public reward distribution function. The contract suffers from a critical flaw: anyone can call distributeRewards to arbitrarily inflate token supply, and additional issues include duplicate holder entries, missing array length checks, and unbounded loops that can cause gas‑limit failures.",
+    "score": 61,
+    "findings": [
+      {
+        "id": "MG-01",
+        "severity": "critical",
+        "title": "distributeRewards lacks access control, allows arbitrary token inflation",
+        "description": "The function distributeRewards (lines 22‑28) is public and contains no access control. It adds rewardPerHolder to every address in the holders array and increases totalSupply accordingly. An attacker can call it with a large rewardPerHolder, effectively minting unlimited tokens for all holders and inflating totalSupply.",
+        "impact": "An attacker can create unlimited tokens out of thin air, devaluing the token and allowing the attacker to drain value from the ecosystem.",
+        "fix": "Restrict the function to only the contract owner (or an authorized role) and optionally cap the reward amount.",
+        "fixCode": "function distributeRewards(uint256 rewardPerHolder) public {\n    require(msg.sender == owner, \"Only owner can distribute rewards\");\n    uint256 totalReward = 0;\n    for (uint256 i = 0; i < holders.length; i++) {\n        balances[holders[i]] += rewardPerHolder;\n        totalReward += rewardPerHolder;\n    }\n    totalSupply += totalReward;\n}",
+        "lines": [22, 24, 25, 26, 28]
+      },
+      {
+        "id": "MG-02",
+        "severity": "medium",
+        "title": "mint creates duplicate holder entries, enabling reward inflation",
+        "description": "The mint function (line 35) pushes the recipient address to the holders array every time, even if the address is already present. Duplicate entries cause distributeRewards to credit the same address multiple times, inflating that holder's balance and totalSupply.",
+        "impact": "An owner (or anyone who can trigger mint) can cause disproportionate rewards for specific addresses, leading to unintended supply inflation.",
+        "fix": "Track whether an address is already a holder using a mapping and only push new addresses.",
+        "fixCode": "mapping(address => bool) private _isHolder;\nfunction mint(address to, uint256 amount) public {\n    require(msg.sender == owner, \"Only owner\");\n    totalSupply += amount;\n    balances[to] += amount;\n    if (!_isHolder[to]) {\n        holders.push(to);\n        _isHolder[to] = true;\n    }\n}",
+        "lines": [35]
+      },
+      {
+        "id": "MG-03",
+        "severity": "low",
+        "title": "batchTransfer missing amounts array length validation",
+        "description": "batchTransfer (lines 14‑19) iterates over to.length but accesses amounts[i] without checking that amounts has the same length, which can cause an out‑of‑bounds revert if the arrays differ.",
+        "impact": "A caller can cause the transaction to revert, leading to a denial of service for that call.",
+        "fix": "Add a require that to.length equals amounts.length before the loop.",
+        "fixCode": "function batchTransfer(address[] memory to, uint256[] memory amounts) public {\n    require(to.length == amounts.length, \"Mismatched arrays\");\n    for (uint256 i = 0; i < to.length; i++) {\n        require(balances[msg.sender] >= amounts[i], \"Insufficient balance\");\n        balances[msg.sender] -= amounts[i];\n        balances[to[i]] += amounts[i];\n    }\n}",
+        "lines": [14, 15]
+      },
+      {
+        "id": "MG-04",
+        "severity": "low",
+        "title": "distributeRewards contains unbounded loop over dynamic holders array",
+        "description": "The loop in distributeRewards (lines 24‑28) iterates over the entire holders array, which can grow without bound. When the array becomes large, the function may exceed the block gas limit and fail.",
+        "impact": "Users may be unable to execute reward distribution, effectively a denial‑of‑service for that feature.",
+        "fix": "Implement batched reward distribution or limit the number of holders processed per transaction.",
+        "fixCode": "",
+        "lines": [24, 25, 26, 27, 28]
+      }
+    ]
+  }
+}

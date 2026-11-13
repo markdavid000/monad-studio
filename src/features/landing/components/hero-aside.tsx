@@ -19,7 +19,7 @@ export function HeroAside() {
           </Link>
         </Button>
         <Button asChild size="lg" variant="ghost">
-          <Link href="#tools">{landingCopy.secondaryCta}</Link>
+          <Link href="/demo">{landingCopy.secondaryCta}</Link>
         </Button>
       </div>
     </div>

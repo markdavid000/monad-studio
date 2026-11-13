@@ -13,4 +13,10 @@ export const layoutCopy = {
   activity: "Activity",
   soon: "Soon",
   studioNav: "Studio",
+  demo: "Demo",
+  demoNav: "Demo tools",
+  demoBanner:
+    "You are in the demo. Results are recorded runs of the three example contracts. Connect your wallet to run the tools on your own contract.",
+  connectWallet: "Connect wallet",
+  tryDemo: "Try the demo",
 } as const;

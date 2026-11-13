@@ -1,7 +1,7 @@
 # ADR-2026-11-13: A demo of the tools that needs no wallet
 
-- **Status:** Proposed
-- **Approved by:** (name, date; filled in by the maintainer)
+- **Status:** Accepted
+- **Approved by:** (MarkDavid, 13th Nov 2026, by merging PR #22)
 - **Companion:** [ADR-2026-11-13-no-wallet-demo-for-dummies.md](ADR-2026-11-13-no-wallet-demo-for-dummies.md)
 
 ## Context

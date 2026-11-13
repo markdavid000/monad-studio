@@ -69,3 +69,10 @@ export const monguardCopy = {
 export function runSummary(report: ScanReport) {
   return `Score ${report.score}, ${findingsCount(report.findings.length)}`;
 }
+
+export const monguardDemoCopy = {
+  lead: "A security review of a Solidity contract. Each finding names the lines involved and suggests a fix.",
+  pick: "Pick an example contract",
+  run: "See the scan",
+  note: "Recorded from a real MonGuard scan of this example. Nothing is sent when you press it.",
+} as const;
