@@ -23,7 +23,7 @@ import {
   pushRuns,
 } from "@/lib/sync-api";
 import { toast } from "@/lib/toast";
-import { setSyncedAddress, useSyncedAddress } from "./use-synced-address";
+import { addSyncedAddress, removeSyncedAddress, useSyncedAddress } from "./use-synced-address";
 
 const HISTORY_KEY = ["history"] as const;
 
@@ -34,7 +34,6 @@ export interface ActivityItem extends HistoryMeta {
 function handleSyncError(error: unknown) {
   console.error(error);
   if (error instanceof ApiError && error.code === "unauthorized") {
-    setSyncedAddress(null);
     toast.warning(historyCopy.syncEndedTitle, { description: historyCopy.syncEndedBody });
     return;
   }
@@ -151,13 +150,13 @@ export function useStartSync() {
   return useHistoryMutation(async (address: Address) => {
     const local = await listRuns();
     await pushRuns(local);
-    setSyncedAddress(address);
+    addSyncedAddress(address);
     return local.length;
   });
 }
 
 export function useStopSync() {
-  return useHistoryMutation(async () => {
-    setSyncedAddress(null);
+  return useHistoryMutation(async (address: Address) => {
+    removeSyncedAddress(address);
   });
 }

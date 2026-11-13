@@ -21,6 +21,7 @@ vi.mock("wagmi", () => ({
 }));
 
 const ALICE = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" as const;
+const BOB = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC" as const;
 const fetchMock = vi.fn<typeof fetch>();
 
 function json(body: unknown, status = 200) {
@@ -201,13 +202,15 @@ describe("ActivityLog", () => {
         ([url, init]) => url === "/api/history" && init?.method === "POST"
       );
       expect(JSON.parse(String(uploaded?.[1]?.body)).runs).toHaveLength(2);
-      expect(window.localStorage.getItem("monad-studio:synced-wallet")).toBe(ALICE);
+      expect(window.localStorage.getItem("monad-studio:synced-wallets")).toBe(
+        JSON.stringify([ALICE])
+      );
     });
 
     it("shows runs from other devices and opens them by downloading the full run", async () => {
       await seed();
       wallet.address = ALICE;
-      window.localStorage.setItem("monad-studio:synced-wallet", ALICE);
+      window.localStorage.setItem("monad-studio:synced-wallets", JSON.stringify([ALICE]));
       fetchMock.mockImplementation(async (url) => {
         if (url === "/api/history") return json({ data: { runs: [remoteRun] } });
         return json({
@@ -233,7 +236,7 @@ describe("ActivityLog", () => {
     it("deletes a run from the synced history too", async () => {
       const { scan } = await seed();
       wallet.address = ALICE;
-      window.localStorage.setItem("monad-studio:synced-wallet", ALICE);
+      window.localStorage.setItem("monad-studio:synced-wallets", JSON.stringify([ALICE]));
       fetchMock.mockImplementation(async (url) =>
         url === "/api/history" ? json({ data: { runs: [] } }) : json({ data: { deleted: true } })
       );
@@ -243,28 +246,63 @@ describe("ActivityLog", () => {
       await vi.waitFor(() => expect(calls()).toContain(`DELETE /api/history/${scan.id}`));
     });
 
-    it("stops syncing when the session has ended", async () => {
+    it("keeps the sync choice when the session has ended", async () => {
       wallet.address = ALICE;
-      window.localStorage.setItem("monad-studio:synced-wallet", ALICE);
+      window.localStorage.setItem("monad-studio:synced-wallets", JSON.stringify([ALICE]));
       fetchMock.mockResolvedValue(
         json({ error: { code: "unauthorized", message: "Sign in first." } }, 401)
       );
       renderLog();
       expect((await screen.findAllByText(historyCopy.syncEndedTitle))[0]).toBeInTheDocument();
-      expect(window.localStorage.getItem("monad-studio:synced-wallet")).toBeNull();
+      expect(window.localStorage.getItem("monad-studio:synced-wallets")).toBe(
+        JSON.stringify([ALICE])
+      );
+    });
+
+    it("stays synced when the same wallet disconnects and connects again", async () => {
+      wallet.address = ALICE;
+      window.localStorage.setItem("monad-studio:synced-wallets", JSON.stringify([ALICE]));
+      fetchMock.mockImplementation(async () => json({ data: { runs: [] } }));
+      const view = renderLog();
+      expect(await screen.findByText("Synced with 0x7099...79C8")).toBeInTheDocument();
+
+      wallet.address = undefined;
+      view.rerender(
+        <QueryClientProvider client={new QueryClient()}>
+          <ActivityLog />
+        </QueryClientProvider>
+      );
+      expect(await screen.findByText(activityCopy.syncNoWalletBody)).toBeInTheDocument();
+
+      wallet.address = ALICE;
+      view.rerender(
+        <QueryClientProvider client={new QueryClient()}>
+          <ActivityLog />
+        </QueryClientProvider>
+      );
+      expect(await screen.findByText("Synced with 0x7099...79C8")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: activityCopy.syncButton })).toBeNull();
+    });
+
+    it("offers sync to another wallet without using the first wallet's choice", async () => {
+      await seed();
+      wallet.address = BOB;
+      window.localStorage.setItem("monad-studio:synced-wallets", JSON.stringify([ALICE]));
+      renderLog();
       expect(
         await screen.findByRole("button", { name: activityCopy.syncButton })
       ).toBeInTheDocument();
+      expect(calls()).not.toContain("GET /api/history");
     });
 
     it("stops syncing on request without signing out", async () => {
       wallet.address = ALICE;
-      window.localStorage.setItem("monad-studio:synced-wallet", ALICE);
+      window.localStorage.setItem("monad-studio:synced-wallets", JSON.stringify([ALICE]));
       fetchMock.mockImplementation(async () => json({ data: { runs: [] } }));
       renderLog();
       fireEvent.click(await screen.findByRole("button", { name: activityCopy.stopSync }));
       await vi.waitFor(() =>
-        expect(window.localStorage.getItem("monad-studio:synced-wallet")).toBeNull()
+        expect(window.localStorage.getItem("monad-studio:synced-wallets")).toBe("[]")
       );
       expect(calls()).not.toContain("DELETE /api/auth/session");
     });

@@ -34,9 +34,9 @@ export const activityCopy = {
   syncOffBody:
     "Store your activity under this wallet so it shows up wherever you connect it. Your contracts and results are then kept on the MonadStudio server, and removed 180 days after your last sync or when you clear them here.",
   syncButton: "Sync with this wallet",
-  syncOtherWallet: "The connected wallet is not the one you synced with.",
   stopSync: "Stop syncing",
-  stopSyncNote: "Stopping keeps the synced copy. Clear activity first if you want it gone.",
+  stopSyncNote:
+    "Sync stays on for this wallet until you stop it, even if you disconnect. Stopping keeps the synced copy. Clear activity first if you want it gone.",
   syncPendingTitle: "Syncing your activity",
   syncDoneTitle: "Activity synced",
   syncFailedTitle: "Sync failed",

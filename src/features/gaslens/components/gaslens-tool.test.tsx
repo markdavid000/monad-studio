@@ -9,6 +9,10 @@ import { gaslensCopy } from "../copy";
 import type { GasReport } from "../types";
 import { GaslensTool } from "./gaslens-tool";
 
+vi.mock("wagmi", () => ({
+  useAccount: () => ({ address: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" }),
+}));
+
 const SOURCE = [
   "contract Pool {",
   "  address public owner;",
