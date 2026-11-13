@@ -48,7 +48,7 @@ const diagnosticSchema = z.object({
 const compiledContractSchema = z.object({
   name: z.string(),
   abi: z.array(abiItemSchema),
-  bytecode: z.string().regex(/^0x[0-9a-f]+$/),
+  bytecode: z.templateLiteral(["0x", z.string().regex(/^[0-9a-f]+$/)]),
   deployedSize: z.number(),
 });
 
@@ -96,6 +96,12 @@ export function toGenerated(reply: z.infer<typeof generateReplySchema>) {
 export const forgeRunSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("generate"), contract: generatedContractSchema }),
   z.object({ kind: z.literal("compile"), fileName: z.string(), result: compileResultSchema }),
+  z.object({
+    kind: z.literal("deploy"),
+    fileName: z.string(),
+    result: compileResultSchema,
+    deployment: z.lazy(() => deploymentSchema),
+  }),
 ]);
 
 export const errorFixReplySchema = z.object({
@@ -107,4 +113,34 @@ export const errorFixSchema = z.object({
   fixedSource: z.string(),
   changes: z.array(z.object({ line: z.number(), note: z.string() })),
   compile: compileResultSchema,
+});
+
+const ADDRESS_PATTERN = /^0x[0-9a-fA-F]{40}$/;
+const TX_HASH_PATTERN = /^0x[0-9a-fA-F]{64}$/;
+const VERIFICATION_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+export const addressSchema = z.string().regex(ADDRESS_PATTERN, "That is not a contract address.");
+export const verificationIdSchema = z.string().regex(VERIFICATION_ID_PATTERN);
+
+export const verifyInputSchema = z.object({
+  address: addressSchema,
+  creationTxHash: z.string().regex(TX_HASH_PATTERN).optional(),
+  standardJsonInput: z.string().max(400 * 1024),
+  compilerVersion: z.string().regex(/^v?\d+\.\d+\.\d+\+commit\.[0-9a-f]+$/),
+  contractIdentifier: z.string().regex(/^[A-Za-z0-9_-]{1,80}\.sol:[A-Za-z_$][\w$]*$/),
+});
+
+export const MATCHES = ["exact_match", "match"] as const;
+
+export const verificationSchema = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("pending"), verificationId: z.string() }),
+  z.object({ status: z.literal("verified"), match: z.enum(MATCHES) }),
+  z.object({ status: z.literal("failed"), message: z.string() }),
+  z.object({ status: z.literal("unverified") }),
+]);
+
+export const deploymentSchema = z.object({
+  contractName: z.string(),
+  address: addressSchema,
+  txHash: z.string().regex(TX_HASH_PATTERN),
 });

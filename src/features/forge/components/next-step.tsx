@@ -1,9 +1,20 @@
-import { Check, FileInput, Fuel, Hammer, LoaderCircle, ShieldCheck, Wrench } from "lucide-react";
+import {
+  Check,
+  ExternalLink,
+  FileInput,
+  Fuel,
+  Hammer,
+  LoaderCircle,
+  Rocket,
+  ShieldCheck,
+  Wrench,
+} from "lucide-react";
+import { addressUrl } from "@/lib/explorer";
 import { Button } from "@/components/ui/button";
 import { NextStepBar } from "@/components/ui/next-step-bar";
 import type { JourneyTool } from "@/hooks/use-send-contract";
 import { journeyCopy } from "@/lib/copy";
-import { forgeCopy } from "../copy";
+import { deployLabel, forgeCopy } from "../copy";
 
 interface WrittenNextStepProps {
   isInWorkspace: boolean;
@@ -56,6 +67,10 @@ interface CompiledNextStepProps {
   onShowFix: () => void;
   onAcceptFix: () => void;
   onSend: (tool: JourneyTool) => void;
+  deployName: string | undefined;
+  deployedAddress: string | undefined;
+  isDeploying: boolean;
+  onDeploy: () => void;
 }
 
 export function CompiledNextStep(props: CompiledNextStepProps) {
@@ -65,7 +80,13 @@ export function CompiledNextStep(props: CompiledNextStepProps) {
     <NextStepBar
       label={journeyCopy.label}
       status={
-        isReviewing ? copy.fixes.status : props.isCompiled ? copy.statusCompiled : copy.statusFailed
+        isReviewing
+          ? copy.fixes.status
+          : props.deployedAddress
+            ? forgeCopy.deploy.status
+            : props.isCompiled
+              ? copy.statusCompiled
+              : copy.statusFailed
       }
       note={isReviewing ? copy.fixes.note : undefined}
     >
@@ -73,6 +94,32 @@ export function CompiledNextStep(props: CompiledNextStepProps) {
         <Button onClick={props.onAcceptFix}>
           <Check aria-hidden />
           {copy.fixes.accept}
+        </Button>
+      ) : null}
+      {!isReviewing && props.deployName ? (
+        <Button
+          variant={props.deployedAddress ? "outline" : "default"}
+          onClick={props.onDeploy}
+          disabled={props.isDeploying}
+        >
+          {props.isDeploying ? (
+            <LoaderCircle aria-hidden className="animate-spin" />
+          ) : (
+            <Rocket aria-hidden />
+          )}
+          {props.isDeploying
+            ? forgeCopy.deploy.running
+            : props.deployedAddress
+              ? forgeCopy.deploy.again
+              : deployLabel(props.deployName)}
+        </Button>
+      ) : null}
+      {!isReviewing && props.deployedAddress ? (
+        <Button asChild variant="outline">
+          <a href={addressUrl(props.deployedAddress)} target="_blank" rel="noreferrer">
+            <ExternalLink aria-hidden />
+            {forgeCopy.deploy.viewOnExplorer}
+          </a>
         </Button>
       ) : null}
       {!isReviewing && props.hasFix ? (

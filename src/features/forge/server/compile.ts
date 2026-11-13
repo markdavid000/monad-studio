@@ -95,7 +95,7 @@ export function compileSolidity({
     .map(([name, contract]) => ({
       name,
       abi: contract.abi,
-      bytecode: `0x${contract.evm.bytecode.object}`,
+      bytecode: `0x${contract.evm.bytecode.object}` as const,
       deployedSize: contract.evm.deployedBytecode.object.length / 2,
     }));
 

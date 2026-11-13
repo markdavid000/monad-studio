@@ -7,6 +7,8 @@ import { forgeCopy } from "../copy";
 import { useForge } from "../hooks/use-forge";
 import { CompilePanel } from "./compile-panel";
 import { CompileResults } from "./compile-results";
+import { DeployPanel } from "./deploy-panel";
+import { DeploymentCard } from "./deployment-card";
 import { GeneratePanel } from "./generate-panel";
 import { GeneratedResults } from "./generated-results";
 import { CompiledNextStep, WrittenNextStep } from "./next-step";
@@ -83,6 +85,21 @@ export function ForgeTool({ runId, autoRun }: ForgeToolProps) {
           focusedLine={forge.focusedLine}
           onFocusLine={forge.setFocusedLine}
           suggestedFix={forge.compileView === "fixes" ? forge.suggestedFix : undefined}
+          deployment={
+            <>
+              {forge.deployment ? (
+                <DeploymentCard
+                  deployment={forge.deployment}
+                  verification={forge.verification}
+                  isVerifying={forge.isVerifying}
+                  verificationFailed={forge.verificationFailed}
+                  onVerifyAgain={forge.verifyAgain}
+                  onCheck={forge.checkVerification}
+                />
+              ) : null}
+              <DeployPanel form={forge.deployForm} />
+            </>
+          }
           onBackToResult={forge.showCompileResult}
           footer={
             <CompiledNextStep
@@ -94,6 +111,10 @@ export function ForgeTool({ runId, autoRun }: ForgeToolProps) {
               onShowFix={forge.showSuggestedFix}
               onAcceptFix={forge.acceptSuggestedFix}
               onSend={forge.sendCompiled}
+              deployName={forge.deployForm.contract?.name}
+              deployedAddress={forge.deployment?.address}
+              isDeploying={forge.isDeploying}
+              onDeploy={forge.deploy}
             />
           }
         />
