@@ -2,7 +2,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { getAddress, type Address } from "viem";
 import { useAccount } from "wagmi";
-import { setSyncedAddress } from "@/hooks/use-synced-address";
 import { connectUrl } from "@/lib/studio-entry";
 import { endSession } from "@/lib/sync-api";
 import { useSessionStatus } from "./use-wallet-session";
@@ -34,9 +33,6 @@ export function useSessionGuard(sessionAddress: Address) {
     const next = window.location.pathname + window.location.search;
     endSession()
       .catch((error: unknown) => console.error(error))
-      .finally(() => {
-        setSyncedAddress(null);
-        router.replace(connectUrl(next));
-      });
+      .finally(() => router.replace(connectUrl(next)));
   }, [status, address, authStatus, isSettled, sessionAddress, router]);
 }

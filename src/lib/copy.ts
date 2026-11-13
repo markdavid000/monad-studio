@@ -37,8 +37,8 @@ export const historyCopy = {
   saveFailedTitle: "Not saved to your activity",
   saveFailedBody: "This browser blocked local storage, so this run will not appear in Activity.",
   missing: "That saved run is no longer in this browser's activity.",
-  syncEndedTitle: "Wallet sync stopped",
-  syncEndedBody: "Your wallet session ended. Connect your wallet again to keep syncing.",
+  syncEndedTitle: "Wallet session ended",
+  syncEndedBody: "Connect your wallet again to reach your synced history.",
   syncFailedTitle: "Not synced",
   syncFailedBody: "The run is saved in this browser but could not reach your synced history.",
 } as const;

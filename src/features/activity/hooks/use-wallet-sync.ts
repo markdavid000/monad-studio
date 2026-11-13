@@ -15,8 +15,8 @@ export function useWalletSync() {
   const stop = useStopSync();
 
   let state: SyncState = "off";
-  if (synced && synced === address) state = "on";
-  else if (!address) state = synced ? "on" : "no-wallet";
+  if (!address) state = "no-wallet";
+  else if (synced) state = "on";
 
   return {
     state,
@@ -42,11 +42,13 @@ export function useWalletSync() {
         },
       });
     },
-    stopSync: () =>
-      stop.mutate(undefined, {
+    stopSync: () => {
+      if (!address) return;
+      stop.mutate(address, {
         onSuccess: () => toast.info(activityCopy.syncStopped),
         onError: () =>
           toast.error(activityCopy.syncFailedTitle, { description: activityCopy.tryAgain }),
-      }),
+      });
+    },
   };
 }

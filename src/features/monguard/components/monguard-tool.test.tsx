@@ -9,6 +9,10 @@ import { monguardCopy } from "../copy";
 import type { ScanReport } from "../types";
 import { MonguardTool } from "./monguard-tool";
 
+vi.mock("wagmi", () => ({
+  useAccount: () => ({ address: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" }),
+}));
+
 const SOURCE = ["contract Bank {", "  function withdraw() public {", "  }", "}"].join("\n");
 
 const report: ScanReport = {
@@ -130,8 +134,8 @@ describe("MonguardTool", () => {
   it("also sends a finished run to the synced history when sync is on", async () => {
     saveDraft(SOURCE);
     window.localStorage.setItem(
-      "monad-studio:synced-wallet",
-      "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+      "monad-studio:synced-wallets",
+      JSON.stringify(["0x70997970C51812dc3A010C7d01b50e0d17dc79C8"])
     );
     fetchMock.mockImplementation(async (url) =>
       url === "/api/history" ? json({ data: { saved: 1 } }) : json({ data: report })
