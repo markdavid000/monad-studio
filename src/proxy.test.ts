@@ -36,6 +36,10 @@ describe("proxy", () => {
     );
   });
 
+  it("leaves the demo public", () => {
+    expect(config.matcher.some((pattern) => pattern.startsWith("/demo"))).toBe(false);
+  });
+
   it("sends a visitor without a session to connect, remembering where they were going", () => {
     const response = proxy(request("/studio/gaslens?run=abc"));
     expect(response.status).toBe(307);

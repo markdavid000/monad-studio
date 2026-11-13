@@ -1,19 +1,27 @@
 import { cn } from "@/lib/utils";
-import { studioCopy } from "../copy";
-import type { ExampleContract } from "../examples";
 
-interface ExamplePickerProps {
-  examples: readonly ExampleContract[];
-  activeName: string;
-  onPick: (example: ExampleContract) => void;
+interface ExampleOption {
+  id: string;
+  name: string;
+  summary: string;
 }
 
-export function ExamplePicker({ examples, activeName, onPick }: ExamplePickerProps) {
+interface ExamplePickerProps<T extends ExampleOption> {
+  label: string;
+  examples: readonly T[];
+  activeName: string;
+  onPick: (example: T) => void;
+}
+
+export function ExamplePicker<T extends ExampleOption>({
+  label,
+  examples,
+  activeName,
+  onPick,
+}: ExamplePickerProps<T>) {
   return (
     <div className="flex flex-col gap-2">
-      <p className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
-        {studioCopy.examplesLabel}
-      </p>
+      <p className="font-mono text-xs tracking-wide text-muted-foreground uppercase">{label}</p>
       <div className="grid gap-2 sm:grid-cols-3">
         {examples.map((example) => (
           <button

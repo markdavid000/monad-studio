@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { studioCopy } from "../copy";
-import { exampleContracts } from "../examples";
+import { exampleContracts } from "@/config/examples";
 import { StudioWorkspace } from "./studio-workspace";
 
 vi.mock("wagmi", () => ({

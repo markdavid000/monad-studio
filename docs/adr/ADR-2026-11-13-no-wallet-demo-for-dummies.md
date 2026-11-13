@@ -1,6 +1,6 @@
 # A demo that works without a wallet, in plain English
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Technical version:** [ADR-2026-11-13-no-wallet-demo.md](ADR-2026-11-13-no-wallet-demo.md)
 
 ## What is the problem?

@@ -6,13 +6,12 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { IntroDialog } from "@/components/ui/intro-dialog";
 import { PageTitle } from "@/components/ui/page-title";
-import { ResultsSheet } from "@/components/ui/results-sheet";
 import { ToolActions } from "@/components/ui/tool-actions";
 import { aiCopy, historyCopy } from "@/lib/copy";
 import { gaslensCopy } from "../copy";
 import { useGaslens } from "../hooks/use-gaslens";
 import { CodePanel } from "./code-panel";
-import { ResultPanel } from "./result-panel";
+import { GasResults } from "./gas-results";
 
 function runLabel(isPending: boolean, hasReport: boolean) {
   if (isPending) return gaslensCopy.analysing;
@@ -55,7 +54,8 @@ export function GaslensTool({ runId }: GaslensToolProps) {
             hasChanges={false}
             highlightedKeys={[]}
             flaggedKeys={[]}
-            onModeChange={gaslens.setMode}
+            onModeChange={gaslens.view.setMode}
+            canEdit
           />
           <ToolActions
             note={aiCopy.note}
@@ -88,35 +88,16 @@ export function GaslensTool({ runId }: GaslensToolProps) {
         </>
       )}
       {report ? (
-        <ResultsSheet
+        <GasResults
+          report={report}
           open={gaslens.isResultsOpen}
           onOpenChange={gaslens.setResultsOpen}
-          title={gaslensCopy.resultsTitle}
-          description={report.contractName}
-          closeLabel={aiCopy.closeResults}
-        >
-          <div className="grid items-start gap-6 lg:grid-cols-2">
-            <div className="min-w-0 lg:sticky lg:top-0">
-              <CodePanel
-                fileName={gaslens.fileName}
-                source={gaslens.source}
-                diff={gaslens.diff}
-                optimizedSource={report.optimizedSource}
-                mode={gaslens.mode}
-                hasChanges={gaslens.hasChanges}
-                highlightedKeys={gaslens.highlightedKeys}
-                flaggedKeys={gaslens.flaggedKeys}
-                onModeChange={gaslens.setMode}
-              />
-            </div>
-            <ResultPanel
-              report={report}
-              isStale={gaslens.isStale}
-              activeId={gaslens.activeId}
-              onToggle={gaslens.toggle}
-            />
-          </div>
-        </ResultsSheet>
+          fileName={gaslens.fileName}
+          source={gaslens.source}
+          isStale={gaslens.isStale}
+          canEdit
+          view={gaslens.view}
+        />
       ) : null}
     </div>
   );

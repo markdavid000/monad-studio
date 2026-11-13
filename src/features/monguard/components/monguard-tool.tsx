@@ -6,12 +6,11 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { IntroDialog } from "@/components/ui/intro-dialog";
 import { PageTitle } from "@/components/ui/page-title";
-import { ResultsSheet } from "@/components/ui/results-sheet";
 import { ToolActions } from "@/components/ui/tool-actions";
 import { aiCopy, historyCopy } from "@/lib/copy";
 import { monguardCopy } from "../copy";
 import { useMonguard } from "../hooks/use-monguard";
-import { ReportPanel } from "./report-panel";
+import { ScanResults } from "./scan-results";
 import { SourceView } from "./source-view";
 
 function scanLabel(isPending: boolean, hasReport: boolean) {
@@ -46,7 +45,12 @@ export function MonguardTool({ runId }: MonguardToolProps) {
         />
       ) : (
         <>
-          <SourceView fileName={monguard.fileName} source={monguard.source} highlightedLines={[]} />
+          <SourceView
+            fileName={monguard.fileName}
+            source={monguard.source}
+            highlightedLines={[]}
+            canEdit
+          />
           <ToolActions
             note={aiCopy.note}
             tooLarge={
@@ -78,29 +82,18 @@ export function MonguardTool({ runId }: MonguardToolProps) {
         </>
       )}
       {report ? (
-        <ResultsSheet
+        <ScanResults
+          report={report}
           open={monguard.isResultsOpen}
           onOpenChange={monguard.setResultsOpen}
-          title={monguardCopy.resultsTitle}
-          description={report.contractName}
-          closeLabel={aiCopy.closeResults}
-        >
-          <div className="grid items-start gap-6 lg:grid-cols-2">
-            <div className="min-w-0 lg:sticky lg:top-0">
-              <SourceView
-                fileName={monguard.fileName}
-                source={monguard.scannedSource}
-                highlightedLines={monguard.highlightedLines}
-              />
-            </div>
-            <ReportPanel
-              report={report}
-              isStale={monguard.isStale}
-              activeId={monguard.activeId}
-              onToggle={monguard.toggle}
-            />
-          </div>
-        </ResultsSheet>
+          fileName={monguard.fileName}
+          source={monguard.scannedSource}
+          highlightedLines={monguard.highlightedLines}
+          isStale={monguard.isStale}
+          canEdit
+          activeId={monguard.activeId}
+          onToggle={monguard.toggle}
+        />
       ) : null}
     </div>
   );

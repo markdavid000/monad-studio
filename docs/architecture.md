@@ -97,18 +97,20 @@ When two features keep needing each other, they are one feature. Merge them; do 
 
 ## Features
 
-| Feature     | Route               | Owns                                                   |
-| ----------- | ------------------- | ------------------------------------------------------ |
-| `landing`   | `/`                 | The public page                                        |
-| `wallet`    | studio header       | wagmi and RainbowKit config, providers, connect button |
-| `monguard`  | `/studio/monguard`  | Security review: schema, prompt, score, findings UI    |
-| `gaslens`   | `/studio/gaslens`   | Gas review: schema, prompt, diff, findings UI          |
-| `forge`     | `/studio/forge`     | Generate, compile, deploy, verify                      |
-| `sentinel`  | `/studio/sentinel`  | Watch list, activity polling, flagged patterns         |
-| `paradebug` | `/studio/paradebug` | Same-function contention report                        |
-| `activity`  | `/studio/activity`  | List, filter, reopen and delete saved runs             |
+| Feature     | Route                                | Owns                                                               |
+| ----------- | ------------------------------------ | ------------------------------------------------------------------ |
+| `landing`   | `/`                                  | The public page                                                    |
+| `wallet`    | studio header                        | wagmi and RainbowKit config, providers, connect button             |
+| `monguard`  | `/studio/monguard`, `/demo/monguard` | Security review: schema, prompt, score, findings UI, recorded demo |
+| `gaslens`   | `/studio/gaslens`, `/demo/gaslens`   | Gas review: schema, prompt, diff, findings UI, recorded demo       |
+| `forge`     | `/studio/forge`                      | Generate, compile, deploy, verify                                  |
+| `sentinel`  | `/studio/sentinel`                   | Watch list, activity polling, flagged patterns                     |
+| `paradebug` | `/studio/paradebug`                  | Same-function contention report                                    |
+| `activity`  | `/studio/activity`                   | List, filter, reopen and delete saved runs                         |
 
 Source code handed from one tool to another goes through `hooks/use-contract-draft.ts`, never a feature import.
+
+The three example contracts live in `config/examples.ts`. `/demo` is public and needs no wallet: each tool exports a demo component that shows a report recorded from a real run of each example (`features/<tool>/demo/recorded-reports.json`, parsed with the tool's report schema at load). The demo makes no API call and saves nothing. Re-record those files when a prompt or report schema changes.
 
 Finished runs are saved in the browser's IndexedDB through `lib/history.ts` and `hooks/use-history.ts`. A tool records its own run and validates a saved report with its own schema; the activity feature only sees the shared `HistoryRun` shape, and reopens a run by loading its source into the draft and linking to `/studio/<tool>?run=<id>`.
 
@@ -116,7 +118,7 @@ The studio needs a signed wallet session. `/api/auth/nonce` and `/api/auth/sessi
 
 ## Rendering and caching
 
-- The landing page is a Server Component with no request-time data, prerendered at build time. Studio pages read the session cookie, so they render per request.
+- The landing page and the demo pages have no request-time data and are prerendered at build time. Studio pages read the session cookie, so they render per request.
 - Tool pages are server-rendered shells with one client leaf per interactive panel.
 - `fetch` is uncached by default. Upstream calls (Groq, the Monad RPC, Sourcify) are per request and never cached in a shared entry.
 - Cache Components (`cacheComponents`, `"use cache"`) are not used. Turning them on is an ADR.

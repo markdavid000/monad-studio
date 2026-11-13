@@ -14,7 +14,7 @@ export const landingCopy = {
   titleAccessible: "Write the contract. Review, optimise, deploy, watch and debug it on Monad.",
   lead: "Review a contract for security holes and wasted gas, generate one from a sentence, deploy it from your own wallet, then watch how it behaves on testnet.",
   cta: "Open the studio",
-  secondaryCta: "See what each tool does",
+  secondaryCta: "Try the demo, no wallet needed",
   showcaseLabel: "Tool previews",
   pause: "Pause the previews",
   play: "Play the previews",

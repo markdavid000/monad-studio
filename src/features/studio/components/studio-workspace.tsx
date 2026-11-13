@@ -1,13 +1,13 @@
 "use client";
 
 import { studioCopy } from "../copy";
-import { exampleContracts } from "../examples";
 import { useContractDraft } from "@/hooks/use-contract-draft";
 import { ActionBar } from "./action-bar";
-import { ExamplePicker } from "./example-picker";
 import { SourceEditor } from "./source-editor";
 import { StatusRail } from "./status-rail";
+import { ExamplePicker } from "@/components/ui/example-picker";
 import { IntroDialog } from "@/components/ui/intro-dialog";
+import { exampleContracts } from "@/config/examples";
 import { PageTitle } from "@/components/ui/page-title";
 
 export function StudioWorkspace() {
@@ -20,6 +20,7 @@ export function StudioWorkspace() {
         <p>{studioCopy.lead}</p>
       </PageTitle>
       <ExamplePicker
+        label={studioCopy.examplesLabel}
         examples={exampleContracts}
         activeName={draft.name}
         onPick={(example) => draft.load(example.name, example.source)}

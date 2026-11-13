@@ -7,9 +7,10 @@ interface SourceViewProps {
   fileName: string;
   source: string;
   highlightedLines: readonly number[];
+  canEdit: boolean;
 }
 
-export function SourceView({ fileName, source, highlightedLines }: SourceViewProps) {
+export function SourceView({ fileName, source, highlightedLines, canEdit }: SourceViewProps) {
   const highlighted = new Set(highlightedLines);
   const lines: CodeLine[] = source.split("\n").map((text, index) => ({
     key: String(index + 1),
@@ -22,13 +23,15 @@ export function SourceView({ fileName, source, highlightedLines }: SourceViewPro
     <section className="flex min-w-0 flex-col overflow-hidden rounded-xl border bg-card">
       <div className="flex items-center justify-between gap-3 border-b px-4 py-2.5">
         <span className="truncate font-mono text-sm">{fileName || monguardCopy.untitled}</span>
-        <Link
-          href="/studio"
-          className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <Pencil aria-hidden className="size-3.5" />
-          {monguardCopy.editInWorkspace}
-        </Link>
+        {canEdit ? (
+          <Link
+            href="/studio"
+            className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Pencil aria-hidden className="size-3.5" />
+            {monguardCopy.editInWorkspace}
+          </Link>
+        ) : null}
       </div>
       <CodeView
         label={monguardCopy.sourceLabel}
