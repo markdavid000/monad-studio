@@ -1,6 +1,7 @@
 import { BadgeCheck, LoaderCircle } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
 import { cn } from "@/lib/utils";
 import { forgeCopy } from "../copy";
 import type { useVerifySource } from "../hooks/use-verify-source";
@@ -64,7 +65,7 @@ export function VerifyPanel({ form, ...props }: VerifyPanelProps) {
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field id="verify-contract" label={copy.contractLabel}>
-            <select
+            <NativeSelect
               id="verify-contract"
               value={form.contractName}
               onChange={(event) => form.setContractName(event.target.value)}
@@ -77,7 +78,7 @@ export function VerifyPanel({ form, ...props }: VerifyPanelProps) {
                   {name}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
           </Field>
           <Field id="verify-version" label={copy.versionLabel}>
             <input
@@ -113,7 +114,7 @@ export function VerifyPanel({ form, ...props }: VerifyPanelProps) {
             />
           </Field>
           <Field id="verify-evm" label={copy.evmLabel}>
-            <select
+            <NativeSelect
               id="verify-evm"
               value={form.evmVersion}
               onChange={(event) => form.setEvmVersion(event.target.value)}
@@ -124,7 +125,7 @@ export function VerifyPanel({ form, ...props }: VerifyPanelProps) {
                   {version === "default" ? copy.evmDefault : version}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
           </Field>
         </div>
         <label className="flex items-center gap-2 text-sm">

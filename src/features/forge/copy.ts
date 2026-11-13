@@ -167,7 +167,7 @@ export const forgeCopy = {
     optimizerLabel: "Optimizer was on",
     runsLabel: "Optimizer runs",
     evmLabel: "EVM version",
-    evmDefault: "Compiler default",
+    evmDefault: "Default",
     run: "Verify on Sourcify",
     running: "Submitting",
     statusLabel: "Status",
