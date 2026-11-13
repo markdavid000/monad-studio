@@ -181,13 +181,11 @@ describe("ActivityLog", () => {
       expect(screen.queryByRole("button", { name: activityCopy.syncButton })).toBeNull();
     });
 
-    it("signs in with the wallet and uploads the runs from this browser", async () => {
+    it("turns on sync and uploads the runs from this browser without another signature", async () => {
       await seed();
       wallet.address = ALICE;
       fetchMock.mockImplementation(async (url, init) => {
         const key = `${init?.method ?? "GET"} ${String(url)}`;
-        if (key === "GET /api/auth/nonce") return json({ data: { nonce: "abcdefgh12345678" } });
-        if (key === "POST /api/auth/session") return json({ data: { address: ALICE } });
         if (key === "POST /api/history") return json({ data: { saved: 2 } });
         if (key === "GET /api/history") return json({ data: { runs: [] } });
         return json({ error: { code: "not_found", message: key } }, 404);
@@ -197,29 +195,13 @@ describe("ActivityLog", () => {
 
       expect((await screen.findAllByText(activityCopy.syncDoneTitle))[0]).toBeInTheDocument();
       expect(screen.getByText("Synced with 0x7099...79C8")).toBeInTheDocument();
-      const [[{ message }]] = wallet.signMessageAsync.mock.calls as unknown as [
-        [{ message: string }],
-      ];
-      expect(message).toContain(ALICE);
-      expect(message).toContain("Chain ID: 10143");
-      expect(message).toContain("Nonce: abcdefgh12345678");
+      expect(wallet.signMessageAsync).not.toHaveBeenCalled();
+      expect(calls()).not.toContain("GET /api/auth/nonce");
       const uploaded = fetchMock.mock.calls.find(
         ([url, init]) => url === "/api/history" && init?.method === "POST"
       );
       expect(JSON.parse(String(uploaded?.[1]?.body)).runs).toHaveLength(2);
       expect(window.localStorage.getItem("monad-studio:synced-wallet")).toBe(ALICE);
-    });
-
-    it("says the sync was cancelled when the signature is rejected", async () => {
-      wallet.address = ALICE;
-      wallet.signMessageAsync.mockRejectedValue(
-        Object.assign(new Error("User rejected the request."), { name: "UserRejectedRequestError" })
-      );
-      fetchMock.mockImplementation(async () => json({ data: { nonce: "abcdefgh12345678" } }));
-      renderLog();
-      fireEvent.click(await screen.findByRole("button", { name: activityCopy.syncButton }));
-      expect((await screen.findAllByText(activityCopy.syncCancelled))[0]).toBeInTheDocument();
-      expect(window.localStorage.getItem("monad-studio:synced-wallet")).toBeNull();
     });
 
     it("shows runs from other devices and opens them by downloading the full run", async () => {
@@ -275,16 +257,16 @@ describe("ActivityLog", () => {
       ).toBeInTheDocument();
     });
 
-    it("stops syncing on request", async () => {
+    it("stops syncing on request without signing out", async () => {
       wallet.address = ALICE;
       window.localStorage.setItem("monad-studio:synced-wallet", ALICE);
-      fetchMock.mockImplementation(async (url) =>
-        url === "/api/history" ? json({ data: { runs: [] } }) : json({ data: { address: null } })
-      );
+      fetchMock.mockImplementation(async () => json({ data: { runs: [] } }));
       renderLog();
       fireEvent.click(await screen.findByRole("button", { name: activityCopy.stopSync }));
-      await vi.waitFor(() => expect(calls()).toContain("DELETE /api/auth/session"));
-      expect(window.localStorage.getItem("monad-studio:synced-wallet")).toBeNull();
+      await vi.waitFor(() =>
+        expect(window.localStorage.getItem("monad-studio:synced-wallet")).toBeNull()
+      );
+      expect(calls()).not.toContain("DELETE /api/auth/session");
     });
   });
 });

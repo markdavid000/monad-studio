@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Address } from "viem";
-import { createSiweMessage } from "viem/siwe";
 import type { z } from "zod";
 import { ApiError } from "@/lib/api-error";
 import { historyCopy } from "@/lib/copy";
@@ -19,12 +18,9 @@ import type { HistoryMeta } from "@/lib/history-schema";
 import {
   clearRemoteRuns,
   deleteRemoteRun,
-  endSession,
-  fetchNonce,
   fetchRemoteRun,
   fetchRemoteRuns,
   pushRuns,
-  verifySignature,
 } from "@/lib/sync-api";
 import { toast } from "@/lib/toast";
 import { setSyncedAddress, useSyncedAddress } from "./use-synced-address";
@@ -151,36 +147,17 @@ export function useClearRuns() {
   });
 }
 
-interface StartSync {
-  address: Address;
-  chainId: number;
-  signMessage: (message: string) => Promise<string>;
-}
-
 export function useStartSync() {
-  return useHistoryMutation(async ({ address, chainId, signMessage }: StartSync) => {
-    const { nonce } = await fetchNonce();
-    const message = createSiweMessage({
-      address,
-      chainId,
-      domain: window.location.host,
-      nonce,
-      uri: window.location.origin,
-      version: "1",
-      statement: historyCopy.signInStatement,
-    });
-    const signature = await signMessage(message);
-    const session = await verifySignature(message, signature);
-    setSyncedAddress(session.address);
+  return useHistoryMutation(async (address: Address) => {
     const local = await listRuns();
     await pushRuns(local);
+    setSyncedAddress(address);
     return local.length;
   });
 }
 
 export function useStopSync() {
   return useHistoryMutation(async () => {
-    await endSession();
     setSyncedAddress(null);
   });
 }

@@ -2,29 +2,32 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { useAccount } from "wagmi";
+import { useSessionStatus } from "./use-wallet-session";
 
-export function useStudioGate(onDismiss: () => void) {
+export function useStudioGate(next: string, onDismiss: () => void) {
   const router = useRouter();
-  const { status } = useAccount();
+  const authStatus = useSessionStatus();
+  const { status: walletStatus } = useAccount();
   const { openConnectModal, connectModalOpen } = useConnectModal();
-  const hasRequested = useRef(false);
   const wasShown = useRef(false);
 
   useEffect(() => {
-    if (status === "connected") {
-      router.push("/studio");
+    if (authStatus === "authenticated") {
+      router.push(next);
       return;
     }
-    if (status !== "disconnected" || !openConnectModal || hasRequested.current) return;
-    hasRequested.current = true;
-    openConnectModal();
-  }, [status, openConnectModal, router]);
-
-  useEffect(() => {
     if (connectModalOpen) {
       wasShown.current = true;
       return;
     }
-    if (wasShown.current && status === "disconnected") onDismiss();
-  }, [connectModalOpen, status, onDismiss]);
+    if (authStatus !== "unauthenticated") return;
+    if (walletStatus === "connecting" || walletStatus === "reconnecting") return;
+    if (walletStatus === "disconnected" && wasShown.current) {
+      onDismiss();
+      return;
+    }
+    if (!openConnectModal) return;
+    const timer = window.setTimeout(openConnectModal, 0);
+    return () => window.clearTimeout(timer);
+  }, [authStatus, walletStatus, connectModalOpen, openConnectModal, router, next, onDismiss]);
 }

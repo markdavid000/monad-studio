@@ -2,7 +2,11 @@ import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 
-const SERVER_TESTS = ["src/app/api/**/*.test.ts", "src/lib/server/**/*.test.ts"];
+const SERVER_TESTS = [
+  "src/app/api/**/*.test.ts",
+  "src/lib/server/**/*.test.ts",
+  "src/proxy.test.ts",
+];
 
 export default defineConfig({
   plugins: [react()],

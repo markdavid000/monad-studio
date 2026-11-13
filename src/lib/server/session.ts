@@ -44,8 +44,8 @@ function sealedUntil(value: string, seconds: number) {
   return seal(`${value}|${Math.floor(Date.now() / 1000) + seconds}`);
 }
 
-function openUntil(request: Request, name: string) {
-  const value = unseal(readCookie(request, name));
+function openSealed(sealed: string | undefined) {
+  const value = unseal(sealed);
   if (!value) return null;
   const [content, expires] = value.split("|");
   return content && Number(expires) > Date.now() / 1000 ? content : null;
@@ -59,9 +59,15 @@ export function clearedSessionCookie() {
   return cookie(SESSION_COOKIE, "", 0);
 }
 
-export function readSession(request: Request): Address | null {
-  const address = openUntil(request, SESSION_COOKIE);
+export const SESSION_COOKIE_NAME = SESSION_COOKIE;
+
+export function readSessionValue(sealed: string | undefined): Address | null {
+  const address = openSealed(sealed);
   return address && isAddress(address) ? getAddress(address) : null;
+}
+
+export function readSession(request: Request): Address | null {
+  return readSessionValue(readCookie(request, SESSION_COOKIE));
 }
 
 export function nonceCookie(nonce: string) {
@@ -73,5 +79,5 @@ export function clearedNonceCookie() {
 }
 
 export function readNonce(request: Request) {
-  return openUntil(request, NONCE_COOKIE);
+  return openSealed(readCookie(request, NONCE_COOKIE));
 }

@@ -53,7 +53,7 @@ export function SyncPanel() {
           ) : (
             <Cloud aria-hidden />
           )}
-          {sync.isStarting ? activityCopy.syncConfirm : activityCopy.syncButton}
+          {activityCopy.syncButton}
         </Button>
       ) : null}
     </section>

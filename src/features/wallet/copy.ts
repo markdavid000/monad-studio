@@ -5,6 +5,8 @@ export const walletCopy = {
   network: "Monad testnet",
   networkMenu: "Change network",
   accountMenu: "Wallet details",
+  signInStatement:
+    "Sign in to MonadStudio with this wallet. This does not send a transaction or cost gas.",
 } as const;
 
 export const networkGuardCopy = {

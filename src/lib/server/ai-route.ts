@@ -2,6 +2,7 @@ import "server-only";
 import { z } from "zod";
 import type { ApiErrorCode } from "@/lib/api-error";
 import { limitAiCall } from "./rate-limit";
+import { readSession } from "./session";
 import { UpstreamError } from "./upstream-error";
 
 export function errorResponse(
@@ -26,6 +27,10 @@ export async function readJson(
 
 export function aiRoute<T extends z.ZodType, R>(input: T, run: (value: z.infer<T>) => Promise<R>) {
   return async function handle(request: Request) {
+    const address = readSession(request);
+    if (!address) {
+      return errorResponse(401, "unauthorized", "Connect and sign in with your wallet first.");
+    }
     const read = await readJson(request);
     if (!read.ok) {
       return errorResponse(400, "invalid_input", "The request body must be JSON.");

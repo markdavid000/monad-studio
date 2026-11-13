@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { sessionCookie } from "@/lib/server/session";
 
 const limit = vi.hoisted(() => ({ allowed: true, retryAfterSeconds: 120 }));
 
@@ -35,23 +36,31 @@ function groqReply(content: string) {
   );
 }
 
-function scanRequest(body: unknown) {
+function scanRequest(body: unknown, signedIn = true) {
+  const cookie = signedIn
+    ? sessionCookie("0x70997970C51812dc3A010C7d01b50e0d17dc79C8").split(";")[0]
+    : "";
   return new Request("http://localhost/api/monguard/scan", {
     method: "POST",
-    headers: { "content-type": "application/json", "x-forwarded-for": "203.0.113.7" },
+    headers: {
+      "content-type": "application/json",
+      "x-forwarded-for": "203.0.113.7",
+      cookie,
+    },
     body: typeof body === "string" ? body : JSON.stringify(body),
   });
 }
 
-async function post(body: unknown) {
+async function post(body: unknown, signedIn = true) {
   const { POST } = await import("./route");
-  return POST(scanRequest(body));
+  return POST(scanRequest(body, signedIn));
 }
 
 const fetchMock = vi.fn<typeof fetch>();
 
 beforeEach(() => {
   vi.stubEnv("GROQ_API_KEY", "test-key");
+  vi.stubEnv("SESSION_SECRET", "a-test-secret-that-is-at-least-32-characters");
   vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://example.upstash.io");
   vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "test-token");
   vi.stubGlobal("fetch", fetchMock);
@@ -68,6 +77,13 @@ afterEach(() => {
 });
 
 describe("POST /api/monguard/scan", () => {
+  it("refuses a caller without a wallet session before reading the body", async () => {
+    const response = await post({ source: "contract A {}" }, false);
+    expect(response.status).toBe(401);
+    expect((await response.json()).error.code).toBe("unauthorized");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("returns the mapped report", async () => {
     fetchMock.mockResolvedValue(groqReply(JSON.stringify(validReply)));
     const response = await post({ source: "contract A {\n  function withdraw() {}\n}" });

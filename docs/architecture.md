@@ -112,11 +112,11 @@ Source code handed from one tool to another goes through `hooks/use-contract-dra
 
 Finished runs are saved in the browser's IndexedDB through `lib/history.ts` and `hooks/use-history.ts`. A tool records its own run and validates a saved report with its own schema; the activity feature only sees the shared `HistoryRun` shape, and reopens a run by loading its source into the draft and linking to `/studio/<tool>?run=<id>`.
 
-Wallet sync is opt in. `/api/auth/nonce` and `/api/auth/session` run Sign-In with Ethereum (`viem/siwe`, Monad testnet only) and set an HTTP-only session cookie signed with `SESSION_SECRET` (`lib/server/session.ts`). `/api/history` and `/api/history/[id]` store runs in Upstash under the signed-in address (`lib/server/history-store.ts`): a metadata hash for the list and one key per full run, newest 200, expiring 180 days after the last write. The browser remembers which wallet it synced with (`hooks/use-synced-address.ts`) and pushes each new run.
+The studio needs a signed wallet session. `/api/auth/nonce` and `/api/auth/session` run Sign-In with Ethereum (`viem/siwe`, Monad testnet only), shown by RainbowKit as "Verify your account", and set an HTTP-only session cookie signed with `SESSION_SECRET` (`lib/server/session.ts`). `src/proxy.ts` checks it before every studio page and studio API, the studio layout checks it again (`lib/server/require-session.ts`), the route handlers check it inside, and `SessionGuard` signs out when the wallet disconnects or changes. Wallet sync is a switch on top of that session. `/api/history` and `/api/history/[id]` store runs in Upstash under the signed-in address (`lib/server/history-store.ts`): a metadata hash for the list and one key per full run, newest 200, expiring 180 days after the last write. The browser remembers which wallet it synced with (`hooks/use-synced-address.ts`) and pushes each new run.
 
 ## Rendering and caching
 
-- The landing page and the studio index are Server Components with no request-time data, prerendered at build time.
+- The landing page is a Server Component with no request-time data, prerendered at build time. Studio pages read the session cookie, so they render per request.
 - Tool pages are server-rendered shells with one client leaf per interactive panel.
 - `fetch` is uncached by default. Upstream calls (Groq, the Monad RPC, Sourcify) are per request and never cached in a shared entry.
 - Cache Components (`cacheComponents`, `"use cache"`) are not used. Turning them on is an ADR.
