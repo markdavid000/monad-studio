@@ -2,12 +2,19 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Toaster } from "@/components/ui/toaster";
-import { aiCopy, historyCopy, retryIn } from "@/lib/copy";
+import { aiCopy, historyCopy, journeyCopy, retryIn } from "@/lib/copy";
 import { clearRuns, listRuns, saveRun } from "@/lib/history";
 import { toast } from "@/lib/toast";
-import { monguardCopy } from "../copy";
+import { monguardCopy, reviewFixesLabel } from "../copy";
 import type { ScanReport } from "../types";
 import { MonguardTool } from "./monguard-tool";
+
+const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn() }));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => router,
+  usePathname: () => "/studio/monguard",
+}));
 
 vi.mock("wagmi", () => ({
   useAccount: () => ({ address: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" }),
@@ -55,6 +62,10 @@ function json(body: unknown, init?: ResponseInit) {
 function saveDraft(source: string, name = "Bank.sol") {
   window.localStorage.setItem("monad-studio:draft", JSON.stringify({ name, source }));
   window.dispatchEvent(new Event("monad-studio:draft-change"));
+}
+
+function readDraft() {
+  return JSON.parse(window.localStorage.getItem("monad-studio:draft") ?? "{}");
 }
 
 function newClient() {
@@ -280,6 +291,73 @@ describe("MonguardTool", () => {
     expect(await findText(monguardCopy.doneTitle)).toBeInTheDocument();
     fireEvent.click(await screen.findByRole("button", { name: monguardCopy.showResults }));
     expect(within(await results()).getByText(report.summary)).toBeInTheDocument();
+  });
+
+  it("applies only the chosen fixes, shows the changes, and accepts them with undo", async () => {
+    saveDraft(SOURCE);
+    const fixed = SOURCE.replace("  }", "    balances[msg.sender] = 0;\n  }");
+    fetchMock.mockResolvedValueOnce(json({ data: report })).mockResolvedValueOnce(
+      json({
+        data: {
+          fixedSource: fixed,
+          applied: [{ id: "MG-01", note: "Clears the balance first." }],
+          skipped: [],
+        },
+      })
+    );
+    renderTool();
+    fireEvent.click(scanButton());
+    const dialog = await results();
+    const bar = within(dialog).getByRole("group", { name: journeyCopy.label });
+    expect(within(bar).getByText(monguardCopy.fixes.statusScanned)).toBeInTheDocument();
+    fireEvent.click(
+      within(dialog).getByRole("checkbox", { name: /Include the fix for Missing event/ })
+    );
+    fireEvent.click(within(bar).getByRole("button", { name: reviewFixesLabel(1) }));
+
+    expect(await within(dialog).findByText("Clears the balance first.")).toBeInTheDocument();
+    const sent = JSON.parse(String(fetchMock.mock.calls[1][1]?.body));
+    expect(fetchMock.mock.calls[1][0]).toBe("/api/monguard/fix");
+    expect(sent.findings.map((finding: { id: string }) => finding.id)).toEqual(["MG-01"]);
+    const diff = within(dialog).getByRole("region", { name: monguardCopy.fixes.diffLabel });
+    expect(diff.querySelector('[data-kind="add"]')).toHaveTextContent("balances[msg.sender] = 0;");
+    expect(readDraft().source).toBe(SOURCE);
+    await vi.waitFor(async () =>
+      expect((await listRuns()).some((run) => run.summary === "1 fix applied")).toBe(true)
+    );
+
+    fireEvent.click(within(bar).getByRole("button", { name: monguardCopy.fixes.accept }));
+    expect(readDraft().source).toBe(fixed);
+    expect(within(bar).getByText(monguardCopy.fixes.statusAccepted)).toBeInTheDocument();
+    expect(within(dialog).queryByText(monguardCopy.stale)).toBeNull();
+    fireEvent.click(await screen.findByRole("button", { name: journeyCopy.undo, hidden: true }));
+    expect(readDraft().source).toBe(SOURCE);
+  });
+
+  it("sends the scanned contract to GasLens and MonadForge from the next step bar", async () => {
+    saveDraft(SOURCE);
+    fetchMock.mockImplementation(async () => json({ data: report }));
+    renderTool();
+    fireEvent.click(scanButton());
+    const bar = within(await results()).getByRole("group", { name: journeyCopy.label });
+    fireEvent.click(within(bar).getByRole("button", { name: journeyCopy.gas }));
+    expect(router.push).toHaveBeenLastCalledWith("/studio/gaslens?run=new");
+    fireEvent.click(within(bar).getByRole("button", { name: journeyCopy.compile }));
+    expect(router.push).toHaveBeenLastCalledWith("/studio/forge?run=new");
+    expect(readDraft().source).toBe(SOURCE);
+  });
+
+  it("starts a scan by itself when a contract is sent here", async () => {
+    saveDraft(SOURCE);
+    fetchMock.mockImplementation(async () => json({ data: report }));
+    render(
+      <QueryClientProvider client={newClient()}>
+        <MonguardTool autoRun />
+      </QueryClientProvider>
+    );
+    await results();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledWith("/studio/monguard");
   });
 
   it("opens another finding and highlights its lines", async () => {

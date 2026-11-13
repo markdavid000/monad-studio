@@ -108,7 +108,7 @@ When two features keep needing each other, they are one feature. Merge them; do 
 | `paradebug` | `/studio/paradebug`                  | Same-function contention report                                    |
 | `activity`  | `/studio/activity`                   | List, filter, reopen and delete saved runs                         |
 
-Source code handed from one tool to another goes through `hooks/use-contract-draft.ts`, never a feature import.
+Source code handed from one tool to another goes through `hooks/use-contract-draft.ts`, never a feature import. Each results layer ends with a `NextStepBar`; sending uses `hooks/use-send-contract.ts` (load the draft, open `/studio/<tool>?run=new`, which the tool turns into one run through `hooks/use-auto-run.ts`), and accepting a MonGuard fix or a GasLens rewrite uses `hooks/use-accept-contract.ts`, which offers Undo. See [the ADR](adr/ADR-2026-11-13-contract-journey.md).
 
 MonadForge compiles on the server with the pinned `solc` package (listed in `serverExternalPackages`), never rewriting the source, and returns the exact standard JSON input and compiler version so a deploy can be verified byte for byte. `/api/forge/compile` has its own rate limit; `/api/forge/generate` counts against the AI limit.
 

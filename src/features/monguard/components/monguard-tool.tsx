@@ -10,6 +10,7 @@ import { ToolActions } from "@/components/ui/tool-actions";
 import { aiCopy, historyCopy } from "@/lib/copy";
 import { monguardCopy } from "../copy";
 import { useMonguard } from "../hooks/use-monguard";
+import { NextStep } from "./next-step";
 import { ScanResults } from "./scan-results";
 import { SourceView } from "./source-view";
 
@@ -20,10 +21,11 @@ function scanLabel(isPending: boolean, hasReport: boolean) {
 
 interface MonguardToolProps {
   runId?: string;
+  autoRun?: boolean;
 }
 
-export function MonguardTool({ runId }: MonguardToolProps) {
-  const monguard = useMonguard(runId);
+export function MonguardTool({ runId, autoRun }: MonguardToolProps) {
+  const monguard = useMonguard(runId, autoRun);
   const { report } = monguard;
 
   return (
@@ -93,6 +95,27 @@ export function MonguardTool({ runId }: MonguardToolProps) {
           canEdit
           activeId={monguard.activeId}
           onToggle={monguard.toggle}
+          review={{
+            view: monguard.view,
+            fix: monguard.fix,
+            isChosen: monguard.isChosen,
+            onToggleFix: monguard.toggleFix,
+            onShowFindings: monguard.showFindings,
+          }}
+          footer={
+            <NextStep
+              view={monguard.view}
+              hasFix={monguard.fix !== undefined}
+              isFixing={monguard.isFixing}
+              isAccepted={monguard.isAccepted}
+              canAccept={monguard.canAccept}
+              chosenCount={monguard.chosenCount}
+              onReviewFixes={monguard.reviewFixes}
+              onShowFixes={monguard.showFixes}
+              onAccept={monguard.acceptFixes}
+              onSend={monguard.sendTo}
+            />
+          }
         />
       ) : null}
     </div>

@@ -1,5 +1,5 @@
-import { CircleAlert, CircleCheck, FileInput } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CircleAlert, CircleCheck } from "lucide-react";
+import type { ReactNode } from "react";
 import { ResultsSheet } from "@/components/ui/results-sheet";
 import { aiCopy } from "@/lib/copy";
 import { cn } from "@/lib/utils";
@@ -15,7 +15,7 @@ interface GeneratedResultsProps {
   onOpenChange: (open: boolean) => void;
   focusedLine: number | undefined;
   onFocusLine: (line: number) => void;
-  onUse: (contract: GeneratedContract) => void;
+  footer: ReactNode;
 }
 
 const copy = forgeCopy.generate;
@@ -31,6 +31,7 @@ export function GeneratedResults({ contract, ...props }: GeneratedResultsProps) 
       title={copy.resultsTitle}
       description={contract.contractName}
       closeLabel={aiCopy.closeResults}
+      footer={props.footer}
     >
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <div className="min-w-0 lg:sticky lg:top-0">
@@ -60,11 +61,7 @@ export function GeneratedResults({ contract, ...props }: GeneratedResultsProps) 
             </p>
           </div>
           <p className="leading-relaxed">{contract.summary}</p>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <Button onClick={() => props.onUse(contract)}>
-              <FileInput aria-hidden />
-              {copy.use}
-            </Button>
+          <div className="flex">
             <CopyButton text={contract.source} label={copy.copy} copiedLabel={copy.copied} />
           </div>
           {compile.status === "failed" ? (

@@ -50,6 +50,17 @@ export const gaslensCopy = {
   noFindingsTitle: "Nothing to optimise",
   noFindingsBody: "GasLens found no clear gas waste, so the contract is unchanged.",
   copyOptimised: "Copy optimised contract",
+  journey: {
+    accept: "Accept rewrite",
+    acceptedTitle: "Rewrite accepted into the workspace",
+    statusReviewed: "Reviewed contract",
+    statusReady: "Rewrite checked, not accepted yet",
+    statusAccepted: "Rewrite accepted into the workspace",
+    statusUnchanged: "Nothing to rewrite",
+    readyNote: "Check every change on the left before you accept.",
+    flaggedNote: "The behaviour check flagged this rewrite, so it cannot be accepted.",
+    unavailableNote: "The behaviour check did not run. Review again before accepting the rewrite.",
+  },
   copied: "Copied",
   impact: { high: "High", medium: "Medium", low: "Low" } satisfies Record<Impact, string>,
   per: {

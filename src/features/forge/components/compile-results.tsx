@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { ResultsSheet } from "@/components/ui/results-sheet";
 import { aiCopy } from "@/lib/copy";
 import { forgeCopy } from "../copy";
@@ -14,6 +15,7 @@ interface CompileResultsProps {
   isStale: boolean;
   focusedLine: number | undefined;
   onFocusLine: (line: number) => void;
+  footer: ReactNode;
 }
 
 export function CompileResults({ result, ...props }: CompileResultsProps) {
@@ -24,6 +26,7 @@ export function CompileResults({ result, ...props }: CompileResultsProps) {
       title={forgeCopy.compile.resultsTitle}
       description={props.fileName || forgeCopy.untitled}
       closeLabel={aiCopy.closeResults}
+      footer={props.footer}
     >
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <div className="min-w-0 lg:sticky lg:top-0">

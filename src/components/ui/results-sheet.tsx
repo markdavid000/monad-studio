@@ -10,6 +10,7 @@ interface ResultsSheetProps {
   title: string;
   description?: string;
   closeLabel: string;
+  footer?: ReactNode;
   children: ReactNode;
 }
 
@@ -46,6 +47,7 @@ export function ResultsSheet(props: ResultsSheetProps) {
             </Dialog.Close>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-5 py-6 sm:px-8">{props.children}</div>
+          {props.footer}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

@@ -12,6 +12,7 @@ import { gaslensCopy } from "../copy";
 import { useGaslens } from "../hooks/use-gaslens";
 import { CodePanel } from "./code-panel";
 import { GasResults } from "./gas-results";
+import { NextStep } from "./next-step";
 
 function runLabel(isPending: boolean, hasReport: boolean) {
   if (isPending) return gaslensCopy.analysing;
@@ -20,10 +21,11 @@ function runLabel(isPending: boolean, hasReport: boolean) {
 
 interface GaslensToolProps {
   runId?: string;
+  autoRun?: boolean;
 }
 
-export function GaslensTool({ runId }: GaslensToolProps) {
-  const gaslens = useGaslens(runId);
+export function GaslensTool({ runId, autoRun }: GaslensToolProps) {
+  const gaslens = useGaslens(runId, autoRun);
   const { report } = gaslens;
 
   return (
@@ -97,6 +99,16 @@ export function GaslensTool({ runId }: GaslensToolProps) {
           isStale={gaslens.isStale}
           canEdit
           view={gaslens.view}
+          footer={
+            <NextStep
+              hasChanges={gaslens.view.hasChanges}
+              check={report.check}
+              isAccepted={gaslens.isAccepted}
+              canAccept={gaslens.canAccept}
+              onAccept={gaslens.acceptRewrite}
+              onSend={gaslens.sendTo}
+            />
+          }
         />
       ) : null}
     </div>

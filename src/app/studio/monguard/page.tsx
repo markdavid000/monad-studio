@@ -6,5 +6,6 @@ export const metadata: Metadata = { title: toolCopy.monguard.name };
 
 export default async function MonguardPage({ searchParams }: PageProps<"/studio/monguard">) {
   const { run } = await searchParams;
-  return <MonguardTool runId={typeof run === "string" ? run : undefined} />;
+  const runId = typeof run === "string" && run !== "new" ? run : undefined;
+  return <MonguardTool runId={runId} autoRun={run === "new"} />;
 }

@@ -63,3 +63,63 @@ export function toScanReport(reply: ScanReply, source: string): ScanReport {
     findings,
   };
 }
+
+const FIX_LIMIT = 20;
+
+export const fixInputSchema = z.object({
+  source: scanInputSchema.shape.source,
+  findings: z
+    .array(
+      z.object({
+        id: z.string().max(20),
+        title: z.string().max(300),
+        fix: z.string().max(2000),
+        fixCode: z.string().max(8000),
+        lines: z.array(z.number()).max(200),
+      })
+    )
+    .min(1, "Pick at least one fix.")
+    .max(FIX_LIMIT, "Pick at most 20 fixes."),
+});
+
+export const fixReplySchema = z.object({
+  fixedSource: z.string(),
+  applied: z.array(z.object({ id: z.string(), note: z.string() })),
+  skipped: z.array(z.object({ id: z.string(), reason: z.string() })),
+});
+
+export const fixResultSchema = z.object({
+  fixedSource: z.string(),
+  applied: z.array(z.object({ id: z.string(), note: z.string() })),
+  skipped: z.array(z.object({ id: z.string(), reason: z.string() })),
+});
+
+export const monguardRunSchema = z.union([
+  scanReportSchema,
+  z.object({ kind: z.literal("fix"), scan: scanReportSchema, fix: fixResultSchema }),
+]);
+
+export function toFixResult(
+  reply: z.infer<typeof fixReplySchema>,
+  source: string,
+  requestedIds: readonly string[]
+): z.infer<typeof fixResultSchema> {
+  const requested = new Set(requestedIds);
+  const fixedSource = stripCodeFences(reply.fixedSource) || source;
+  const unchanged = fixedSource.trim() === source.trim();
+  const applied = unchanged
+    ? []
+    : reply.applied
+        .filter((item) => requested.has(item.id))
+        .map((item) => ({ id: item.id, note: item.note.replaceAll("`", "").trim() }));
+  const appliedIds = new Set(applied.map((item) => item.id));
+  const skipped = [...requested]
+    .filter((id) => !appliedIds.has(id))
+    .map((id) => ({
+      id,
+      reason: (reply.skipped.find((item) => item.id === id)?.reason ?? "")
+        .replaceAll("`", "")
+        .trim(),
+    }));
+  return { fixedSource: unchanged ? source : fixedSource, applied, skipped };
+}

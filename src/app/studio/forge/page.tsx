@@ -6,5 +6,6 @@ export const metadata: Metadata = { title: toolCopy.forge.name };
 
 export default async function ForgePage({ searchParams }: PageProps<"/studio/forge">) {
   const { run } = await searchParams;
-  return <ForgeTool runId={typeof run === "string" ? run : undefined} />;
+  const runId = typeof run === "string" && run !== "new" ? run : undefined;
+  return <ForgeTool runId={runId} autoRun={run === "new"} />;
 }

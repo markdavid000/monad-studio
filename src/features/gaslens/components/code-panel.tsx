@@ -4,7 +4,7 @@ import { CodeView, type CodeLine } from "@/components/ui/code-view";
 import { useCopy } from "@/hooks/use-copy";
 import { cn } from "@/lib/utils";
 import { changeSummary, gaslensCopy } from "../copy";
-import { diffLineKey, type DiffLine } from "../lib/diff";
+import { diffLineKey, type DiffLine } from "@/lib/diff";
 
 interface CodePanelProps {
   fileName: string;

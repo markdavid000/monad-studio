@@ -44,6 +44,15 @@ export const historyCopy = {
   syncFailedBody: "The run is saved in this browser but could not reach your synced history.",
 } as const;
 
+export const journeyCopy = {
+  label: "Next step",
+  scan: "Scan in MonGuard",
+  gas: "Review gas in GasLens",
+  compile: "Compile in MonadForge",
+  undo: "Undo",
+  undone: "Workspace contract restored",
+} as const;
+
 export function linesLabel(lines: readonly number[]) {
   if (lines.length === 0) return "";
   return `${lines.length === 1 ? "Line" : "Lines"} ${lineRanges(lines)}`;

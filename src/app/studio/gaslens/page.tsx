@@ -6,5 +6,6 @@ export const metadata: Metadata = { title: toolCopy.gaslens.name };
 
 export default async function GaslensPage({ searchParams }: PageProps<"/studio/gaslens">) {
   const { run } = await searchParams;
-  return <GaslensTool runId={typeof run === "string" ? run : undefined} />;
+  const runId = typeof run === "string" && run !== "new" ? run : undefined;
+  return <GaslensTool runId={runId} autoRun={run === "new"} />;
 }

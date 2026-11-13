@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useAcceptContract } from "@/hooks/use-accept-contract";
+import { useAutoRun } from "@/hooks/use-auto-run";
 import { useContractDraft } from "@/hooks/use-contract-draft";
 import { useSavedRun } from "@/hooks/use-history";
 import { useLastRunId } from "@/hooks/use-last-run";
+import { useSendContract, type JourneyTool } from "@/hooks/use-send-contract";
 import { SOURCE_LIMIT_BYTES, byteSize } from "@/lib/byte-size";
-import { toast } from "@/lib/toast";
 import { forgeCopy } from "../copy";
 import { forgeRunSchema, PROMPT_MAX_LENGTH, PROMPT_MIN_LENGTH, toFileName } from "../lib/schema";
 import { outlineOf } from "../lib/outline";
@@ -36,7 +38,7 @@ function kindOf(run: ForgeRun | undefined): ResultsKind | undefined {
   return run.kind === "generate" ? "generated" : "compiled";
 }
 
-export function useForge(runId?: string) {
+export function useForge(runId?: string, autoRun = false) {
   const draft = useContractDraft();
   const [prompt, setPrompt] = useState("");
   const [focusedLine, setFocusedLine] = useState<number>();
@@ -49,6 +51,8 @@ export function useForge(runId?: string) {
     setOpenResults(kind);
   }
 
+  const accept = useAcceptContract();
+  const send = useSendContract();
   const generation = useGenerate(() => showResults("generated"));
   const compilation = useCompile(() => showResults("compiled"));
   const opened = useSavedRun("forge", runId, forgeRunSchema);
@@ -79,18 +83,33 @@ export function useForge(runId?: string) {
   }
 
   function loadGenerated(contract: GeneratedContract) {
-    draft.load(contract.fileName, contract.source);
+    accept(forgeCopy.generate.usedTitle, contract.fileName, contract.source);
     showResults(undefined);
-    toast.success(forgeCopy.generate.usedTitle, { description: contract.fileName });
+  }
+
+  function compileSource(name: string, source: string) {
+    showResults(undefined);
+    compilation.compile({ fileName: toFileName(name.replace(/\.sol$/i, "")), source });
   }
 
   function compile() {
-    showResults(undefined);
-    compilation.compile({
-      fileName: toFileName(draft.name.replace(/\.sol$/i, "")),
-      source: draft.source,
-    });
+    compileSource(draft.name, draft.source);
   }
+
+  function putInWorkspace(contract: GeneratedContract) {
+    if (draft.source !== contract.source) draft.load(contract.fileName, contract.source);
+  }
+
+  function compileGenerated(contract: GeneratedContract) {
+    putInWorkspace(contract);
+    compileSource(contract.fileName, contract.source);
+  }
+
+  function sendGenerated(tool: JourneyTool, contract: GeneratedContract) {
+    send(tool, contract.source, contract.fileName);
+  }
+
+  useAutoRun(autoRun && draft.source.trim().length > 0, compile);
 
   return {
     prompt,
@@ -103,6 +122,12 @@ export function useForge(runId?: string) {
     generated,
     generate,
     loadGenerated,
+    compileGenerated,
+    sendGenerated,
+    isGeneratedInWorkspace: generated !== undefined && draft.source === generated.source,
+    sendCompiled: (tool: JourneyTool) => {
+      if (compiled) send(tool, compiled.source);
+    },
     fileName: draft.name,
     source: draft.source,
     outline: outlineOf(draft.source),

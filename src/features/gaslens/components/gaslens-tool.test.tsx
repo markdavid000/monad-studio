@@ -2,12 +2,19 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Toaster } from "@/components/ui/toaster";
-import { aiCopy, historyCopy, retryIn } from "@/lib/copy";
+import { aiCopy, historyCopy, journeyCopy, retryIn } from "@/lib/copy";
 import { clearRuns, listRuns, saveRun } from "@/lib/history";
 import { toast } from "@/lib/toast";
 import { gaslensCopy } from "../copy";
 import type { GasReport } from "../types";
 import { GaslensTool } from "./gaslens-tool";
+
+const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn() }));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => router,
+  usePathname: () => "/studio/gaslens",
+}));
 
 vi.mock("wagmi", () => ({
   useAccount: () => ({ address: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" }),
@@ -299,6 +306,54 @@ describe("GaslensTool", () => {
     expect(screen.queryByRole("button", { name: /use in workspace/i })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: gaslensCopy.copyOptimised }));
     expect(readDraft()).toEqual({ name: "Pool.sol", source: SOURCE });
+  });
+
+  it("accepts a checked rewrite into the workspace and sends it on", async () => {
+    saveDraft(SOURCE);
+    await analyse();
+    const bar = screen.getByRole("group", { name: journeyCopy.label });
+    expect(within(bar).getByText(gaslensCopy.journey.statusReady)).toBeInTheDocument();
+    fireEvent.click(within(bar).getByRole("button", { name: gaslensCopy.journey.accept }));
+    expect(readDraft()).toEqual({ name: "Pool.sol", source: OPTIMIZED });
+    expect(within(bar).getByText(gaslensCopy.journey.statusAccepted)).toBeInTheDocument();
+    expect(within(bar).getByRole("button", { name: gaslensCopy.journey.accept })).toBeDisabled();
+    expect(screen.queryByText(gaslensCopy.stale)).toBeNull();
+
+    fireEvent.click(within(bar).getByRole("button", { name: journeyCopy.compile }));
+    expect(router.push).toHaveBeenLastCalledWith("/studio/forge?run=new");
+    expect(readDraft().source).toBe(OPTIMIZED);
+  });
+
+  it("never lets a flagged rewrite be accepted", async () => {
+    saveDraft(SOURCE);
+    await analyse(flagged);
+    const bar = screen.getByRole("group", { name: journeyCopy.label });
+    expect(within(bar).getByRole("button", { name: gaslensCopy.journey.accept })).toBeDisabled();
+    expect(within(bar).getByText(gaslensCopy.journey.flaggedNote)).toBeInTheDocument();
+    fireEvent.click(within(bar).getByRole("button", { name: journeyCopy.scan }));
+    expect(router.push).toHaveBeenLastCalledWith("/studio/monguard?run=new");
+    expect(readDraft().source).toBe(SOURCE);
+  });
+
+  it("does not accept a rewrite whose check did not run", async () => {
+    saveDraft(SOURCE);
+    await analyse({ ...report, check: { status: "unavailable", risks: [] } });
+    const bar = screen.getByRole("group", { name: journeyCopy.label });
+    expect(within(bar).getByRole("button", { name: gaslensCopy.journey.accept })).toBeDisabled();
+    expect(within(bar).getByText(gaslensCopy.journey.unavailableNote)).toBeInTheDocument();
+  });
+
+  it("starts a review by itself when a contract is sent here", async () => {
+    saveDraft(SOURCE);
+    fetchMock.mockImplementation(async () => json({ data: report }));
+    render(
+      <QueryClientProvider client={newClient()}>
+        <GaslensTool autoRun />
+      </QueryClientProvider>
+    );
+    await results();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledWith("/studio/gaslens");
   });
 
   it("says when the behaviour check found nothing", async () => {
