@@ -355,6 +355,17 @@ describe("GaslensTool", () => {
     expect(within(await results()).getByText(report.summary)).toBeInTheDocument();
   });
 
+  it("says the AI service is busy and offers a retry", async () => {
+    saveDraft(SOURCE);
+    fetchMock.mockResolvedValueOnce(
+      json({ error: { code: "upstream_busy", message: "busy" } }, { status: 502 })
+    );
+    renderTool();
+    fireEvent.click(screen.getByRole("button", { name: gaslensCopy.analyse }));
+    expect(await findText(aiCopy.errors.upstream_busy)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: aiCopy.retry })).toBeInTheDocument();
+  });
+
   it("shares the AI limit message with the other tools", async () => {
     saveDraft(SOURCE);
     fetchMock.mockResolvedValue(

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const UPSTREAM_ERROR_CODES = ["upstream_unavailable", "invalid_reply"] as const;
+const UPSTREAM_ERROR_CODES = ["upstream_unavailable", "upstream_busy", "invalid_reply"] as const;
 const API_ERROR_CODES = [
   "invalid_input",
   "rate_limited",
