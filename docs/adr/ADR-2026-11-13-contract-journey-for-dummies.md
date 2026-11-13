@@ -1,6 +1,6 @@
 # Moving a contract from tool to tool, in plain English
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Technical version:** [ADR-2026-11-13-contract-journey.md](ADR-2026-11-13-contract-journey.md)
 
 ## What is the problem?

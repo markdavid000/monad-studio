@@ -1,7 +1,7 @@
 # ADR-2026-11-13: Contract journey between tools
 
-- **Status:** Proposed
-- **Approved by:** (name, date; filled in by the maintainer)
+- **Status:** Accepted
+- **Approved by:** (MarkDavid, 13th Nov 2026)
 - **Companion:** [ADR-2026-11-13-contract-journey-for-dummies.md](ADR-2026-11-13-contract-journey-for-dummies.md)
 
 ## Context
