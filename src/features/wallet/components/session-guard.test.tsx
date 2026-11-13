@@ -58,7 +58,7 @@ beforeEach(() => {
   account.status = "connected";
   account.address = ALICE;
   window.history.replaceState(null, "", "/studio/gaslens?run=1");
-  window.localStorage.setItem("monad-studio:synced-wallet", ALICE);
+  window.localStorage.setItem("monad-studio:synced-wallets", JSON.stringify([ALICE]));
 });
 
 afterEach(() => {
@@ -87,7 +87,18 @@ describe("SessionGuard", () => {
       expect(replace).toHaveBeenCalledWith("/?connect=1&next=%2Fstudio%2Fgaslens%3Frun%3D1")
     );
     expect(deletes()).toBe(1);
-    expect(window.localStorage.getItem("monad-studio:synced-wallet")).toBeNull();
+  });
+
+  it("keeps the wallet's sync choice when the wallet disconnects", async () => {
+    sessionReply(ALICE);
+    const view = renderGuard();
+    account.status = "disconnected";
+    account.address = undefined;
+    view.rerender();
+    await vi.waitFor(() => expect(replace).toHaveBeenCalled());
+    expect(window.localStorage.getItem("monad-studio:synced-wallets")).toBe(
+      JSON.stringify([ALICE])
+    );
   });
 
   it("signs out when the wallet switches to another account", async () => {

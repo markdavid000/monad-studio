@@ -1,7 +1,6 @@
 import { createAuthenticationAdapter, type AuthenticationStatus } from "@rainbow-me/rainbowkit";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createSiweMessage } from "viem/siwe";
-import { setSyncedAddress } from "@/hooks/use-synced-address";
 import { endSession, fetchNonce, fetchSession, verifySignature } from "@/lib/sync-api";
 import { walletCopy } from "../copy";
 
@@ -41,7 +40,6 @@ export function useWalletSession() {
     },
     signOut: async () => {
       await endSession();
-      setSyncedAddress(null);
       client.setQueryData(SESSION_KEY, null);
     },
   });

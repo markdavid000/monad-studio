@@ -39,11 +39,6 @@ export function SyncPanel() {
           <p className="max-w-2xl text-sm text-muted-foreground">
             {sync.state === "no-wallet" ? activityCopy.syncNoWalletBody : activityCopy.syncOffBody}
           </p>
-          {sync.syncedAddress && sync.state === "off" ? (
-            <p className="text-xs text-muted-foreground">
-              {activityCopy.syncOtherWallet} {syncedWith(sync.syncedAddress)}
-            </p>
-          ) : null}
         </div>
       </div>
       {sync.state === "off" ? (

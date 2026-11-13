@@ -1,15 +1,29 @@
 import { useSyncExternalStore } from "react";
 import { getAddress, isAddress, type Address } from "viem";
+import { useAccount } from "wagmi";
 
-const STORAGE_KEY = "monad-studio:synced-wallet";
-const CHANGE_EVENT = "monad-studio:synced-wallet-change";
+const STORAGE_KEY = "monad-studio:synced-wallets";
+const CHANGE_EVENT = "monad-studio:synced-wallets-change";
 
 function read() {
   try {
-    return window.localStorage.getItem(STORAGE_KEY) ?? "";
+    return window.localStorage.getItem(STORAGE_KEY) ?? "[]";
   } catch (error) {
     console.error(error);
-    return "";
+    return "[]";
+  }
+}
+
+function parse(raw: string): Address[] {
+  try {
+    const value: unknown = JSON.parse(raw);
+    if (!Array.isArray(value)) return [];
+    return value
+      .filter((item): item is string => typeof item === "string" && isAddress(item))
+      .map((item) => getAddress(item));
+  } catch (error) {
+    console.error(error);
+    return [];
   }
 }
 
@@ -22,17 +36,30 @@ function subscribe(onChange: () => void) {
   };
 }
 
-export function setSyncedAddress(address: Address | null) {
+function write(addresses: readonly Address[]) {
   try {
-    if (address) window.localStorage.setItem(STORAGE_KEY, address);
-    else window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(addresses));
   } catch (error) {
     console.error(error);
   }
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 
+export function addSyncedAddress(address: Address) {
+  const current = parse(read());
+  const normalized = getAddress(address);
+  if (!current.includes(normalized)) write([...current, normalized]);
+}
+
+export function removeSyncedAddress(address: Address) {
+  const normalized = getAddress(address);
+  write(parse(read()).filter((item) => item !== normalized));
+}
+
 export function useSyncedAddress(): Address | null {
-  const raw = useSyncExternalStore(subscribe, read, () => "");
-  return isAddress(raw) ? getAddress(raw) : null;
+  const { address } = useAccount();
+  const raw = useSyncExternalStore(subscribe, read, () => "[]");
+  if (!address) return null;
+  const normalized = getAddress(address);
+  return parse(raw).includes(normalized) ? normalized : null;
 }
